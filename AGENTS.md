@@ -22,6 +22,7 @@ pnpm preview    # 预览 dist（AI 禁止启动）
 
 - **Node >= 22**（engines 已声明），包管理用 pnpm
 - TypeScript strict 全开（含 `exactOptionalPropertyTypes`、`noUncheckedIndexedAccess`）——可选属性用 `...(x !== undefined ? { x } : {})` 模式
+- **优先成熟 npm 包，不重复造轮子**：需要某种能力（流程图、图表、在线执行、动画……）时先调研社区方案（React Flow、Sandpack、recharts 等），确认无合适包再自研；同时不为简单需求引重型依赖
 - 提交信息用中文简短描述，格式 `type: 描述`
 - 每完成一个阶段或一个功能点即 commit；不主动 commit，等用户确认
 

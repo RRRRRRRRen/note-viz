@@ -24,15 +24,25 @@ import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/co
 // 代码块  属性: code, lang?: "javascript" | "typescript"
 import CodeBlock from "@/components/demo/CodeBlock";
 
-// 演示通用件：日志面板 / 按钮
+// ★ 在线代码游乐场：可编辑代码 + 真实执行 + 控制台（Sandpack 驱动，需网络）
+//   props: code（初始代码）, label?, template? "node"|"vanilla", height?
+import { PlayGround } from "@/components/demo/PlayGround";
+
+// 流程图/拓扑图：React Flow + dagre 自动布局，自带缩放/适应/小地图
+//   props: data {direction?, nodes[{id,label,color}], edges[{source,target,label?,dashed?}]}, label?, height?
+import { FlowChart } from "@/components/demo/FlowChart";
+
+// 演示通用件：日志面板 / 按钮（轻量交互演示用）
 import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
-// 可缩放拖拽画布：包住 svg/流程图，自带缩放/拖拽/复位按钮
+// 可缩放拖拽画布：仅用于包住手写 SVG 等无内置缩放的静态内容
 import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
 
 // ★ 可视化组件（均自带 VizBlock 包壳）
 import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "@/components/viz";
 ```
+
+**组件选型优先级**：内容需要某种视觉呈现时，先查有没有成熟 npm 包（流程图 → React Flow/dagre；在线执行 → Sandpack；图表 → 可考虑 recharts 等），确认没有合适的再自研。禁止重复造轮子，也不为简单需求引重型依赖。
 
 可视化组件选型：
 

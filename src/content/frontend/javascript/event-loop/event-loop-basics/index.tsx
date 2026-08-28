@@ -1,8 +1,7 @@
-import { motion } from "framer-motion";
-import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
 import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/components/note";
 import { BarChart, CompareTable, MemoryCard, Timeline } from "@/components/viz";
-import CodeBlock from "@/components/demo/CodeBlock";
+import { FlowChart } from "@/components/demo/FlowChart";
+import { PlayGround } from "@/components/demo/PlayGround";
 import EventLoopSimulator from "./EventLoopSimulator";
 
 export default function Note() {
@@ -90,9 +89,11 @@ export default function Note() {
 
       <Section title="动手验证：经典输出题">
         <p className="mb-2 text-sm text-muted">
-          先自己推一遍输出顺序，再打开浏览器控制台实际运行对照——所有结论都应来自真实运行结果，而不是背答案：
+          先自己推一遍输出顺序，再直接运行对照。下面的代码可以随意改动——加几个 setTimeout、嵌套一层
+          Promise.then，验证你对该主题的所有猜想：
         </p>
-        <CodeBlock
+        <PlayGround
+          label="在线运行 / playground"
           code={`console.log(1);
 
 new Promise((resolve) => {
@@ -216,78 +217,25 @@ console.log(2);
 }
 
 function EventLoopFlow() {
-  const nodes = [
-    { id: "sync", label: "执行同步代码（厨师做菜）", x: 160, y: 34, color: "#f59e0b" },
-    { id: "micro", label: "清空微任务队列（处理补话）", x: 160, y: 116, color: "#8b5cf6" },
-    { id: "render", label: "渲染检查（可选）rAF", x: 50, y: 198, color: "#10b981" },
-    { id: "macro", label: "取 1 个宏任务（拿下一张单）", x: 270, y: 198, color: "#3b82f6" },
-  ];
   return (
-    <PanZoomCanvas>
-      <svg viewBox="0 0 380 252" width={684} height={454} className="block">
-        {nodes.map((n) => (
-          <g key={n.id}>
-            <motion.rect
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              x={n.x - 105}
-              y={n.y - 18}
-              width={210}
-              height={36}
-              rx={8}
-              fill={`${n.color}1a`}
-              stroke={n.color}
-            />
-            <text x={n.x} y={n.y + 4} textAnchor="middle" fontSize={11} fill={n.color}>
-              {n.label}
-            </text>
-          </g>
-        ))}
-        <defs>
-          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#888" strokeWidth={1.2} />
-          </marker>
-        </defs>
-        <line
-          x1={160}
-          y1={52}
-          x2={160}
-          y2={94}
-          stroke="#888"
-          strokeWidth={1.2}
-          markerEnd="url(#arrow)"
-        />
-        <line
-          x1={105}
-          y1={134}
-          x2={70}
-          y2={176}
-          stroke="#888"
-          strokeWidth={1.2}
-          markerEnd="url(#arrow)"
-        />
-        <line
-          x1={215}
-          y1={134}
-          x2={250}
-          y2={176}
-          stroke="#888"
-          strokeWidth={1.2}
-          markerEnd="url(#arrow)"
-        />
-        <path
-          d="M 50 216 C 50 244, 340 244, 292 212"
-          fill="none"
-          stroke="#888"
-          strokeWidth={1.2}
-          strokeDasharray="4 3"
-          markerEnd="url(#arrow)"
-        />
-        <text x={160} y={240} fontSize={10} fill="#888">
-          循环
-        </text>
-      </svg>
-    </PanZoomCanvas>
+    <FlowChart
+      label="事件循环全景 / event loop"
+      height={380}
+      data={{
+        direction: "TB",
+        nodes: [
+          { id: "sync", label: "执行同步代码（厨师做菜）", color: "#f59e0b" },
+          { id: "micro", label: "清空微任务队列（处理补话）", color: "#8b5cf6" },
+          { id: "render", label: "渲染检查（可选）rAF", color: "#10b981" },
+          { id: "macro", label: "取 1 个宏任务（拿下一张单）", color: "#3b82f6" },
+        ],
+        edges: [
+          { source: "sync", target: "micro", label: "栈清空" },
+          { source: "micro", target: "render", label: "微任务清空" },
+          { source: "render", target: "macro", label: "本轮无渲染则跳过", dashed: true },
+          { source: "macro", target: "sync", label: "下一轮循环", dashed: true },
+        ],
+      }}
+    />
   );
 }
