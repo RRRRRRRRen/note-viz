@@ -15,8 +15,10 @@ export function Conclusion({ children }: { children: ReactNode }) {
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section>
-      <h2 className="mb-3 text-xl font-semibold">{title}</h2>
+    <section className="scroll-mt-24">
+      <h2 data-toc className="mb-3 text-xl font-semibold">
+        {title}
+      </h2>
       {children}
     </section>
   );
