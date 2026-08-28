@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
-import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
+import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 import EventLoopSimulator from "./EventLoopSimulator";
 
@@ -38,27 +38,36 @@ export default function Note() {
       </Section>
 
       <Section title="逐段拆解">
-        <Prose>
-          <p>
-            <strong>1. 调用栈（Call Stack）</strong>
-            ：函数调用形成栈帧，后进先出。栈空是事件循环推进的唯一信号。
-          </p>
-          <p>
-            <strong>2. 微任务（Microtask）</strong>
-            ：Promise.then/catch/finally、queueMicrotask、await 之后的代码。当前宏任务结束后
-            <strong>立即、全部、递归地</strong>清空——执行微任务过程中产生的新微任务也会在本轮处理。
-          </p>
-          <p>
-            <strong>3. 宏任务（Macrotask）</strong>
-            ：setTimeout/setInterval、I/O、UI 事件。每轮循环只取<strong>一个</strong>
-            ，执行完再次清微任务。
-          </p>
-          <p>
-            <strong>4. 渲染时机</strong>
-            ：浏览器在每轮宏任务结束后、微任务清空后决定是否渲染（requestAnimationFrame
-            在渲染前调用），并非每轮都渲染。
-          </p>
-        </Prose>
+        <Subsection title="调用栈（Call Stack）">
+          <Prose>
+            <p>函数调用形成栈帧，后进先出。栈空是事件循环推进的唯一信号。</p>
+          </Prose>
+        </Subsection>
+        <Subsection title="微任务（Microtask）">
+          <Prose>
+            <p>
+              Promise.then/catch/finally、queueMicrotask、await 之后的代码。当前宏任务结束后
+              <strong>立即、全部、递归地</strong>
+              清空——执行微任务过程中产生的新微任务也会在本轮处理。
+            </p>
+          </Prose>
+        </Subsection>
+        <Subsection title="宏任务（Macrotask）">
+          <Prose>
+            <p>
+              setTimeout/setInterval、I/O、UI 事件。每轮循环只取<strong>一个</strong>
+              ，执行完再次清微任务。
+            </p>
+          </Prose>
+        </Subsection>
+        <Subsection title="渲染时机">
+          <Prose>
+            <p>
+              浏览器在每轮宏任务结束后、微任务清空后决定是否渲染（requestAnimationFrame
+              在渲染前调用），并非每轮都渲染。
+            </p>
+          </Prose>
+        </Subsection>
       </Section>
 
       <Section title="动手验证：经典输出题">

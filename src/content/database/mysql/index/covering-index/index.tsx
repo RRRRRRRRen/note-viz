@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
+import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 
 export default function Note() {
@@ -12,22 +12,27 @@ export default function Note() {
       </Conclusion>
 
       <Section title="逐段拆解">
-        <Prose>
-          <p>
-            <strong>1. 两棵 B+ 树</strong>
-            ：聚簇索引叶子 = 完整行数据；二级索引叶子 = 索引列值 +
-            主键。每个二级索引都是一棵独立的树。
-          </p>
-          <p>
-            <strong>2. 回表的成本</strong>
-            ：按主键回聚簇索引是随机 I/O，命中 1 万行 = 1 万次随机读。EXPLAIN 的 Extra 出现{" "}
-            <code>Using index</code> 表示免回表。
-          </p>
-          <p>
-            <strong>3. 最左前缀</strong>
-            ：联合索引 (a, b, c) 只能命中 a、a+b、a+b+c 前缀。遇到范围查询后面的列停止走索引。
-          </p>
-        </Prose>
+        <Subsection title="两棵 B+ 树">
+          <Prose>
+            <p>
+              聚簇索引叶子 = 完整行数据；二级索引叶子 = 索引列值 +
+              主键。每个二级索引都是一棵独立的树。
+            </p>
+          </Prose>
+        </Subsection>
+        <Subsection title="回表的成本">
+          <Prose>
+            <p>
+              按主键回聚簇索引是随机 I/O，命中 1 万行 = 1 万次随机读。EXPLAIN 的 Extra 出现{" "}
+              <code>Using index</code> 表示免回表。
+            </p>
+          </Prose>
+        </Subsection>
+        <Subsection title="最左前缀">
+          <Prose>
+            <p>联合索引 (a, b, c) 只能命中 a、a+b、a+b+c 前缀。遇到范围查询后面的列停止走索引。</p>
+          </Prose>
+        </Subsection>
         <CodeBlock
           code={`CREATE INDEX idx_user_status ON users(status, created_at);
 

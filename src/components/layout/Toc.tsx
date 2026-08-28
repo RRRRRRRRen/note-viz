@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 export interface TocItem {
   id: string;
   title: string;
+  /** 标题层级：2 = h2 大节，3 = h3 小节 */
+  level: 2 | 3;
 }
 
 interface TocProps {
-  /** 渲染笔记正文的容器 ref，从中提取 h2 生成大纲 */
+  /** 渲染笔记正文的容器 ref，从中提取 h2/h3 生成大纲 */
   containerRef: React.RefObject<HTMLElement | null>;
   /** 内容切换时重置（传 note.path 即可） */
   resetKey: string;
@@ -25,11 +27,11 @@ function slugify(text: string, used: Set<string>): string {
   return id;
 }
 
-/** 从容器中提取 h2 标题、写入 id，供大纲导航使用 */
+/** 从容器中提取 h2/h3 标题、写入 id，供大纲导航使用 */
 export function extractHeadings(container: HTMLElement): TocItem[] {
   const used = new Set<string>();
   const items: TocItem[] = [];
-  container.querySelectorAll("h2[data-toc]").forEach((el) => {
+  container.querySelectorAll("h2[data-toc], h3[data-toc]").forEach((el) => {
     const title = el.textContent?.trim();
     if (!title) return;
     let id = el.id;
@@ -37,13 +39,13 @@ export function extractHeadings(container: HTMLElement): TocItem[] {
       id = slugify(title, used);
       el.id = id;
     }
-    items.push({ id, title });
+    items.push({ id, title, level: el.tagName === "H2" ? 2 : 3 });
   });
   return items;
 }
 
 /**
- * 笔记大纲导航：fixed 悬浮于右侧、随滚动实时高亮当前小节。
+ * 笔记大纲导航：fixed 悬浮于右侧、随滚动实时高亮当前小节、h2/h3 分级缩进展示。
  * 长大纲超出高度时自动滚动，保证活动项始终可见。
  */
 export function Toc({ containerRef, resetKey }: TocProps) {
@@ -113,28 +115,33 @@ export function Toc({ containerRef, resetKey }: TocProps) {
     <nav
       id="toc-nav"
       aria-label="大纲"
-      className="fixed right-6 top-[140px] z-10 max-h-[calc(100vh-200px)] w-52 overflow-y-auto"
+      className="fixed right-6 top-[140px] z-10 max-h-[calc(100vh-200px)] w-56 overflow-y-auto pb-4"
     >
       <div className="mb-3 text-[10px] tracking-[0.1em] text-muted uppercase meta-mono">
         本页大纲
       </div>
-      <ul className="space-y-0.5 border-l border-border">
+      <ul className="space-y-px border-l border-border">
         {items.map((item, i) => {
           const active = item.id === activeId;
+          const isSub = item.level === 3;
           return (
             <li key={item.id}>
               <button
                 type="button"
                 onClick={() => jump(item.id)}
-                className={`-ml-px block w-full border-l-2 py-1 pl-3 text-left text-xs leading-snug transition-all ${
+                className={`-ml-px block w-full border-l-2 py-1 pr-1 text-left text-xs leading-snug transition-all ${
+                  isSub ? "pl-6" : "pl-3"
+                } ${
                   active
                     ? "border-accent font-medium text-foreground"
                     : "border-transparent text-muted hover:border-border hover:text-foreground"
                 } ${active ? "" : "opacity-80"}`}
               >
-                <span className="mr-1.5 text-[10px] text-muted meta-mono">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+                {!isSub && (
+                  <span className="mr-1.5 text-[10px] text-muted meta-mono">
+                    {String(numberOf(items, i)).padStart(2, "0")}
+                  </span>
+                )}
                 {item.title}
               </button>
             </li>
@@ -143,4 +150,13 @@ export function Toc({ containerRef, resetKey }: TocProps) {
       </ul>
     </nav>
   );
+}
+
+/** h2 大节的序号（h3 小节不编号） */
+function numberOf(items: TocItem[], index: number): number {
+  let n = 0;
+  for (let i = 0; i <= index; i++) {
+    if (items[i]!.level === 2) n++;
+  }
+  return n;
 }

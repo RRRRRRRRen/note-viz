@@ -24,6 +24,17 @@ export function Section({ title, children }: { title: string; children: ReactNod
   );
 }
 
+export function Subsection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="scroll-mt-24">
+      <h3 data-toc className="mb-2 mt-5 text-sm font-semibold">
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
 export function Prose({ children }: { children: ReactNode }) {
   return <div className="space-y-4 text-sm leading-relaxed">{children}</div>;
 }
