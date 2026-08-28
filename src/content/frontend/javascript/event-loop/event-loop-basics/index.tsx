@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
 import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/components/note";
+import { BarChart, CompareTable, MemoryCard, Timeline } from "@/components/viz";
 import CodeBlock from "@/components/demo/CodeBlock";
 import EventLoopSimulator from "./EventLoopSimulator";
 
@@ -70,6 +71,23 @@ export default function Note() {
         </Subsection>
       </Section>
 
+      <Section title="一轮事件循环的完整时序">
+        <Timeline
+          steps={[
+            { label: "执行同步代码", sub: "调用栈运行", color: "#f59e0b" },
+            { label: "栈清空", sub: "唯一推进信号", color: "#f59e0b" },
+            { label: "清空微任务", sub: "全部·递归", color: "#8b5cf6" },
+            { label: "渲染检查", sub: "可能跳过", color: "#10b981" },
+            { label: "取 1 个宏任务", sub: "只取一个", color: "#3b82f6" },
+            { label: "回到开头", sub: "循环往复", color: "#1677ff" },
+          ]}
+        />
+        <MemoryCard keyword="微任务永远插队">
+          每个宏任务执行完，都要先把微任务队列<strong>彻底清空</strong>才能进入下一阶段——
+          微任务不是"优先级高的宏任务"，而是绑定在<strong>本轮</strong>的收尾工作。
+        </MemoryCard>
+      </Section>
+
       <Section title="动手验证：经典输出题">
         <p className="mb-2 text-sm text-muted">
           先自己推一遍输出顺序，再打开浏览器控制台实际运行对照——所有结论都应来自真实运行结果，而不是背答案：
@@ -88,10 +106,74 @@ setTimeout(() => console.log("B"), 0);
 console.log(2);
 // 真实输出：1 → executor 同步执行 → 2 → 3 → A → B`}
         />
+        <p className="mb-1 text-sm text-muted">输出顺序的时间线视图：</p>
+        <Timeline
+          steps={[
+            { label: "1", sub: "同步", color: "#f59e0b" },
+            { label: "executor", sub: "同步", color: "#f59e0b" },
+            { label: "2", sub: "同步", color: "#f59e0b" },
+            { label: "3", sub: "微任务", color: "#8b5cf6" },
+            { label: "A", sub: "宏任务①", color: "#3b82f6" },
+            { label: "B", sub: "宏任务②", color: "#3b82f6" },
+          ]}
+        />
         <p className="text-sm text-muted">
           关键点：Promise 的 executor 是同步的；setTimeout(...,0)
           不代表立即执行，只是"下一轮宏任务"。
         </p>
+      </Section>
+
+      <Section title="微任务 vs 宏任务：一张图分清">
+        <CompareTable
+          left={{
+            title: "微任务 Microtask",
+            color: "#8b5cf6",
+            points: [
+              "Promise.then / catch / finally",
+              "queueMicrotask()、await 之后的代码",
+              "MutationObserver（浏览器）",
+              "本轮全部清空，递归处理新微任务",
+              "场景：状态变化的即时后续处理",
+            ],
+          }}
+          right={{
+            title: "宏任务 Macrotask",
+            color: "#3b82f6",
+            points: [
+              "setTimeout / setInterval",
+              "I/O、UI 事件回调",
+              "setImmediate（Node）、MessageChannel",
+              "每轮只取 1 个，执行完再清微任务",
+              "场景：大块工作切片，给渲染让路",
+            ],
+          }}
+        />
+        <MemoryCard keyword="setTimeout(fn, 0) ≠ 立即执行" color="#d29922">
+          延时 0 只表示"下一轮宏任务"。当前栈不清空、微任务不清完，它永远排不上。
+        </MemoryCard>
+      </Section>
+
+      <Section title="执行开销参考">
+        <p className="mb-1 text-sm text-muted">
+          为什么规范要把渲染放在宏任务之后、且每轮只取一个宏任务？给一层抽象成本做参考
+          （同一台机器上的相对量级，仅供直觉建立，不要背具体数字）：
+        </p>
+        <BarChart
+          title="相对开销量级（越大越该避免在高频路径出现）"
+          items={[
+            { label: "读内存变量", value: 1, color: "#3fb950" },
+            { label: "微任务调度", value: 3, color: "#8b5cf6" },
+            { label: "setTimeout ≥4ms", value: 40, color: "#3b82f6" },
+            { label: "强制重排 reflow", value: 300, color: "#d29922" },
+          ]}
+        />
+        <Prose>
+          <p>
+            浏览器为 <code>setTimeout</code> 设了 4ms 下限嵌套防饿死；而一次强制 reflow
+            的代价可能抵得上数万次微任务调度——事件循环把渲染夹在中间，本质是在
+            「及时响应」与「别频繁打断」之间做调度平衡。
+          </p>
+        </Prose>
       </Section>
 
       <Section title="交互模拟器">
