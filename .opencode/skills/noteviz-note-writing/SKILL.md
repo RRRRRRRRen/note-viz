@@ -39,7 +39,15 @@ import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
 
 // ★ 可视化组件（均自带 VizBlock 包壳）
-import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "@/components/viz";
+import {
+  VizBlock,
+  CompareTable,
+  Timeline,
+  OutputTimeline,
+  MemoryCard,
+  BarChart,
+  DoDont,
+} from "@/components/viz";
 ```
 
 **组件选型优先级**：内容需要某种视觉呈现时，先查有没有成熟 npm 包（流程图 → React Flow/dagre；在线执行 → Sandpack；图表 → 可考虑 recharts 等），确认没有合适的再自研。禁止重复造轮子，也不为简单需求引重型依赖。
@@ -49,7 +57,8 @@ import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "
 | 组件                                          | 用途                                               | 参数                                |
 | --------------------------------------------- | -------------------------------------------------- | ----------------------------------- |
 | `<CompareTable left={...} right={...} />`     | 两个概念的左右对照（var vs let、微任务 vs 宏任务） | `{title, points[], color?}` × 2     |
-| `<Timeline steps={[...]} label? />`           | 执行顺序/输出顺序/流转过程                         | `{label, sub?, color?}[]`           |
+| `<Timeline steps={[...]} label? />` | 执行顺序/输出顺序/流转过程 | `{label, sub?, color?}[]` |
+| `<OutputTimeline steps={[...]} label? />` | **输出题专用**：每条输出的逐条解读（必须用这个而不是 Timeline 展示输出） | `{output, phase: 同步\|微任务\|宏任务, why, color?}[]` |
 | `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 ≤3 个                         | keyword + children, color?          |
 | `<BarChart items={[...]} label? title? />`    | 相对开销/数量级对比（给直觉，勿当精确值）          | `{label, value, color?, suffix?}[]` |
 | `<DoDont dont={...} do={...} label? />`       | 错误写法 vs 推荐写法的并排代码对照                 | `{code, note}` × 2                  |
@@ -79,7 +88,7 @@ import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "
 1. **结论先行**：`<Conclusion>` 3-5 句给出可执行答案，只读这一段能应付 80% 提问。
 2. **类比按需**：只给真正抽象、反直觉的机制配生活化类比（按上表决定有无）；简单/具象概念**不要硬凑类比**。有类比时放「一个生活化的类比」Section 并贯穿后文（括号回扣，如「宏任务（=前台的新单子）」）。
 3. **篇幅**：正文（不含代码）≥800 字（熟悉度高时侧重深度而非字数），每个保留的核心小节 ≥2 段（先"为什么这样设计"，再"引擎层面怎么做"）。
-4. **真实运行（最重要）**：输出题的输出注释必须是真实引擎运行结果，禁止臆测——Node 行为用 `node -e` 验证、浏览器行为注明 Chrome 版本、Node 特有 API 注明版本。代码块后写「运行结果解读」：逐行解释为什么，而不是复述输出。无法实测的场景显式写明不确定性。示例代码必须自包含、可直接复制运行。
+4. **真实运行（最重要）**：输出题的输出注释必须是真实引擎运行结果，禁止臆测——Node 行为用 `node -e` 验证、浏览器行为注明 Chrome 版本、Node 特有 API 注明版本。代码块后用 `<OutputTimeline>` 逐条解读：每条输出标注阶段（同步/微任务/宏任务）+ 一段「为什么是它」的解释，而不是只罗列顺序。无法实测的场景显式写明不确定性。示例代码必须自包含、可直接复制运行。
 5. **可视化密度**：每篇 ≥4 个可视化块；连续两屏纯文字即不合格。
 6. **追问链**：`<QAChain>` 数量与难度按详略表，答案给确定结论而非「看情况」。
 7. **过渡钩子**：结尾点出与站内相邻主题的关联，为交叉阅读埋线。
