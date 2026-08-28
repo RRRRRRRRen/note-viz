@@ -21,7 +21,7 @@ function TopBar() {
   const location = useLocation();
 
   return (
-    <div className="fixed inset-x-0 top-0 z-20">
+    <div className="relative z-20">
       <header className="border-b border-border bg-background/95 backdrop-blur">
         <div className="flex h-14 items-center gap-7 px-6">
           <Link to="/" className="min-w-44 text-lg font-bold tracking-tight">

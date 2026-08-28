@@ -45,8 +45,14 @@
   --color-warn: var(--warn);
 }
 
+html {
+  height: 100%;
+}
+
 body {
   @apply bg-background text-foreground antialiased;
+  height: 100%;
+  overflow: hidden;
   font-size: 14px;
   line-height: 1.7;
   font-family:
