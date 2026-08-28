@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Moon, Sun, X } from "lucide-react";
 import { domainTrees } from "@/lib/registry";
 import { activateTab, closeTab, useTabs } from "@/lib/tabs";
@@ -81,6 +81,7 @@ function TopBar() {
 function TabBar() {
   const { tabs, activeIndex } = useTabs();
   const location = useLocation();
+  const navigate = useNavigate();
   if (tabs.length === 0) return null;
 
   return (
@@ -97,7 +98,13 @@ function TabBar() {
                   : "border-transparent text-muted hover:bg-surface hover:text-foreground"
               }`}
             >
-              <button type="button" onClick={() => activateTab(i)}>
+              <button
+                type="button"
+                onClick={() => {
+                  activateTab(i);
+                  navigate(tab.path);
+                }}
+              >
                 {tab.title}
               </button>
               <button
