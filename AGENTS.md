@@ -5,12 +5,18 @@ NoteViz：纯前端程序员学习站（Vite + React + TS + Tailwind 4）。
 ## 常用命令
 
 ```bash
-pnpm dev        # 开发服务器（用户自己启动）
+pnpm dev        # 开发服务器（用户自己启动，AI 禁止启动）
 pnpm build      # tsc 类型检查 + vite 构建（meta 校验在构建时强制执行）
 pnpm lint       # oxlint
 pnpm format     # oxfmt 格式化
-pnpm preview    # 预览 dist
+pnpm preview    # 预览 dist（AI 禁止启动）
 ```
+
+## 硬性禁令（最高优先级）
+
+**禁止启动任何长期运行的服务**——包括 `pnpm dev`、`pnpm preview`、`docker run`、任何 `--watch`/`serve` 类命令。开发服务器由用户自己启动和管理。AI 启动后台服务会不经确认地占用端口与机器资源，属于严重违规。
+
+需要验证页面效果时，只允许：`pnpm build && pnpm lint` 静态检查，或与用户沟通后由用户自行在浏览器确认。
 
 ## 项目约定
 
