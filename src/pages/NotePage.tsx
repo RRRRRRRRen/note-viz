@@ -76,7 +76,7 @@ export default function NotePage() {
         </Suspense>
       </div>
 
-      <aside className="hidden w-56 shrink-0 xl:block">
+      <aside className="hidden w-52 shrink-0 xl:block" aria-hidden="true">
         <Toc containerRef={contentRef} resetKey={note.path} />
       </aside>
     </article>
