@@ -3,14 +3,15 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { domainTree } from "@/lib/registry";
 
-export default function Sidebar() {
+export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   const location = useLocation();
   const segs = location.pathname.split("/").filter(Boolean);
-  const domainSlug = segs[0];
-  const domain = domainSlug ? domainTree(domainSlug) : undefined;
+  const domain = domainTree(domainSlug);
   if (!domain) return null;
 
-  const notePath = `/note/${segs.slice(0, 4).join("/")}`;
+  const notePath = location.pathname.startsWith("/note/")
+    ? location.pathname
+    : `/note/${segs.slice(0, 4).join("/")}`;
 
   return (
     <aside className="sticky top-14 h-[calc(100vh-56px)] w-72 shrink-0 overflow-y-auto border-r border-border px-4 py-6">

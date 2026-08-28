@@ -8,7 +8,14 @@ function Chrome() {
   const { zen } = useZen();
   const location = useLocation();
   const isHome = location.pathname === "/";
-  const isDomain = !isHome && !location.pathname.startsWith("/note/");
+  const isNote = location.pathname.startsWith("/note/");
+  const domainSlug =
+    isHome || isNote
+      ? isNote
+        ? location.pathname.split("/")[2]
+        : undefined
+      : location.pathname.split("/")[1];
+  const showSidebar = !zen && !isHome && domainSlug !== undefined;
 
   return (
     <div className="min-h-screen pt-14">
@@ -28,7 +35,7 @@ function Chrome() {
       </AnimatePresence>
       <div className="flex">
         <AnimatePresence>
-          {!zen && isDomain && (
+          {showSidebar && (
             <motion.div
               key="chrome-side"
               initial={{ opacity: 0 }}
@@ -36,7 +43,7 @@ function Chrome() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Sidebar />
+              <Sidebar domainSlug={domainSlug} />
             </motion.div>
           )}
         </AnimatePresence>
