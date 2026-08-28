@@ -126,6 +126,65 @@ export function Timeline(props: {
   );
 }
 
+/* ---------- 输出解读时间线：每条输出的顺序 + 为什么 ---------- */
+
+export function OutputTimeline(props: {
+  label?: string;
+  steps: { output: string; phase: string; why: string; color?: string }[];
+}) {
+  const phaseColor: Record<string, string> = {
+    同步: "#f59e0b",
+    微任务: "#8b5cf6",
+    宏任务: "#3b82f6",
+  };
+  return (
+    <VizBlock label={props.label ?? "输出解读 / output explained"}>
+      <ol className="space-y-0">
+        {props.steps.map((s, i) => {
+          const color = s.color ?? phaseColor[s.phase] ?? "#1677ff";
+          const last = i === props.steps.length - 1;
+          return (
+            <li key={i} className="relative flex gap-3 pb-4 last:pb-0">
+              {/* 左侧：序号 + 连接线 */}
+              <div className="flex flex-col items-center">
+                <motion.span
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06, type: "spring", stiffness: 300 }}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold"
+                  style={{ backgroundColor: `${color}1a`, color }}
+                >
+                  {i + 1}
+                </motion.span>
+                {!last && <span className="mt-1 w-px flex-1 bg-border" />}
+              </div>
+              {/* 右侧：输出值 + 阶段徽章 + 解释 */}
+              <div className="min-w-0 flex-1 pt-0.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <code
+                    className="rounded px-1.5 py-0.5 font-mono text-xs font-bold"
+                    style={{ backgroundColor: `${color}1a`, color }}
+                  >
+                    {s.output}
+                  </code>
+                  <span
+                    className="rounded border px-1.5 py-px text-[10px]"
+                    style={{ borderColor: `${color}66`, color }}
+                  >
+                    {s.phase}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-muted">{s.why}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </VizBlock>
+  );
+}
+
 /* ---------- 记忆卡片：关键结论，一眼记住 ---------- */
 
 export function MemoryCard(props: { keyword: string; children: ReactNode; color?: string }) {

@@ -1,5 +1,5 @@
 import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/components/note";
-import { BarChart, CompareTable, MemoryCard, Timeline } from "@/components/viz";
+import { BarChart, CompareTable, MemoryCard, OutputTimeline, Timeline } from "@/components/viz";
 import { FlowChart } from "@/components/demo/FlowChart";
 import { PlayGround } from "@/components/demo/PlayGround";
 import EventLoopSimulator from "./EventLoopSimulator";
@@ -107,21 +107,45 @@ setTimeout(() => console.log("B"), 0);
 console.log(2);
 // 真实输出：1 → executor 同步执行 → 2 → 3 → A → B`}
         />
-        <p className="mb-1 text-sm text-muted">输出顺序的时间线视图：</p>
-        <Timeline
+        <p className="mb-1 text-sm text-muted">每一行输出的来历：</p>
+        <OutputTimeline
           steps={[
-            { label: "1", sub: "同步", color: "#f59e0b" },
-            { label: "executor", sub: "同步", color: "#f59e0b" },
-            { label: "2", sub: "同步", color: "#f59e0b" },
-            { label: "3", sub: "微任务", color: "#8b5cf6" },
-            { label: "A", sub: "宏任务①", color: "#3b82f6" },
-            { label: "B", sub: "宏任务②", color: "#3b82f6" },
+            {
+              output: "1",
+              phase: "同步",
+              why: "脚本开头的 console.log(1) 直接进调用栈执行，没有任何等待。",
+            },
+            {
+              output: "executor 同步执行",
+              phase: "同步",
+              why: "new Promise(executor) 的 executor 是【同步】立即调用的——这是 Promise 规范的规定，不是异步回调。",
+            },
+            {
+              output: "2",
+              phase: "同步",
+              why: "同步代码还没跑完，调用栈非空，此时 setTimeout 和 .then 都只是在排队，轮不到执行。",
+            },
+            {
+              output: "3",
+              phase: "微任务",
+              why: "同步代码执行完，调用栈清空，引擎立即清空微任务队列——.then 的回调在这里执行。它在 A、B 之前，因为微任务先于下一个宏任务。",
+            },
+            {
+              output: "A",
+              phase: "宏任务",
+              why: "微任务清空后才取第一个宏任务。setTimeout(...,0) 的 0ms 不代表立即执行，只是『下一轮』。",
+            },
+            {
+              output: "B",
+              phase: "宏任务",
+              why: "A 执行完后，栈再次清空、微任务队列是空的，于是取下一个宏任务 B。每轮只取一个。",
+            },
           ]}
         />
-        <p className="text-sm text-muted">
-          关键点：Promise 的 executor 是同步的；setTimeout(...,0)
-          不代表立即执行，只是"下一轮宏任务"。
-        </p>
+        <MemoryCard keyword="executor 是同步的；setTimeout(...,0) 只是『下一轮』">
+          判断输出顺序只问两个问题：① 这段代码是同步、微任务还是宏任务？ ②
+          当前轮次进行到哪一步了？两问一答，顺序自然出来。
+        </MemoryCard>
       </Section>
 
       <Section title="微任务 vs 宏任务：一张图分清">
