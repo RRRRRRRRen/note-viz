@@ -115,6 +115,74 @@ export function activateTab(index: number): void {
   setState(activate(state, index));
 }
 
+/** 批量关闭后重新计算 activeIndex：优先回到历史栈中仍存活的最近标签 */
+function normalizeAfterClose(tabs: Tab[], history: number[]): TabsState {
+  let activeIndex = -1;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const idx = history[i]!;
+    if (idx < tabs.length) {
+      activeIndex = idx;
+      break;
+    }
+  }
+  if (activeIndex === -1 && tabs.length > 0) activeIndex = 0;
+  const cleanedHistory =
+    activeIndex === -1
+      ? []
+      : [...history.filter((i) => i < tabs.length), activeIndex].slice(-MAX_HISTORY);
+  return { tabs, activeIndex, history: cleanedHistory };
+}
+
+/** 关闭全部标签 */
+export function closeAllTabs(): void {
+  ensureRestored();
+  if (state.tabs.length === 0) return;
+  setState({ tabs: [], activeIndex: -1, history: [] });
+}
+
+/** 关闭其他标签（保留指定索引） */
+export function closeOtherTabs(index: number): void {
+  ensureRestored();
+  if (index < 0 || index >= state.tabs.length) return;
+  const tabs = [state.tabs[index]!];
+  setState(normalizeAfterClose(tabs, [0]));
+}
+
+/** 关闭右侧所有标签 */
+export function closeTabsToRight(index: number): void {
+  ensureRestored();
+  if (index < 0 || index >= state.tabs.length - 1) return;
+  const tabs = state.tabs.slice(0, index + 1);
+  setState(
+    normalizeAfterClose(
+      tabs,
+      state.history.filter((i) => i <= index),
+    ),
+  );
+}
+
+/** 关闭与指定标签不同领域的标签（按 /note/<domain>/ 前缀分组） */
+export function closeOtherDomains(index: number): void {
+  ensureRestored();
+  if (index < 0 || index >= state.tabs.length) return;
+  const domainOf = (p: string) => p.split("/")[1] ?? p;
+  const target = domainOf(state.tabs[index]!.path);
+  const tabs = state.tabs.filter((t) => domainOf(t.path) === target);
+  setState(
+    normalizeAfterClose(
+      tabs,
+      state.history.filter(
+        (i) => i < state.tabs.length && domainOf(state.tabs[i]!.path) === target,
+      ),
+    ),
+  );
+}
+
+export function tabsSnapshot(): TabsState {
+  ensureRestored();
+  return state;
+}
+
 export function useTabs(): TabsState {
   ensureRestored();
   return useSyncExternalStore(subscribe, getSnapshot, () => EMPTY);

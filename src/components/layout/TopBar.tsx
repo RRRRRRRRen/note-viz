@@ -1,7 +1,17 @@
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Moon, Sun, X } from "lucide-react";
 import { domainTrees } from "@/lib/registry";
-import { activateTab, closeTab, useTabs } from "@/lib/tabs";
+import {
+  activateTab,
+  closeAllTabs,
+  closeOtherDomains,
+  closeOtherTabs,
+  closeTab,
+  closeTabsToRight,
+  tabsSnapshot,
+  useTabs,
+} from "@/lib/tabs";
 import { useTheme } from "@/lib/theme";
 import { useZen } from "@/lib/zen";
 
@@ -85,6 +95,39 @@ function TabBar() {
   const { tabs, activeIndex } = useTabs();
   const location = useLocation();
   const navigate = useNavigate();
+  const [menu, setMenu] = useState<{ index: number; x: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 点击菜单外部或 Esc 关闭
+  useEffect(() => {
+    if (!menu) return;
+    const onDown = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenu(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenu(null);
+    };
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menu]);
+
+  const runAction = (fn: () => void, targetPath?: string) => {
+    fn();
+    setMenu(null);
+    // 若当前路径的标签被关闭，跳到剩余标签或首页
+    if (targetPath !== undefined && location.pathname === targetPath) {
+      const after = tabsSnapshot();
+      if (after.activeIndex >= 0 && after.tabs[after.activeIndex]) {
+        navigate(after.tabs[after.activeIndex]!.path);
+      } else {
+        navigate("/");
+      }
+    }
+  };
 
   return (
     <div className="flex h-9 items-end border-b border-border bg-background">
@@ -94,6 +137,10 @@ function TabBar() {
           return (
             <div
               key={tab.path}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setMenu({ index: i, x: e.clientX });
+              }}
               className={`group relative flex shrink-0 items-stretch border-b-2 ${
                 active
                   ? "border-accent text-foreground"
@@ -124,6 +171,52 @@ function TabBar() {
           );
         })}
       </div>
+
+      {menu && (
+        <div
+          ref={menuRef}
+          className="fixed z-50 min-w-36 rounded-md border border-border bg-background py-1 shadow-lg"
+          style={{ left: Math.min(menu.x, window.innerWidth - 160), top: 92 }}
+        >
+          {[
+            {
+              label: "关闭",
+              disabled: false,
+              run: () => runAction(() => closeTab(menu.index), tabs[menu.index]?.path),
+            },
+            {
+              label: "关闭其他",
+              disabled: tabs.length <= 1,
+              run: () => runAction(() => closeOtherTabs(menu.index), location.pathname),
+            },
+            {
+              label: "关闭右侧",
+              disabled: menu.index >= tabs.length - 1,
+              run: () => runAction(() => closeTabsToRight(menu.index), location.pathname),
+            },
+            {
+              label: "关闭其他领域",
+              disabled: tabs.length <= 1,
+              run: () => runAction(() => closeOtherDomains(menu.index), location.pathname),
+            },
+            {
+              label: "关闭全部",
+              disabled: false,
+              run: () => runAction(() => closeAllTabs(), location.pathname),
+            },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              disabled={item.disabled}
+              onClick={item.run}
+              className="block w-full px-3 py-1.5 text-left text-xs text-foreground hover:bg-surface-2 disabled:cursor-not-allowed disabled:text-muted disabled:hover:bg-transparent"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
