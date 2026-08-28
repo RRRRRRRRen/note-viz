@@ -17,7 +17,7 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   return (
     <aside
       ref={scrollRef}
-      className="sticky top-14 h-[calc(100vh-56px)] w-72 shrink-0 overflow-y-auto border-r border-border px-4 py-6"
+      className="h-full w-72 shrink-0 overflow-y-auto border-r border-border px-4 py-6"
     >
       <div className="mb-5 px-2 text-[10px] tracking-[0.1em] text-muted uppercase meta-mono">
         知识导航 / {domain.label}

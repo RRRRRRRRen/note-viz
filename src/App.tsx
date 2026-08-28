@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { TopBar, TabBar } from "./components/layout/TopBar";
+import { TopBar } from "./components/layout/TopBar";
 import Sidebar from "./components/layout/Sidebar";
 import { ZenProvider, useZen } from "./lib/zen";
 
@@ -25,7 +25,7 @@ function Chrome() {
   const showSidebar = !zen && !isHome && sidebarDomain !== undefined;
 
   return (
-    <div className="min-h-screen pt-14">
+    <div className="min-h-screen pt-[92px]">
       <AnimatePresence>
         {!zen && (
           <motion.div
@@ -36,11 +36,10 @@ function Chrome() {
             transition={{ duration: 0.2 }}
           >
             <TopBar />
-            <TabBar />
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="flex">
+      <div className="flex h-[calc(100vh-92px)]">
         <motion.div
           initial={false}
           animate={{ width: showSidebar ? 288 : 0, opacity: showSidebar ? 1 : 0 }}
@@ -49,7 +48,7 @@ function Chrome() {
         >
           {sidebarDomain && <Sidebar domainSlug={sidebarDomain} />}
         </motion.div>
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 overflow-y-auto">
           <Outlet />
         </main>
       </div>
