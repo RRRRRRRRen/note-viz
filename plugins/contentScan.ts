@@ -41,6 +41,18 @@ export function contentScan(): Plugin {
     resolveId(id) {
       if (id === virtualModuleId) return resolvedId;
     },
+    // watch 内容目录：新增/删除笔记目录后 dev 自动重扫
+    configureServer(server) {
+      const rescan = (file: string) => {
+        const abs = path.resolve(file);
+        if (abs.startsWith(contentDir) && (abs.endsWith("meta.ts") || abs.endsWith("index.tsx"))) {
+          const mod = server.moduleGraph.getModuleById(resolvedId);
+          if (mod) server.moduleGraph.invalidateModule(mod);
+        }
+      };
+      server.watcher.on("add", rescan);
+      server.watcher.on("unlink", rescan);
+    },
     buildStart() {
       if (!fs.existsSync(contentDir)) return;
       const noteDirs = findNoteDirs(contentDir);
