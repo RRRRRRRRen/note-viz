@@ -102,7 +102,10 @@ pre {
 /* 大纲跳转后的标题高亮渐隐 */
 @keyframes toc-flash {
   0% {
-    background-color: color-mix(in oklab, var(--accent) 25%, transparent);
+    background-color: color-mix(in oklab, var(--accent) 60%, transparent);
+  }
+  60% {
+    background-color: color-mix(in oklab, var(--accent) 35%, transparent);
   }
   100% {
     background-color: transparent;
@@ -110,5 +113,5 @@ pre {
 }
 
 .toc-flash {
-  animation: toc-flash 1.5s ease-out forwards;
+  animation: toc-flash 2.6s ease-out forwards;
 }

@@ -28,7 +28,7 @@ export function flashHeading(id: string): void {
   // 强制 reflow 以重启动画
   void el.offsetWidth;
   el.classList.add("toc-flash");
-  const timer = setTimeout(() => el.classList.remove("toc-flash"), 1600);
+  const timer = setTimeout(() => el.classList.remove("toc-flash"), 2700);
   void timer;
 }
 

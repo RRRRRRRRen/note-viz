@@ -81,12 +81,11 @@ function TechSection(props: { color: string; tech: TechTree; segs: string[]; not
 }
 
 function AreaGroup(props: {
-  color: string;
   area: { slug: string; label: string; notes: { path: string; meta: { title: string } }[] };
   segs: string[];
   notePath: string;
 }) {
-  const { color, area, segs, notePath } = props;
+  const { area, segs, notePath } = props;
   const idx = segs[0] === "note" ? 3 : 2;
   const areaActive = segs[idx] === area.slug;
   const containsCurrent = area.notes.some((n) => n.path === notePath);
@@ -144,12 +143,9 @@ function AreaGroup(props: {
                 key={n.path}
                 ref={active ? activeRef : undefined}
                 to={n.path}
-                className={`flex items-center gap-2 border-l border-border px-2 py-1 text-xs ${
-                  active
-                    ? "-ml-px border-l-2 font-medium text-foreground"
-                    : "text-muted hover:text-foreground"
+                className={`flex items-center gap-2 px-2 py-1 text-xs ${
+                  active ? "font-medium text-foreground" : "text-muted hover:text-foreground"
                 }`}
-                style={active ? { borderColor: color } : undefined}
               >
                 <span className="truncate">{n.meta.title}</span>
               </Link>
