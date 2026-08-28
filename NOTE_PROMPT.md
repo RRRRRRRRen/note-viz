@@ -33,15 +33,36 @@ import { CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "@/componen
 | 组件                                          | 用途                                               | 参数                                |
 | --------------------------------------------- | -------------------------------------------------- | ----------------------------------- |
 | `<CompareTable left={...} right={...} />`     | 两个概念的左右对照（var vs let、微任务 vs 宏任务） | `{title, points[], color?}` × 2     |
-| `<Timeline steps={[...]} />`                  | 执行顺序/输出顺序/流转过程                         | `{label, sub?, color?}[]`           |
+| `<Timeline steps={[...]} label? />`           | 执行顺序/输出顺序/流转过程                         | `{label, sub?, color?}[]`           |
 | `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 2-3 个                        | keyword + children, color?          |
-| `<BarChart items={[...]} title? />`           | 相对开销/数量级对比（给直觉，勿当精确值）          | `{label, value, color?, suffix?}[]` |
-| `<DoDont dont={...} do={...} />`              | 错误写法 vs 推荐写法的并排代码对照                 | `{code, note}` × 2                  |
+| `<BarChart items={[...]} label? title? />`    | 相对开销/数量级对比（给直觉，勿当精确值）          | `{label, value, color?, suffix?}[]` |
+| `<DoDont dont={...} do={...} label? />`       | 错误写法 vs 推荐写法的并排代码对照                 | `{code, note}` × 2                  |
 | `<PanZoomCanvas>`                             | 包住自绘 SVG 流程图，防截断                        | children 为 svg                     |
 
 - 根元素必须是 `<NoteShell>...</NoteShell>`，**不要自己写最外层带背景的容器**
-- 小节用 `<Section title="...">`，普通段落包裹 `<Prose>`（内含多个 `<p>`）
+- 小节用 `<Section title="...">`，小节内部的子标题用 `<Subsection title="...">`，普通段落包裹 `<Prose>`（内含多个 `<p>`）
 - 开篇第一个元素永远是 `<Conclusion>`（结论先行卡）
+
+## 视觉规范（内容分层与边界）
+
+页面内容分三层，**每层的视觉包装是固定规范，不要自创**：
+
+| 层           | 包装                                                | 包含组件                             |
+| ------------ | --------------------------------------------------- | ------------------------------------ |
+| **正文层**   | 无边框无背景，直接落在页面上                        | `Prose`、`Section`/`Subsection` 标题 |
+| **可视化层** | `VizBlock` 统一包壳：边框 + 彩色标题栏 + 左上角圆点 | 所有 viz 组件**已内置**，直接用      |
+| **演示层**   | 自带运行控制（播放/单步/重置按钮 + 日志面板）       | 模拟器、LogPanel、PanZoomCanvas      |
+
+要点：
+
+1. **可视化组件自带包壳**（VizBlock 已内置于 Timeline/CompareTable/BarChart/DoDont），调用时**不要再手动套一层 `<div className="border ...">`**——双重边框是视觉事故。
+2. 需要展示自定义的可视化内容（不属于任何现成组件）时，用 `<VizBlock label="示意图 / diagram" color="#8b5cf6">...</VizBlock>` 包壳，保证全站视觉一致。可选 label 前缀规范：中文短标签 + 空格 + 英文斜杠小写（如 `对比 / compare`、`量级 / scale`、`示意 / diagram`）。
+3. **重点内容展示标准**：
+   - 全文最核心、必须记住的结论 → `MemoryCard`（每篇 ≤3 个，多了会稀释重点）
+   - 一般性的重要提示/注意点 → 正文内 `<strong>` 或 `<code>`，不要升级为 MemoryCard
+   - 流程顺序 → `Timeline`；概念混淆 → `CompareTable`；写法对错 → `DoDont`；量级对比 → `BarChart`
+   - 类比内容用普通 `Prose`，不要加背景框——类比是叙事的一部分
+4. 配色语义（不指定 color 时的默认）：蓝 `#1677ff` 通用强调 / 紫 `#8b5cf6` 微任务·对比左侧 / 橙 `#f59e0b` 调用栈·同步·警告类 / 绿 `#3fb950` 正确·渲染 / 红 `#f85149` 错误·危险。
 
 ## 内容深度要求（硬性）
 

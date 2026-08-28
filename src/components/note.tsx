@@ -7,7 +7,14 @@ export function NoteShell({ children }: { children: ReactNode }) {
 export function Conclusion({ children }: { children: ReactNode }) {
   return (
     <section className="rounded-lg border-l-4 border-accent bg-accent/5 p-4">
-      <h2 className="mb-1 font-semibold">结论先行</h2>
+      <div className="mb-1 flex items-center gap-2">
+        <span className="rounded bg-accent px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
+          结论
+        </span>
+        <span className="text-[11px] tracking-[0.1em] text-accent uppercase meta-mono">
+          conclusion first
+        </span>
+      </div>
       <p className="text-sm leading-relaxed">{children}</p>
     </section>
   );
