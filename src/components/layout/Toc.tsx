@@ -122,7 +122,7 @@ export function Toc({ containerRef, resetKey }: TocProps) {
     <nav
       id="toc-nav"
       aria-label="大纲"
-      className="fixed right-6 top-[140px] z-10 max-h-[calc(100vh-200px)] w-56 overflow-y-auto pb-4"
+      className="h-full w-full overflow-y-auto border-l border-border py-7 pl-6 pr-2"
     >
       <div className="mb-3 text-[10px] tracking-[0.1em] text-muted uppercase meta-mono">
         本页大纲

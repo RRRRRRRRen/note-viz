@@ -39,8 +39,9 @@ export default function NotePage() {
   const crumbs = breadcrumbParts(note.slug.slice(0, 3));
 
   return (
-    <article className="mx-auto flex max-w-[1200px] items-start px-8 py-7">
-      <div ref={contentRef} className="min-w-0 flex-1">
+    <div className="mx-auto flex h-full max-w-[1200px]">
+      {/* 左：内容（在 main 的滚动容器内自然滚动） */}
+      <div ref={contentRef} className="min-w-0 flex-1 px-8 py-7">
         <nav className="mb-5 flex items-center gap-2 text-[11px] text-muted meta-mono">
           <span>NoteViz</span>
           {crumbs.map((c) => (
@@ -76,9 +77,10 @@ export default function NotePage() {
         </Suspense>
       </div>
 
-      <aside className="hidden w-52 shrink-0 xl:block" aria-hidden="true">
+      {/* 右：大纲栏。h-full 锁定为内容区高度，超出在自身盒子内滚动 */}
+      <aside className="hidden w-56 shrink-0 xl:block">
         <Toc containerRef={contentRef} resetKey={note.path} />
       </aside>
-    </article>
+    </div>
   );
 }
