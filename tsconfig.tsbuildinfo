@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/routes.tsx","./src/pages/homepage.tsx","./src/pages/notepage.tsx","./vite.config.ts"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/routes.tsx","./src/vite-env.d.ts","./src/content/taxonomy.ts","./src/content/frontend/javascript/event-loop/event-loop-basics/index.tsx","./src/content/frontend/javascript/event-loop/event-loop-basics/meta.ts","./src/lib/registry.ts","./src/lib/types.ts","./src/pages/homepage.tsx","./src/pages/notepage.tsx","./vite.config.ts"],"version":"5.9.3"}
