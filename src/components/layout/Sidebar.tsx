@@ -14,6 +14,8 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   const notePath = location.pathname.startsWith("/note/")
     ? location.pathname
     : `/note/${segs.slice(0, 4).join("/")}`;
+  // tech 链接的目标领域前缀：始终挂当前领域，避免分类页丢前缀（/react → 分类不存在）
+  const domainPrefix = `/${domainSlug}`;
 
   return (
     <aside
@@ -26,7 +28,7 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
       {domain.techs.map((tech) => (
         <TechSection
           key={tech.slug}
-          color={domain.color}
+          domainPrefix={domainPrefix}
           tech={tech}
           segs={segs}
           notePath={notePath}
@@ -36,9 +38,15 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   );
 }
 
-function TechSection(props: { color: string; tech: TechTree; segs: string[]; notePath: string }) {
-  const { color, tech, segs, notePath } = props;
-  const techSlug = segs[0] === "note" ? segs[2] : segs[1];
+function TechSection(props: {
+  domainPrefix: string;
+  tech: TechTree;
+  segs: string[];
+  notePath: string;
+}) {
+  const { domainPrefix, tech, segs, notePath } = props;
+  const idx = segs[0] === "note" ? 2 : 1;
+  const techSlug = segs[idx];
   const techActive = techSlug === tech.slug;
   const [open, setOpen] = useState(techActive);
 
@@ -49,30 +57,27 @@ function TechSection(props: { color: string; tech: TechTree; segs: string[]; not
 
   return (
     <div className="mb-3">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between px-2 py-2 text-[11px] font-bold tracking-[0.1em] text-foreground uppercase"
-      >
+      <div className="flex w-full items-center justify-between px-2 py-2">
         <Link
-          to={
-            techSlug ? `/${segs[0] === "note" ? segs[1] : segs[0]}/${tech.slug}` : `/${tech.slug}`
-          }
-          onClick={(e) => e.stopPropagation()}
-          className="hover:text-accent"
+          to={`${domainPrefix}/${tech.slug}`}
+          className="text-[11px] font-bold tracking-[0.1em] text-foreground uppercase hover:text-accent"
         >
           {tech.label}
         </Link>
-        <ChevronRight
-          size={14}
-          className={`text-muted transition-transform ${open ? "rotate-90" : ""}`}
-        />
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label={`${open ? "收起" : "展开"} ${tech.label}`}
+          className="p-1 text-muted hover:text-foreground"
+        >
+          <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+        </button>
+      </div>
       {open && (
         <div className="mb-3 space-y-2">
           {tech.areas.map((area: TechTree["areas"][number]) => (
-            <AreaGroup key={area.slug} color={color} area={area} segs={segs} notePath={notePath} />
+            <AreaGroup key={area.slug} area={area} segs={segs} notePath={notePath} />
           ))}
         </div>
       )}
@@ -81,12 +86,11 @@ function TechSection(props: { color: string; tech: TechTree; segs: string[]; not
 }
 
 function AreaGroup(props: {
-  color: string;
   area: { slug: string; label: string; notes: { path: string; meta: { title: string } }[] };
   segs: string[];
   notePath: string;
 }) {
-  const { color, area, segs, notePath } = props;
+  const { area, segs, notePath } = props;
   const idx = segs[0] === "note" ? 3 : 2;
   const areaActive = segs[idx] === area.slug;
   const containsCurrent = area.notes.some((n) => n.path === notePath);
@@ -136,7 +140,7 @@ function AreaGroup(props: {
         </span>
       </button>
       {open && (
-        <div className="mt-0.5 mb-1 ml-4 border-l border-border pl-2">
+        <div className="mt-0.5 mb-1 ml-4">
           {area.notes.map((n) => {
             const active = n.path === notePath;
             return (
@@ -144,12 +148,11 @@ function AreaGroup(props: {
                 key={n.path}
                 ref={active ? activeRef : undefined}
                 to={n.path}
-                className={`-ml-px flex items-center gap-2 border-l-2 px-2 py-1 text-xs ${
+                className={`block rounded-md px-2 py-1 text-xs transition-colors ${
                   active
-                    ? "font-medium text-foreground"
-                    : "border-transparent text-muted hover:text-foreground"
+                    ? "bg-accent/15 font-medium text-foreground"
+                    : "text-muted hover:bg-surface-2 hover:text-foreground"
                 }`}
-                style={active ? { borderColor: color } : undefined}
               >
                 <span className="truncate">{n.meta.title}</span>
               </Link>

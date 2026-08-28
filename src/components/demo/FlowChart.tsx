@@ -8,7 +8,7 @@ import {
   type Node,
   Position,
 } from "reactflow";
-import dagre from "dagre";
+import dagre from "@dagrejs/dagre";
 import "reactflow/dist/style.css";
 import { VizBlock } from "@/components/viz";
 

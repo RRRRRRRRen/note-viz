@@ -42,9 +42,6 @@ import { FlowChart } from "@/components/demo/FlowChart";
 // 演示通用件：日志面板 / 按钮（轻量交互演示用）
 import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
-// 可缩放拖拽画布（降级方案）：仅用于包住无法迁移到 React Flow 的既有手写 SVG
-import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
-
 // ★ 可视化组件（均自带 VizBlock 包壳）
 import {
   VizBlock,
@@ -117,7 +114,7 @@ import {
 | -------- | ----------------------------------------------- | ------------------------------------------------------------------------------ |
 | 正文层   | 无边框无背景，直接落在页面上                    | Prose / Section 标题                                                           |
 | 可视化层 | VizBlock 统一包壳：边框 + 彩色标题栏 + 圆点标签 | Timeline / CompareTable / BarChart / DoDont / MemoryCard（**已内置，直接用**） |
-| 演示层   | 自带运行控制（播放/单步/重置 + 日志面板）       | 模拟器 / LogPanel / PanZoomCanvas                                              |
+| 演示层   | 自带运行控制（播放/单步/重置 + 日志面板）       | PlayGround / 模拟器 / LogPanel                                                 |
 
 - **禁止双重边框**：viz 组件已内置 VizBlock 包壳，不要再套 border div
 - 自定义可视化（无现成组件）用 `<VizBlock label="示意 / diagram" color="#8b5cf6">` 包壳；label 规范：中文短标签 + 空格 + 英文斜杠小写

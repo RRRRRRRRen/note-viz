@@ -10,6 +10,7 @@ export default function NotePage() {
   const location = useLocation();
   const note = noteByPath(location.pathname);
   const [Component, setComponent] = useState<React.ComponentType | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const openedRef = useRef<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -23,9 +24,15 @@ export default function NotePage() {
     if (!note) return;
     let alive = true;
     setComponent(null);
-    note.load().then((mod) => {
-      if (alive) setComponent(() => mod.default);
-    });
+    setLoadError(false);
+    note
+      .load()
+      .then((mod) => {
+        if (alive) setComponent(() => mod.default);
+      })
+      .catch(() => {
+        if (alive) setLoadError(true);
+      });
     return () => {
       alive = false;
     };
@@ -33,6 +40,14 @@ export default function NotePage() {
 
   if (!note) {
     return <div className="p-8 text-muted">笔记不存在</div>;
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-8 text-muted">
+        笔记加载失败，可能是版本更新导致缓存失效，请刷新页面重试。
+      </div>
+    );
   }
 
   const m = note.meta;

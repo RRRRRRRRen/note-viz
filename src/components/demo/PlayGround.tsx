@@ -25,14 +25,19 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [runId, setRunId] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // runId > 0 表示用户点过「运行」；首次挂载只加载沙箱不自动执行
+  const pendingCode = useRef<string | null>(null);
 
-  // iframe 加载完成后执行当前代码
+  // iframe 加载完成后，若有待执行代码则注入执行
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
     const onLoad = () => {
-      // srcdoc 重载后注入执行
-      iframe.contentWindow?.postMessage({ type: "noteviz-run", code: src }, "*");
+      if (runId === 0 || pendingCode.current === null) return;
+      // srcdoc 沙箱是 opaque origin，targetOrigin 只能 "*"；
+      // 消息内容仅是用户在编辑器里写的代码，且 iframe 无 same-origin 权限
+      iframe.contentWindow?.postMessage({ type: "noteviz-run", code: pendingCode.current }, "*");
+      pendingCode.current = null;
     };
     iframe.addEventListener("load", onLoad);
     return () => iframe.removeEventListener("load", onLoad);
@@ -40,6 +45,7 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
 
   const run = () => {
     setLogs([]);
+    pendingCode.current = draft;
     setSrc(draft);
     setRunId((n) => n + 1);
   };
@@ -86,12 +92,16 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
     })();
   </` + `script>`;
 
-  // 父页面监听日志
+  // 父页面监听日志：仅接受本 Playground 沙箱 iframe 的消息
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
+      if (e.source !== iframeRef.current?.contentWindow) return;
       const d = e.data;
       if (d?.type === "noteviz-log") {
-        setLogs((l) => [...l, { kind: d.kind, text: String(d.text) }]);
+        setLogs((l) => [
+          ...l,
+          { kind: d.kind === "error" ? "error" : "log", text: String(d.text) },
+        ]);
       }
     };
     window.addEventListener("message", onMessage);

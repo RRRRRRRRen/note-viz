@@ -161,21 +161,31 @@ export function closeTabsToRight(index: number): void {
   );
 }
 
-/** 关闭与指定标签不同领域的标签（按 /note/<domain>/ 前缀分组） */
+/** 关闭与指定标签不同领域的标签（笔记按 /note/<domain>/ 分组，分类页按一级路径） */
 export function closeOtherDomains(index: number): void {
   ensureRestored();
   if (index < 0 || index >= state.tabs.length) return;
-  const domainOf = (p: string) => p.split("/")[1] ?? p;
+  // /note/frontend/... 取 [2]，/frontend 取 [1]；首页 "/" 无领域
+  const domainOf = (p: string) => {
+    const segs = p.split("/").filter(Boolean);
+    return segs[0] === "note" ? (segs[1] ?? "") : (segs[0] ?? "");
+  };
   const target = domainOf(state.tabs[index]!.path);
-  const tabs = state.tabs.filter((t) => domainOf(t.path) === target);
-  setState(
-    normalizeAfterClose(
-      tabs,
-      state.history.filter(
-        (i) => i < state.tabs.length && domainOf(state.tabs[i]!.path) === target,
-      ),
-    ),
-  );
+
+  // 记录被保留标签在新数组中的下标映射，供 history 重映射
+  const kept: number[] = [];
+  const tabs = state.tabs.filter((t, i) => {
+    const keep = domainOf(t.path) === target;
+    if (keep) kept.push(i);
+    return keep;
+  });
+  const keptSet = new Set(kept);
+  const newIndex = new Map(kept.map((old, neu) => [old, neu]));
+  const history = state.history
+    .filter((i) => keptSet.has(i))
+    .map((i) => newIndex.get(i)!)
+    .filter((i) => i !== undefined);
+  setState(normalizeAfterClose(tabs, history));
 }
 
 export function tabsSnapshot(): TabsState {

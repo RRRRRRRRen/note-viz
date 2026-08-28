@@ -48,16 +48,21 @@ function TopBar() {
                 <Link
                   key={d.slug}
                   to={`/${d.slug}`}
-                  className={`flex h-full items-center border-0 px-3.5 text-[13px] ${
+                  className={`relative flex h-full items-center border-0 px-3.5 text-[13px] after:absolute after:inset-x-3.5 after:bottom-0 after:h-0.5 after:transition-opacity ${
                     active
-                      ? "relative font-semibold after:absolute after:inset-x-3.5 after:bottom-0 after:h-0.5"
-                      : "text-muted hover:text-foreground"
+                      ? "font-semibold after:opacity-100"
+                      : "text-muted after:opacity-0 hover:text-foreground"
                   }`}
-                  style={
-                    active ? { color: d.color, ["--tw-after-bg" as string]: d.color } : undefined
-                  }
-                  {...(active ? { "data-domain-active": "" } : {})}
+                  style={active ? { color: d.color, ["--domain" as string]: d.color } : undefined}
                 >
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-3.5 bottom-0 h-0.5"
+                    style={{
+                      background: active ? d.color : "var(--accent)",
+                      opacity: active ? 1 : 0,
+                    }}
+                  />
                   {d.label}
                 </Link>
               );
