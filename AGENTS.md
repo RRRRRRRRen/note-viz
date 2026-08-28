@@ -21,13 +21,12 @@ pnpm preview    # 预览 dist
 
 ## 写笔记（重要）
 
-创建或修改 `src/content/` 下的笔记时，**必须使用 `noteviz-note-writing` skill**——它包含内容规范、视觉规范、组件 API 和质量自查清单。核心文件：
+创建或修改 `src/content/` 下的笔记时，**必须使用 `noteviz-note-writing` skill**，按其工作流执行。要点：
 
-- `NOTE_PROMPT.md`：完整写作提示词规范
-- `src/components/note.tsx`：排版原语（NoteShell/Conclusion/Section/Subsection/Prose/QAChain）
-- `src/components/viz.tsx`：可视化组件（Timeline/CompareTable/MemoryCard/BarChart/DoDont，均自带 VizBlock 包壳）
-
-构建时会自动扫描注册笔记并校验 meta 五字段，缺失直接报错。
+1. **禁止跳过大纲确认直接动笔**——先产出大纲提案 + 询问熟悉程度，用户确认后才写正文
+2. 内容规范、组件 API、视觉规范、详略表全部在 skill 文件里（`.opencode/skills/noteviz-note-writing/SKILL.md`）
+3. 组件签名以源码为准：`src/components/note.tsx`（排版）、`src/components/viz.tsx`（可视化）
+4. 构建时自动扫描注册笔记并校验 meta 五字段，缺失直接报错
 
 ## 验证
 
