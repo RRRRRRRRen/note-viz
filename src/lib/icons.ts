@@ -1,8 +1,10 @@
 import {
   Braces,
+  Database,
   Globe,
   Palette,
   Rocket,
+  Server,
   Smartphone,
   TestTube2,
   Workflow,
@@ -16,6 +18,8 @@ import type { LucideIcon } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   Globe,
+  Server,
+  Database,
   Braces,
   Palette,
   Rocket,

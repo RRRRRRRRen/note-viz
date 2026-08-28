@@ -68,15 +68,7 @@ function TechSection(props: {
       {open && (
         <div className="mb-3 space-y-2">
           {tech.areas.map((area) => (
-            <AreaGroup
-              key={area.slug}
-              domainSlug={domainSlug}
-              techSlug={tech.slug}
-              color={color}
-              area={area}
-              segs={segs}
-              notePath={notePath}
-            />
+            <AreaGroup key={area.slug} color={color} area={area} segs={segs} notePath={notePath} />
           ))}
         </div>
       )}
@@ -85,14 +77,12 @@ function TechSection(props: {
 }
 
 function AreaGroup(props: {
-  domainSlug: string;
-  techSlug: string;
   color: string;
   area: { slug: string; label: string; notes: { path: string; meta: { title: string } }[] };
   segs: string[];
   notePath: string;
 }) {
-  const { domainSlug, techSlug, color, area, segs, notePath } = props;
+  const { color, area, segs, notePath } = props;
   const areaActive = segs[2] === area.slug;
   const [open, setOpen] = useState(areaActive || area.notes.some((n) => n.path === notePath));
 
@@ -117,14 +107,6 @@ function AreaGroup(props: {
       </button>
       {open && (
         <div className="mt-0.5 mb-1 ml-4 border-l border-border pl-2">
-          <Link
-            to={`/${domainSlug}/${techSlug}/${area.slug}`}
-            className={`block rounded px-2 py-1 text-xs text-muted hover:text-foreground ${
-              areaActive && notePath === `/note/${segs.slice(0, 4).join("/")}` ? "" : ""
-            }`}
-          >
-            <span className="text-accent">›</span> 模块总览
-          </Link>
           {area.notes.map((n) => (
             <Link
               key={n.path}
