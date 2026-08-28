@@ -17,7 +17,7 @@ export function LogPanel({
     <div>
       {children}
       <div
-        className={`rounded bg-[#0d1117] p-2 font-mono text-xs text-green-400 ${className ?? "mt-3 min-h-12"}`}
+        className={`rounded bg-[#0d1117] p-3 font-mono text-xs leading-relaxed text-green-400 ${className ?? "mt-3 min-h-32 overflow-y-auto"}`}
       >
         {logs.length === 0 ? (
           <span className="text-gray-500">{placeholder}</span>

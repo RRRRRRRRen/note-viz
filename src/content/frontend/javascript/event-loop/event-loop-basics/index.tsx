@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
 import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 import EventLoopSimulator from "./EventLoopSimulator";
@@ -11,6 +12,30 @@ export default function Note() {
         （Promise.then、queueMicrotask、MutationObserver），再取<strong>一个宏任务</strong>
         （setTimeout、I/O、UI 渲染等），如此循环。微任务优先级永远高于下一个宏任务。
       </Conclusion>
+
+      <Section title="一个生活化的类比">
+        <Prose>
+          <p>
+            把 JS 引擎想成<strong>一个只有一位厨师的小餐馆</strong>：
+          </p>
+          <p>
+            <strong>调用栈</strong> = 厨师手上正在做的菜。他一次只能做一道，做完才腾手。
+          </p>
+          <p>
+            <strong>宏任务队列</strong> =
+            前台接的单子（点单、催单、退单）。厨师说："单子先放着，我做完手上这道再看。"
+          </p>
+          <p>
+            <strong>微任务队列</strong> = 客人当场补的一句话："不要香菜！"——这是对
+            <strong>当前这道菜</strong>的修改要求，厨师做完手上这道必须
+            <strong>立刻全部处理完</strong>这些补充，才能去前台拿下一张单子。
+          </p>
+          <p>
+            这就是为什么 <code>Promise.then</code>（微任务）总是赶在下一个 <code>setTimeout</code>
+            （宏任务）之前：补话不用排队，新单子必须等下一轮。
+          </p>
+        </Prose>
+      </Section>
 
       <Section title="逐段拆解">
         <Prose>
@@ -36,7 +61,10 @@ export default function Note() {
         </Prose>
       </Section>
 
-      <Section title="经典输出题">
+      <Section title="动手验证：经典输出题">
+        <p className="mb-2 text-sm text-muted">
+          先自己推一遍输出顺序，再打开浏览器控制台实际运行对照——所有结论都应来自真实运行结果，而不是背答案：
+        </p>
         <CodeBlock
           code={`console.log(1);
 
@@ -49,7 +77,7 @@ setTimeout(() => console.log("A"), 0);
 setTimeout(() => console.log("B"), 0);
 
 console.log(2);
-// 输出：1 → executor 同步执行 → 2 → 3 → A → B`}
+// 真实输出：1 → executor 同步执行 → 2 → 3 → A → B`}
         />
         <p className="text-sm text-muted">
           关键点：Promise 的 executor 是同步的；setTimeout(...,0)
@@ -63,6 +91,9 @@ console.log(2);
       </Section>
 
       <Section title="事件循环全景图">
+        <p className="mb-2 text-sm text-muted">
+          图被截断时，可拖拽移动、Ctrl/⌘+滚轮缩放，或用右上角按钮复位：
+        </p>
         <EventLoopFlow />
       </Section>
 
@@ -98,14 +129,14 @@ console.log(2);
 
 function EventLoopFlow() {
   const nodes = [
-    { id: "sync", label: "执行同步代码", x: 130, y: 30, color: "#f59e0b" },
-    { id: "micro", label: "清空微任务队列", x: 130, y: 110, color: "#8b5cf6" },
-    { id: "render", label: "渲染（可选）rAF", x: 30, y: 190, color: "#10b981" },
-    { id: "macro", label: "取 1 个宏任务", x: 230, y: 190, color: "#3b82f6" },
+    { id: "sync", label: "执行同步代码（厨师做菜）", x: 130, y: 30, color: "#f59e0b" },
+    { id: "micro", label: "清空微任务队列（处理补话）", x: 130, y: 110, color: "#8b5cf6" },
+    { id: "render", label: "渲染检查（可选）rAF", x: 30, y: 190, color: "#10b981" },
+    { id: "macro", label: "取 1 个宏任务（拿下一张单）", x: 230, y: 190, color: "#3b82f6" },
   ];
   return (
-    <div className="my-4 overflow-x-auto rounded-lg border border-border bg-card p-4">
-      <svg viewBox="0 0 360 240" className="mx-auto w-full max-w-md">
+    <PanZoomCanvas>
+      <svg viewBox="0 0 360 240" width={520} height={347} className="block">
         {nodes.map((n) => (
           <g key={n.id}>
             <motion.rect
@@ -169,6 +200,6 @@ function EventLoopFlow() {
           循环
         </text>
       </svg>
-    </div>
+    </PanZoomCanvas>
   );
 }

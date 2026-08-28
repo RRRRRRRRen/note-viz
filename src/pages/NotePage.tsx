@@ -68,11 +68,9 @@ export default function NotePage() {
         </div>
       </header>
 
-      <div className="rounded-[10px] border border-border bg-surface p-6">
-        <Suspense fallback={<div className="text-muted">加载中…</div>}>
-          {Component ? <Component /> : null}
-        </Suspense>
-      </div>
+      <Suspense fallback={<div className="text-muted">加载中…</div>}>
+        {Component ? <Component /> : null}
+      </Suspense>
     </article>
   );
 }

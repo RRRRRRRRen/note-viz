@@ -182,7 +182,7 @@ export default function EventLoopSimulator() {
 
       <div className="border-t border-border px-4 py-2">
         <div className="mb-1 text-xs font-medium text-muted">控制台</div>
-        <div className="max-h-28 min-h-12 overflow-y-auto rounded bg-[#0d1117] p-2 font-mono text-xs text-green-400">
+        <div className="max-h-48 min-h-32 overflow-y-auto rounded bg-[#0d1117] p-3 font-mono text-xs leading-relaxed text-green-400">
           {view.console.length === 0 ? (
             <span className="text-gray-500">// 点击播放或单步执行</span>
           ) : (
