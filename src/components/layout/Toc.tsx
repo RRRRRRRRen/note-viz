@@ -27,17 +27,24 @@ function slugify(text: string, used: Set<string>): string {
   return id;
 }
 
-/** 从容器中提取 h2/h3 标题、写入 id，供大纲导航使用 */
+/** 从容器中提取 h2/h3 标题与追问链条目、写入 id，供大纲导航使用 */
 export function extractHeadings(container: HTMLElement): TocItem[] {
   const used = new Set<string>();
   const items: TocItem[] = [];
-  container.querySelectorAll("h2[data-toc], h3[data-toc]").forEach((el) => {
+  container.querySelectorAll("h2[data-toc], h3[data-toc], [data-toc-item] > h3").forEach((el) => {
     const title = el.textContent?.trim();
     if (!title) return;
     let id = el.id;
     if (!id) {
-      id = slugify(title, used);
-      el.id = id;
+      // 优先用外层 data-toc-item 容器的 id（追问链条目），否则自身生成
+      const owner = el.closest("[data-toc-item]") as HTMLElement | null;
+      if (owner && owner.id) {
+        id = owner.id;
+      } else {
+        id = slugify(title, used);
+        const target = owner ?? el;
+        target.id = id;
+      }
     }
     items.push({ id, title, level: el.tagName === "H2" ? 2 : 3 });
   });
