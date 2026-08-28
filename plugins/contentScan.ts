@@ -64,11 +64,7 @@ export function contentScan(): Plugin {
       if (id !== resolvedId) return;
       if (!fs.existsSync(contentDir)) return `export const notes = [];`;
       const noteDirs = findNoteDirs(contentDir).sort();
-      const lines: string[] = [
-        `import type { NoteEntry } from "../lib/types";`,
-        ``,
-        `export const notes: NoteEntry[] = [`,
-      ];
+      const lines: string[] = [`export const notes = [`];
       const imports: string[] = [];
       noteDirs.forEach((dir, i) => {
         const imp = toImportPath(contentDir, dir);
@@ -79,7 +75,9 @@ export function contentScan(): Plugin {
         lines.push(`    slug: ${JSON.stringify(slug)},`);
         lines.push(`    path: "/note/${pathSegs}",`);
         lines.push(`    meta: meta${i}.meta,`);
-        lines.push(`    load: () => import("${imp}/index.tsx"),`);
+        lines.push(
+          `    load: () => import("/src/content/${path.relative(contentDir, dir).split(path.sep).join("/")}/index.tsx"),`,
+        );
         lines.push(`  },`);
       });
       lines.push(`];`);

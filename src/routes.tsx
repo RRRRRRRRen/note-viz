@@ -14,10 +14,17 @@ export const routes: RouteObject[] = [
         },
       },
       {
-        path: "*",
+        path: "note/*",
         lazy: async () => {
           const { default: NotePage } = await import("./pages/NotePage");
           return { Component: NotePage };
+        },
+      },
+      {
+        path: "*",
+        lazy: async () => {
+          const { default: CategoryPage } = await import("./pages/CategoryPage");
+          return { Component: CategoryPage };
         },
       },
     ],
