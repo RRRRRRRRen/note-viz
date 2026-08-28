@@ -1,17 +1,26 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { breadcrumbParts } from "@/lib/registry";
 import { noteByPath } from "@/lib/registry";
+import { openTab } from "@/lib/tabs";
 import { difficultyBadgeClass } from "@/components/difficulty";
 
 export default function NotePage() {
   const location = useLocation();
   const note = noteByPath(location.pathname);
   const [Component, setComponent] = useState<React.ComponentType | null>(null);
+  const openedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!note || openedRef.current === note.path) return;
+    openedRef.current = note.path;
+    openTab(note.path, note.meta.title);
+  }, [note]);
 
   useEffect(() => {
     if (!note) return;
     let alive = true;
+    setComponent(null);
     note.load().then((mod) => {
       if (alive) setComponent(() => mod.default);
     });
