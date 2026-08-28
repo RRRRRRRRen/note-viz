@@ -1,69 +1,162 @@
-import {
-  SandpackCodeEditor,
-  SandpackConsole,
-  SandpackLayout,
-  SandpackProvider,
-  useSandpackNavigation,
-} from "@codesandbox/sandpack-react";
-import { Play } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Play, RotateCcw } from "lucide-react";
 import { VizBlock } from "@/components/viz";
 
 interface PlayGroundProps {
   label?: string;
-  /** 初始代码（可编辑） */
+  /** 初始代码（可编辑），浏览器端 JavaScript */
   code: string;
-  /** sandpack 预设：node / vanilla 等 */
-  template?: "node" | "vanilla";
-  /** 编辑器高度（px） */
   height?: number;
 }
 
-/** 编辑器工具栏：显式「运行」按钮 */
-function Toolbar() {
-  const { refresh } = useSandpackNavigation();
-  return (
-    <div className="flex items-center gap-2 border-b border-border px-3" style={{ height: 40 }}>
-      <button
-        type="button"
-        onClick={() => refresh()}
-        className="flex items-center gap-1.5 rounded bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground hover:opacity-90"
-      >
-        <Play size={12} /> 运行
-      </button>
-      <span className="ml-auto text-[10px] text-muted meta-mono">可编辑 · 修改后点运行</span>
-    </div>
-  );
+interface LogEntry {
+  kind: "log" | "error";
+  text: string;
 }
 
 /**
- * 在线代码游乐场：可编辑代码 + 真实执行 + 控制台输出（Sandpack 驱动）。
- * 依赖 codesandbox CDN runner，需要网络。
+ * 在线代码游乐场：本地 iframe 沙箱真实执行，零外部依赖、离线可用。
+ * - 代码可编辑，点「运行」后通过 srcdoc iframe 执行，console 被劫持回显
+ * - 执行环境与页面同源隔离在沙箱 iframe 中（allow-scripts, 不含 allow-same-origin）
  */
-export function PlayGround({ label, code, template = "node", height = 260 }: PlayGroundProps) {
+export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
+  const [src, setSrc] = useState(code);
+  const [draft, setDraft] = useState(code);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [runId, setRunId] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // iframe 加载完成后执行当前代码
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    const onLoad = () => {
+      // srcdoc 重载后注入执行
+      iframe.contentWindow?.postMessage({ type: "noteviz-run", code: src }, "*");
+    };
+    iframe.addEventListener("load", onLoad);
+    return () => iframe.removeEventListener("load", onLoad);
+  }, [src, runId]);
+
+  const run = () => {
+    setLogs([]);
+    setSrc(draft);
+    setRunId((n) => n + 1);
+  };
+
+  const reset = () => {
+    setDraft(code);
+    setLogs([]);
+    setSrc(code);
+    setRunId((n) => n + 1);
+  };
+
+  // console 劫持脚本：把 iframe 内的 console.* 转发到父页面
+  const hookScript =
+    `<script>
+    (function () {
+      var send = function (kind, args) {
+        parent.postMessage({ type: "noteviz-log", kind: kind, text: Array.from(args).map(fmt).join(" ") }, "*");
+      };
+      function fmt(v) {
+        if (typeof v === "string") return v;
+        if (v instanceof Error) return v.name + ": " + v.message;
+        try { return JSON.stringify(v); } catch (e) { return String(v); }
+      }
+      ["log", "info", "warn", "error"].forEach(function (method) {
+        var original = console[method].bind(console);
+        console[method] = function () {
+          send(method === "error" ? "error" : "log", arguments);
+          original.apply(console, arguments);
+        };
+      });
+      window.addEventListener("error", function (e) {
+        parent.postMessage({ type: "noteviz-log", kind: "error", text: e.message }, "*");
+      });
+      window.addEventListener("message", function (e) {
+        if (e.data && e.data.type === "noteviz-run") {
+          try {
+            new Function(e.data.code)();
+          } catch (err) {
+            parent.postMessage({ type: "noteviz-log", kind: "error", text: err.name + ": " + err.message }, "*");
+          }
+        }
+      });
+      parent.postMessage({ type: "noteviz-ready" }, "*");
+    })();
+  </` + `script>`;
+
+  // 父页面监听日志
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      const d = e.data;
+      if (d?.type === "noteviz-log") {
+        setLogs((l) => [...l, { kind: d.kind, text: String(d.text) }]);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>${hookScript}</body></html>`;
+
   return (
     <VizBlock label={label ?? "在线运行 / playground"}>
-      <SandpackProvider
-        template={template}
-        theme="dark"
-        files={{ "/index.js": code }}
-        options={{ externalResources: ["https://unpkg.com/@codesandbox/sandpack-client@2"] }}
-      >
-        <SandpackLayout style={{ background: "transparent" }}>
-          <div style={{ flex: 1.4, minWidth: 0 }}>
-            <Toolbar />
-            <SandpackCodeEditor showLineNumbers showTabs={false} style={{ height }} />
+      <div className="grid grid-cols-2 gap-0 overflow-hidden rounded-lg border border-border">
+        <div className="flex flex-col border-r border-border">
+          <div className="flex h-10 items-center gap-2 border-b border-border bg-surface-2/50 px-3">
+            <button
+              type="button"
+              onClick={run}
+              className="flex items-center gap-1.5 rounded bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground hover:opacity-90"
+            >
+              <Play size={12} /> 运行
+            </button>
+            <button
+              type="button"
+              onClick={reset}
+              title="恢复初始代码"
+              className="flex items-center gap-1.5 rounded border border-border px-2 py-1 text-xs text-muted hover:text-foreground"
+            >
+              <RotateCcw size={12} /> 重置
+            </button>
+            <span className="ml-auto text-[10px] text-muted meta-mono">可编辑</span>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="flex h-10 items-center border-b border-border px-3 text-xs font-medium text-muted">
-              控制台输出
-            </div>
-            <SandpackConsole showHeader={false} style={{ height, maxHeight: height + 120 }} />
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            spellCheck={false}
+            className="resize-none bg-[#0d1117] p-3 font-mono text-xs leading-relaxed text-[#e6edf3] outline-none"
+            style={{ height }}
+          />
+        </div>
+        <div className="flex flex-col">
+          <div className="flex h-10 items-center border-b border-border bg-surface-2/50 px-3 text-xs font-medium text-muted">
+            控制台输出
           </div>
-        </SandpackLayout>
-      </SandpackProvider>
-      <p className="mt-2 text-[11px] text-muted">
-        左侧代码可直接编辑，点击「运行」执行，输出实时显示在右侧控制台。
-      </p>
+          <div
+            className="overflow-y-auto bg-[#0d1117] p-3 font-mono text-xs leading-relaxed"
+            style={{ height }}
+          >
+            {logs.length === 0 ? (
+              <span className="text-gray-500">// 点击「运行」查看输出</span>
+            ) : (
+              logs.map((l, i) => (
+                <div key={i} className={l.kind === "error" ? "text-[#f85149]" : "text-[#3fb950]"}>
+                  {l.text}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <iframe
+          ref={iframeRef}
+          srcDoc={html + runId}
+          sandbox="allow-scripts"
+          className="hidden"
+          title="sandbox"
+        />
+      </div>
     </VizBlock>
   );
 }

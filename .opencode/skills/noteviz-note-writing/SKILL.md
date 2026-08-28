@@ -24,8 +24,8 @@ import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/co
 // 代码块  属性: code, lang?: "javascript" | "typescript"
 import CodeBlock from "@/components/demo/CodeBlock";
 
-// ★ 在线代码游乐场：可编辑代码 + 真实执行 + 控制台（Sandpack 驱动，需网络）
-//   props: code（初始代码）, label?, template? "node"|"vanilla", height?
+// ★ 在线代码游乐场：可编辑代码 + 真实执行 + 控制台（本地 iframe 沙箱，离线可用）
+//   props: code（初始代码，浏览器端 JS）, label?, height?
 import { PlayGround } from "@/components/demo/PlayGround";
 
 // 流程图/拓扑图：React Flow + dagre 自动布局，自带缩放/适应/小地图
