@@ -12,11 +12,17 @@ export const taxonomy: Record<string, TaxonomyNode> = {
           "event-loop": {
             label: "事件循环",
           },
+          scope: {
+            label: "作用域与上下文",
+          },
           closure: {
-            label: "闭包与作用域",
+            label: "闭包",
           },
           prototype: {
             label: "原型链",
+          },
+          memory: {
+            label: "内存管理",
           },
         },
       },
