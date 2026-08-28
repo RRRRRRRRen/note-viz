@@ -74,7 +74,11 @@ export function Toc({ containerRef, resetKey }: TocProps) {
   // scrollspy：滚动容器每帧检测「阅读线」（视口 1/3 处）压在哪个小节上
   useEffect(() => {
     if (items.length === 0) return;
-    const scroller = containerRef.current?.closest("main");
+    // 滚动容器优先取内容列自身（双栏布局下内容列独立滚动），回退到 main
+    const scroller =
+      containerRef.current && containerRef.current.scrollHeight > containerRef.current.clientHeight
+        ? containerRef.current
+        : (containerRef.current?.closest("main") as HTMLElement | null);
     if (!scroller) return;
 
     let raf = 0;
@@ -119,11 +123,7 @@ export function Toc({ containerRef, resetKey }: TocProps) {
   };
 
   return (
-    <nav
-      id="toc-nav"
-      aria-label="大纲"
-      className="h-full w-full overflow-y-auto border-l border-border py-7 pl-6 pr-2"
-    >
+    <nav id="toc-nav" aria-label="大纲" className="h-full w-full overflow-y-auto py-7 pl-6 pr-2">
       <div className="mb-3 text-[10px] tracking-[0.1em] text-muted uppercase meta-mono">
         本页大纲
       </div>
