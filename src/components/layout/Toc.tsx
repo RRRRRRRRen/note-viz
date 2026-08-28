@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { flashHeading } from "@/components/note";
 
 export interface TocItem {
   id: string;
@@ -142,7 +143,11 @@ export function Toc({ containerRef, resetKey }: TocProps) {
     scroller.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   };
 
-  const jump = scrollToSection;
+  const jump = (id: string) => {
+    scrollToSection(id);
+    // 滚动结束后高亮目标标题
+    setTimeout(() => flashHeading(id), 450);
+  };
 
   return (
     <nav id="toc-nav" aria-label="大纲" className="h-full w-full overflow-y-auto py-7 pl-6 pr-2">

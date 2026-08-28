@@ -20,10 +20,22 @@ export function Conclusion({ children }: { children: ReactNode }) {
   );
 }
 
+/** 大纲点击跳转后，给目标标题加一段渐隐高亮（配合 data-toc 锚点） */
+export function flashHeading(id: string): void {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove("toc-flash");
+  // 强制 reflow 以重启动画
+  void el.offsetWidth;
+  el.classList.add("toc-flash");
+  const timer = setTimeout(() => el.classList.remove("toc-flash"), 1600);
+  void timer;
+}
+
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="scroll-mt-24">
-      <h2 data-toc className="mb-3 text-xl font-semibold">
+      <h2 data-toc className="mb-3 rounded-md px-2 py-1 text-xl font-semibold -mx-2">
         {title}
       </h2>
       {children}
@@ -34,7 +46,7 @@ export function Section({ title, children }: { title: string; children: ReactNod
 export function Subsection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="scroll-mt-24">
-      <h3 data-toc className="mb-2 mt-5 text-sm font-semibold">
+      <h3 data-toc className="mb-2 mt-5 rounded-md px-2 py-0.5 text-sm font-semibold -mx-2">
         {title}
       </h3>
       {children}

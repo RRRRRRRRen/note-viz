@@ -98,3 +98,17 @@ pre {
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--success) 15%, transparent);
   animation: pulse-dot 2.4s ease-in-out infinite;
 }
+
+/* 大纲跳转后的标题高亮渐隐 */
+@keyframes toc-flash {
+  0% {
+    background-color: color-mix(in oklab, var(--accent) 25%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.toc-flash {
+  animation: toc-flash 1.5s ease-out forwards;
+}
