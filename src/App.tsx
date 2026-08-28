@@ -11,7 +11,7 @@ function Chrome() {
   const isDomain = !isHome && !location.pathname.startsWith("/note/");
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="min-h-screen pt-14">
       <AnimatePresence>
         {!zen && (
           <motion.div
@@ -26,7 +26,7 @@ function Chrome() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="flex min-h-0 flex-1">
+      <div className="flex">
         <AnimatePresence>
           {!zen && isDomain && (
             <motion.div
@@ -40,7 +40,7 @@ function Chrome() {
             </motion.div>
           )}
         </AnimatePresence>
-        <main className="min-w-0 flex-1 overflow-y-auto">
+        <main className="min-w-0 flex-1">
           <Outlet />
         </main>
       </div>

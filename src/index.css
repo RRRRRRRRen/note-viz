@@ -3,46 +3,52 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --border: 214 32% 91%;
-  --accent: 221 83% 53%;
-  --accent-foreground: 210 40% 98%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --ring: 221 83% 53%;
+  --background: #ffffff;
+  --surface: #f6f8fa;
+  --surface-2: #eef1f4;
+  --foreground: #1f2328;
+  --muted: #656d76;
+  --border: #d0d7de;
+  --accent: #1677ff;
+  --accent-foreground: #ffffff;
+  --success: #1a7f37;
+  --danger: #cf222e;
+  --warn: #9a6700;
 }
 
 .dark {
-  --background: 222 47% 7%;
-  --foreground: 210 40% 98%;
-  --muted: 217 33% 14%;
-  --muted-foreground: 215 15% 65%;
-  --border: 217 33% 20%;
-  --accent: 217 91% 60%;
-  --accent-foreground: 222 47% 7%;
-  --card: 222 47% 9%;
-  --card-foreground: 210 40% 98%;
-  --ring: 217 91% 60%;
+  --background: #0f1217;
+  --surface: #161b22;
+  --surface-2: #1c222b;
+  --foreground: #e6edf3;
+  --muted: #8b949e;
+  --border: #303740;
+  --accent: #1677ff;
+  --accent-foreground: #ffffff;
+  --success: #3fb950;
+  --danger: #f85149;
+  --warn: #d29922;
 }
 
 @theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-border: hsl(var(--border));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-ring: hsl(var(--ring));
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
 }
 
 body {
   @apply bg-background text-foreground antialiased;
+  font-size: 14px;
+  line-height: 1.7;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -50,10 +56,39 @@ body {
     "PingFang SC",
     "Hiragino Sans GB",
     "Microsoft YaHei",
+    "Segoe UI",
     sans-serif;
 }
 
 code,
 pre {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.eyebrow {
+  @apply mb-2 text-[11px] font-medium tracking-[0.1em] text-accent uppercase;
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.meta-mono {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--success) 15%, transparent);
+  animation: pulse-dot 2.4s ease-in-out infinite;
 }

@@ -1,0 +1,2813 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NoteViz · 可视化知识学习平台</title>
+    <style>
+      :root {
+        --bg: #0f1217;
+        --surface: #161b22;
+        --fg: #e6edf3;
+        --muted: #8b949e;
+        --border: #303740;
+        --accent: #1677ff;
+        --accent-on: #ffffff;
+        --accent-soft: color-mix(in oklch, var(--accent) 16%, transparent);
+        --fg-soft: color-mix(in oklch, var(--fg) 6%, transparent);
+        --success: #3fb950;
+        --danger: #f85149;
+        --warn: #d29922;
+        --surface-2: #1c222b;
+        --font-display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+        --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+        --text-xs: 11px;
+        --text-sm: 12px;
+        --text-base: 14px;
+        --text-lg: 16px;
+        --text-xl: 22px;
+        --text-2xl: 30px;
+        --leading-body: 1.7;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 20px;
+        --space-6: 24px;
+        --space-8: 32px;
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        background: var(--bg);
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font: var(--text-base)/var(--leading-body) var(--font-body);
+        -webkit-font-smoothing: antialiased;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      p {
+        margin: 0;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-display);
+        text-wrap: balance;
+      }
+      svg {
+        display: block;
+      }
+      .num,
+      .meta,
+      .eyebrow {
+        font-family: var(--font-mono);
+      }
+      .topnav {
+        height: 56px;
+        position: fixed;
+        inset: 0 0 auto;
+        z-index: 20;
+        background: color-mix(in oklch, var(--bg) 94%, transparent);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border);
+      }
+      .topnav-inner {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        padding: 0 24px;
+      }
+      .logo {
+        font: 700 18px var(--font-display);
+        letter-spacing: -0.03em;
+        min-width: 176px;
+      }
+      .logo-v {
+        color: var(--accent);
+        position: relative;
+      }
+      .logo-v::after {
+        content: "";
+        position: absolute;
+        height: 2px;
+        background: var(--accent);
+        left: 1px;
+        right: 1px;
+        bottom: 0;
+      }
+      .domain-nav,
+      .utility-nav {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .domain-nav button,
+      .utility-nav button {
+        height: 100%;
+        position: relative;
+        border: 0;
+        background: transparent;
+        padding: 0 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .domain-nav button:hover,
+      .utility-nav button:hover {
+        color: var(--fg);
+      }
+      .domain-nav button.active,
+      .utility-nav button.active {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .domain-nav button.active::after,
+      .utility-nav button.active::after {
+        content: "";
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: -1px;
+        height: 2px;
+        background: var(--accent);
+      }
+      .utility-nav {
+        margin-left: auto;
+        border-left: 1px solid var(--border);
+        padding-left: 18px;
+      }
+      .utility-nav button[data-plan-open] {
+        border: 1px solid var(--border);
+        height: 34px;
+        border-radius: var(--radius-sm);
+        padding: 0 12px;
+      }
+      .utility-nav button[data-plan-open]:hover {
+        border-color: var(--fg);
+        background: var(--fg-soft);
+      }
+      .topnav-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font: 11px var(--font-mono);
+      }
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        background: var(--success);
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px color-mix(in oklch, var(--success) 15%, transparent);
+      }
+      .app-shell {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        min-height: 100vh;
+        padding-top: 56px;
+      }
+      .sidebar {
+        border-right: 1px solid var(--border);
+        padding: 24px 16px;
+        overflow: auto;
+        position: sticky;
+        top: 56px;
+        height: calc(100vh - 56px);
+      }
+      .side-kicker {
+        color: var(--muted);
+        font: 10px var(--font-mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin: 0 8px 18px;
+      }
+      .mastery-legend {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 8px;
+        margin: 0 8px 20px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--border);
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .legend-item .mastery-dot {
+        width: 7px;
+        height: 7px;
+      }
+      .section-toggle {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 0;
+        background: transparent;
+        padding: 9px 8px;
+        color: var(--fg);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .section-toggle .chevron {
+        transition: transform 0.2s ease;
+        color: var(--muted);
+      }
+      .section-toggle[aria-expanded="true"] .chevron {
+        transform: rotate(90deg);
+      }
+      .section-list {
+        margin: 0 0 12px;
+      }
+      .module {
+        margin: 2px 0;
+      }
+      .module-head {
+        width: 100%;
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        padding: 0 10px;
+        color: var(--muted);
+        text-align: left;
+        font-size: 13px;
+        transition:
+          transform 0.16s ease,
+          border-color 0.16s ease,
+          background 0.16s ease;
+      }
+      .module-head:hover {
+        color: var(--fg);
+        background: var(--fg-soft);
+      }
+      .module-head.active {
+        background: var(--accent-soft);
+        border-color: color-mix(in oklch, var(--accent) 50%, var(--border));
+        color: var(--fg);
+      }
+      .module-head .module-icon {
+        font: 12px var(--font-mono);
+        color: var(--accent);
+        width: 14px;
+      }
+      .count {
+        margin-left: auto;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        color: var(--muted);
+        font: 10px var(--font-mono);
+      }
+      .topic-list {
+        display: none;
+        padding: 4px 0 6px 33px;
+      }
+      .module.open .topic-list {
+        display: block;
+      }
+      .topic-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        color: var(--muted);
+        font-size: 12px;
+        border-left: 1px solid var(--border);
+      }
+      .topic-link:hover,
+      .topic-link.active {
+        color: var(--fg);
+        border-left-color: var(--accent);
+      }
+      .mastery-dot {
+        flex: 0 0 auto;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--muted);
+        box-shadow: 0 0 0 2px color-mix(in oklch, var(--muted) 14%, transparent);
+      }
+      .mastery-dot.level-1 {
+        background: var(--muted);
+      }
+      .mastery-dot.level-2 {
+        background: color-mix(in oklch, var(--accent) 45%, var(--muted));
+      }
+      .mastery-dot.level-3 {
+        background: var(--accent);
+      }
+      .mastery-dot.level-4 {
+        background: color-mix(in oklch, var(--warn) 78%, var(--accent));
+      }
+      .mastery-dot.level-5 {
+        background: var(--success);
+      }
+      .main {
+        min-width: 0;
+        padding: 28px 32px 56px;
+      }
+      .content-width {
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font: 11px var(--font-mono);
+        margin-bottom: 20px;
+      }
+      .breadcrumb span:last-child {
+        color: var(--fg);
+      }
+      .view-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 22px;
+      }
+      .eyebrow {
+        color: var(--accent);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .view-head h1 {
+        font-size: 30px;
+        line-height: 1.2;
+      }
+      .view-head p {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 7px;
+      }
+      .head-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        min-height: 40px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 0 14px;
+        background: transparent;
+        font-size: 12px;
+        transition:
+          background 0.16s ease,
+          border-color 0.16s ease,
+          transform 0.1s ease;
+      }
+      .btn:hover {
+        background: var(--fg-soft);
+        border-color: var(--fg);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-on);
+      }
+      .btn-primary:hover {
+        background: color-mix(in oklch, var(--accent) 86%, black);
+        border-color: color-mix(in oklch, var(--accent) 86%, black);
+      }
+      .btn:focus-visible,
+      .domain-nav button:focus-visible,
+      .module-head:focus-visible,
+      .topic-link:focus-visible,
+      .tab-btn:focus-visible,
+      .option:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+      .overview-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 8px 0 28px;
+        border-bottom: 1px solid var(--border);
+      }
+      .overview-hero h1 {
+        font-size: 32px;
+        line-height: 1.2;
+        max-width: 620px;
+      }
+      .overview-hero p:not(.eyebrow) {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 8px;
+      }
+      .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 24px 0;
+      }
+      .overview-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 18px;
+      }
+      .overview-card h3 {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .overview-card p {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .overview-number {
+        font: 600 28px var(--font-mono);
+        margin: 8px 0;
+      }
+      .continue-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 18px 20px;
+        background: var(--accent-soft);
+        border: 1px solid color-mix(in oklch, var(--accent) 42%, var(--border));
+        border-radius: var(--radius-md);
+        margin-bottom: 24px;
+      }
+      .continue-card h2 {
+        font-size: 17px;
+      }
+      .continue-card p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .home-columns {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 24px;
+        margin-top: 24px;
+      }
+      .home-panel {
+        min-width: 0;
+      }
+      .home-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .home-panel-head h2 {
+        font-size: 16px;
+      }
+      .home-panel-head span {
+        color: var(--muted);
+        font: 10px var(--font-mono);
+      }
+      .overview-section-title {
+        font: 11px var(--font-mono);
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 0 0 10px;
+      }
+      .overview-topic-list,
+      .review-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .overview-topic,
+      .review-topic {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        padding: 11px 13px;
+        text-align: left;
+      }
+      .overview-topic:hover,
+      .review-topic:hover {
+        border-color: var(--accent);
+        background: var(--surface-2);
+      }
+      .overview-topic span:nth-child(2),
+      .review-topic span:nth-child(2) {
+        font-size: 12px;
+      }
+      .overview-topic small,
+      .review-topic small {
+        margin-left: auto;
+        color: var(--muted);
+        font: 10px var(--font-mono);
+      }
+      .review-topic .review-arrow {
+        color: var(--muted);
+        font: 14px var(--font-mono);
+      }
+      .empty-mini {
+        padding: 22px;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-md);
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+      .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .summary-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+      }
+      .summary-label {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .summary-value {
+        font: 600 18px var(--font-mono);
+      }
+      .knowledge-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .knowledge-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto 92px;
+        gap: 16px;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 16px 18px;
+        transition:
+          transform 0.18s ease,
+          border-color 0.18s ease,
+          background 0.18s ease;
+      }
+      .knowledge-card:hover {
+        transform: translateX(4px);
+        border-color: var(--accent);
+        background: var(--surface-2);
+      }
+      .knowledge-card h3 {
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .knowledge-card p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tag {
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 3px 7px;
+        color: var(--muted);
+        font: 11px var(--font-mono);
+        white-space: nowrap;
+      }
+      .tag.depth {
+        color: var(--accent);
+        border-color: color-mix(in oklch, var(--accent) 46%, var(--border));
+      }
+      .dots {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border: 1px solid var(--muted);
+        border-radius: 50%;
+      }
+      .dot.filled {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      .empty {
+        min-height: 440px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-md);
+        color: var(--muted);
+      }
+      .empty strong {
+        display: block;
+        color: var(--fg);
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+      .empty small {
+        font: 11px var(--font-mono);
+      }
+      .detail-view {
+        display: none;
+      }
+      .detail-view.visible {
+        display: block;
+      }
+      .list-view.hidden {
+        display: none;
+      }
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 18px;
+      }
+      .back-link:hover {
+        color: var(--fg);
+      }
+      .detail-title {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .detail-title h1 {
+        font-size: 30px;
+        line-height: 1.22;
+        max-width: 800px;
+      }
+      .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--muted);
+        font: 11px var(--font-mono);
+        margin-top: 12px;
+      }
+      .meta-row .divider {
+        color: var(--border);
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 1px solid var(--border);
+        margin-top: 28px;
+      }
+      .tab-btn {
+        min-height: 45px;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        padding: 0 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .tab-btn:hover {
+        color: var(--fg);
+      }
+      .tab-btn.active {
+        border-bottom-color: var(--accent);
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .tab-panel {
+        display: none;
+        padding-top: 24px;
+      }
+      .tab-panel.active {
+        display: block;
+      }
+      .reading-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 24px;
+      }
+      .reading-copy {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 24px;
+      }
+      .reading-copy h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+      .reading-copy h3 {
+        font-size: 14px;
+        margin: 22px 0 8px;
+      }
+      .reading-copy p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.8;
+      }
+      .code-block {
+        margin-top: 18px;
+        padding: 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--fg);
+        font: 12px/1.7 var(--font-mono);
+        overflow: auto;
+      }
+      .diagram {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 18px;
+      }
+      .diagram-label {
+        display: inline-block;
+        color: var(--muted);
+        font: 10px var(--font-mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+      .diagram-flow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .flow-node {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        text-align: center;
+        font: 12px var(--font-mono);
+        background: var(--surface-2);
+      }
+      .flow-node.active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .flow-arrow {
+        color: var(--muted);
+        font-family: var(--font-mono);
+      }
+      .study-mode-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+      .mode-tabs,
+      .plan-tabs {
+        display: flex;
+        gap: 4px;
+      }
+      .mode-btn,
+      .bookmark-btn,
+      .review-complete,
+      .rating-btn,
+      .plan-tab {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--muted);
+        font-size: 11px;
+        padding: 7px 10px;
+      }
+      .mode-btn.active,
+      .mode-btn:hover,
+      .bookmark-btn:hover,
+      .rating-btn:hover,
+      .plan-tab.active,
+      .plan-tab:hover {
+        border-color: var(--accent);
+        color: var(--fg);
+        background: var(--accent-soft);
+      }
+      .mode-summary {
+        margin-left: auto;
+        color: var(--muted);
+        font: 11px var(--font-mono);
+      }
+      .rating-group {
+        display: flex;
+        gap: 3px;
+        margin-left: auto;
+      }
+      .rating-btn {
+        width: 27px;
+        padding: 5px 0;
+        font: 11px var(--font-mono);
+      }
+      .review-complete {
+        margin-left: auto;
+        color: var(--accent);
+        border-color: color-mix(in oklch, var(--accent) 48%, var(--border));
+      }
+      .review-complete.done {
+        color: var(--success);
+        border-color: var(--success);
+      }
+      .chapter-heading {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .chapter-heading .bookmark-btn {
+        opacity: 0;
+        transition: opacity 0.16s ease;
+        font-size: 10px;
+        padding: 4px 7px;
+      }
+      .chapter-heading:hover .bookmark-btn,
+      .reading-copy .bookmark-btn:focus-visible {
+        opacity: 1;
+      }
+      .bookmark-menu {
+        display: none;
+        position: absolute;
+        z-index: 3;
+        gap: 4px;
+        padding: 6px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        box-shadow: 0 12px 30px color-mix(in oklch, var(--bg) 55%, transparent);
+      }
+      .bookmark-menu.open {
+        display: flex;
+      }
+      .bookmark-option {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 5px 8px;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .bookmark-option:hover {
+        color: var(--fg);
+        background: var(--fg-soft);
+      }
+      .reading-copy h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+      .reading-copy h3 {
+        font-size: 14px;
+        margin: 22px 0 8px;
+      }
+      .review-mode .bookmark-btn,
+      .review-mode .rating-group {
+        display: none;
+      }
+      .plan-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        display: grid;
+        place-items: center;
+        background: color-mix(in oklch, var(--bg) 72%, transparent);
+        padding: 24px;
+      }
+      .plan-overlay[hidden] {
+        display: none;
+      }
+      .plan-panel {
+        width: min(560px, 100%);
+        max-height: min(720px, calc(100vh - 48px));
+        overflow: auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        box-shadow: 0 20px 60px color-mix(in oklch, var(--bg) 60%, transparent);
+      }
+      .plan-head,
+      .plan-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .plan-head h2 {
+        font-size: 22px;
+      }
+      .plan-tabs {
+        margin-top: 22px;
+        border-bottom: 1px solid var(--border);
+      }
+      .plan-tab {
+        border: 0;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+      }
+      .plan-tab.active {
+        border-bottom-color: var(--accent);
+      }
+      .plan-note {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 16px 0;
+      }
+      .plan-items {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .plan-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+      }
+      .plan-item:hover {
+        background: var(--fg-soft);
+      }
+      .plan-item input {
+        accent-color: var(--accent);
+        width: 16px;
+        height: 16px;
+      }
+      .plan-item small {
+        margin-left: auto;
+        color: var(--muted);
+        font: 10px var(--font-mono);
+      }
+      .plan-foot {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+      }
+      .quiz-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+      }
+      .quiz-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 22px;
+      }
+      .quiz-card h2 {
+        font-size: 17px;
+        margin-bottom: 7px;
+      }
+      .quiz-card > p {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 18px;
+      }
+      .question-type {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid color-mix(in oklch, var(--accent) 50%, var(--border));
+        border-radius: 4px;
+        padding: 3px 8px;
+        color: var(--accent);
+        font: 11px var(--font-mono);
+        margin-bottom: 12px;
+      }
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .option {
+        text-align: left;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--fg);
+        font-size: 12px;
+      }
+      .option:hover {
+        border-color: var(--fg);
+        background: var(--fg-soft);
+      }
+      .option.selected {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .option.correct {
+        border-color: var(--success);
+        background: color-mix(in oklch, var(--success) 14%, transparent);
+      }
+      .option.wrong {
+        border-color: var(--danger);
+        background: color-mix(in oklch, var(--danger) 14%, transparent);
+      }
+      .feedback {
+        min-height: 20px;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 12px;
+      }
+      .feedback.success {
+        color: var(--success);
+      }
+      .feedback.error {
+        color: var(--danger);
+      }
+      .explanation {
+        display: none;
+        margin-top: 16px;
+        padding: 13px 14px;
+        border-top: 1px solid var(--border);
+        background: var(--fg-soft);
+        font-size: 12px;
+        line-height: 1.7;
+      }
+      .explanation.visible {
+        display: block;
+      }
+      .explanation strong {
+        display: block;
+        color: var(--fg);
+        margin-bottom: 4px;
+      }
+      .sort-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .sort-row {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface-2);
+      }
+      .sort-index {
+        color: var(--muted);
+        font: 11px var(--font-mono);
+      }
+      .sort-row span {
+        font-size: 12px;
+      }
+      .sort-controls {
+        display: flex;
+        gap: 4px;
+      }
+      .sort-move {
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--muted);
+        font: 12px var(--font-mono);
+      }
+      .sort-move:hover {
+        border-color: var(--fg);
+        color: var(--fg);
+      }
+      .quiz-submit {
+        margin-top: 12px;
+      }
+      .related-grid,
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .related-card,
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 18px;
+      }
+      .related-card.available {
+        border-color: color-mix(in oklch, var(--accent) 40%, var(--border));
+      }
+      .related-card.available a {
+        display: flex;
+        justify-content: space-between;
+        color: var(--fg);
+        font-size: 13px;
+      }
+      .related-card.available a:hover {
+        color: var(--accent);
+      }
+      .related-card small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 8px;
+      }
+      .related-card.pending {
+        border-style: dashed;
+        color: var(--muted);
+      }
+      .pending-mark {
+        float: right;
+        font: 14px var(--font-mono);
+      }
+      .stat-card {
+        min-height: 170px;
+      }
+      .stat-label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .stat-value {
+        font: 600 27px var(--font-mono);
+        margin: 16px 0;
+      }
+      .progress {
+        height: 7px;
+        border-radius: 99px;
+        background: var(--border);
+        overflow: hidden;
+      }
+      .progress span {
+        display: block;
+        height: 100%;
+        background: var(--accent);
+        border-radius: inherit;
+      }
+      .ring {
+        width: 86px;
+        height: 86px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        margin-top: 13px;
+        background: conic-gradient(var(--accent) 0 78%, var(--border) 78% 100%);
+        position: relative;
+      }
+      .ring::after {
+        content: "";
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: var(--surface);
+        position: absolute;
+      }
+      .ring strong {
+        position: relative;
+        z-index: 1;
+        font: 600 15px var(--font-mono);
+      }
+      .stars {
+        color: var(--accent);
+        font: 18px var(--font-mono);
+        letter-spacing: 2px;
+        margin-top: 13px;
+      }
+      @media (max-width: 920px) {
+        .topnav-inner {
+          padding: 0 16px;
+          gap: 16px;
+        }
+        .logo {
+          min-width: auto;
+        }
+        .topnav-status {
+          display: none;
+        }
+        .domain-nav {
+          overflow: auto;
+        }
+        .domain-nav button {
+          padding: 0 10px;
+          white-space: nowrap;
+        }
+        .domain-nav button.active::after {
+          left: 10px;
+          right: 10px;
+        }
+        .app-shell {
+          display: block;
+        }
+        .sidebar {
+          position: static;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+          padding: 16px;
+          display: flex;
+          gap: 8px;
+          overflow: auto;
+        }
+        .side-kicker,
+        .section-toggle {
+          display: none;
+        }
+        .section-list {
+          display: flex;
+          gap: 8px;
+          margin: 0;
+        }
+        .module {
+          min-width: 180px;
+        }
+        .module-head {
+          background: var(--surface);
+          border-color: var(--border);
+          padding: 0 10px;
+        }
+        .topic-list {
+          padding-left: 18px;
+          background: var(--surface);
+        }
+        .main {
+          padding: 24px 16px 40px;
+        }
+        .reading-grid,
+        .quiz-layout {
+          grid-template-columns: 1fr;
+        }
+        .summary-strip,
+        .overview-grid {
+          grid-template-columns: 1fr;
+        }
+        .home-columns {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+        .knowledge-card {
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 10px;
+        }
+        .knowledge-card .tag,
+        .knowledge-card .dots {
+          grid-row: 2;
+        }
+        .knowledge-card .tag:nth-of-type(1) {
+          grid-column: 1;
+        }
+        .knowledge-card .tag:nth-of-type(2) {
+          grid-column: 1;
+        }
+        .knowledge-card .dots {
+          grid-column: 2;
+          grid-row: 1;
+        }
+        .view-head,
+        .detail-title,
+        .overview-hero {
+          display: block;
+        }
+        .head-actions {
+          margin-top: 16px;
+        }
+        .overview-hero .btn {
+          margin-top: 16px;
+        }
+        .continue-card {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .related-grid,
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+        .tabs {
+          overflow: auto;
+        }
+        .tab-btn {
+          white-space: nowrap;
+          padding: 0 10px;
+        }
+      }
+      @media (max-width: 560px) {
+        .domain-nav {
+          display: none;
+        }
+        .topnav-inner {
+          justify-content: space-between;
+        }
+        .view-head h1,
+        .detail-title h1 {
+          font-size: 25px;
+        }
+        .options {
+          grid-template-columns: 1fr;
+        }
+        .knowledge-card p {
+          white-space: normal;
+        }
+        .detail-title .btn {
+          margin-top: 16px;
+        }
+      }
+      .mastery-legend {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+      }
+      .legend-item {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 26px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        padding: 0;
+      }
+      .legend-item:hover {
+        background: var(--fg-soft);
+      }
+      .legend-item.active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .legend-item .mastery-dot {
+        width: 9px;
+        height: 9px;
+      }
+      .legend-item::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        z-index: 5;
+        transform: translateX(-50%) translateY(4px);
+        padding: 5px 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--surface-2);
+        box-shadow: 0 8px 20px color-mix(in oklch, var(--bg) 55%, transparent);
+        color: var(--fg);
+        font: 10px var(--font-body);
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.15s ease,
+          transform 0.15s ease;
+      }
+      .legend-item:hover::after,
+      .legend-item:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .topic-link[hidden],
+      .module[hidden],
+      .sidebar-section[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topnav" data-od-id="top-navigation">
+      <div class="topnav-inner">
+        <a class="logo" href="#" data-od-id="brand-logo">Note<span class="logo-v">V</span>iz</a>
+        <nav class="domain-nav" aria-label="知识领域" data-od-id="domain-navigation">
+          <button class="active" data-home data-od-id="domain-home">首页</button
+          ><button data-domain="frontend" data-od-id="domain-frontend">前端开发</button
+          ><button data-domain="backend" data-od-id="domain-backend">后端开发</button
+          ><button data-domain="database" data-od-id="domain-database">数据库</button>
+        </nav>
+        <nav class="utility-nav" aria-label="学习工具" data-od-id="utility-navigation">
+          <button data-domain="quiz" data-od-id="domain-quiz">刷题</button
+          ><button data-plan-open data-od-id="plan-open">学习计划</button>
+        </nav>
+        <div class="topnav-status">
+          <span class="status-dot"></span><span id="syncStatus">学习状态已同步</span>
+        </div>
+      </div>
+    </header>
+    <div class="app-shell">
+      <aside class="sidebar" data-od-id="knowledge-sidebar">
+        <div class="side-kicker">知识导航 / 领域目录</div>
+        <div class="mastery-legend" data-od-id="mastery-legend">
+          <button
+            class="legend-item"
+            type="button"
+            data-mastery-filter="1"
+            data-label="未学习"
+            aria-label="筛选未学习"
+          >
+            <i class="mastery-dot level-1"></i></button
+          ><button
+            class="legend-item"
+            type="button"
+            data-mastery-filter="2"
+            data-label="初学"
+            aria-label="筛选初学"
+          >
+            <i class="mastery-dot level-2"></i></button
+          ><button
+            class="legend-item"
+            type="button"
+            data-mastery-filter="3"
+            data-label="熟悉"
+            aria-label="筛选熟悉"
+          >
+            <i class="mastery-dot level-3"></i></button
+          ><button
+            class="legend-item"
+            type="button"
+            data-mastery-filter="4"
+            data-label="熟练"
+            aria-label="筛选熟练"
+          >
+            <i class="mastery-dot level-4"></i></button
+          ><button
+            class="legend-item"
+            type="button"
+            data-mastery-filter="5"
+            data-label="滚瓜烂熟"
+            aria-label="筛选滚瓜烂熟"
+          >
+            <i class="mastery-dot level-5"></i>
+          </button>
+        </div>
+        <div class="section-list" id="sidebarSections"></div>
+      </aside>
+      <main class="main" id="content" data-od-id="main-content">
+        <div class="content-width">
+          <div id="listView" class="list-view" data-od-id="knowledge-list-view"></div>
+          <div id="detailView" class="detail-view" data-od-id="learning-detail-view"></div>
+        </div>
+      </main>
+    </div>
+    <div class="plan-overlay" id="planOverlay" hidden data-od-id="plan-overlay">
+      <section
+        class="plan-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="plan-title"
+        data-od-id="plan-panel"
+      >
+        <div class="plan-head">
+          <div>
+            <p class="eyebrow">学习计划 / 可配置</p>
+            <h2 id="plan-title">安排要学习的知识点</h2>
+          </div>
+          <button class="btn" data-plan-close data-od-id="plan-close">关闭</button>
+        </div>
+        <div class="plan-tabs" data-od-id="plan-tabs">
+          <button class="plan-tab active" data-plan-range="week" data-od-id="plan-week">
+            周计划</button
+          ><button class="plan-tab" data-plan-range="month" data-od-id="plan-month">月计划</button>
+        </div>
+        <p class="plan-note" id="planNote">本周选择的知识点会进入你的学习队列。</p>
+        <div class="plan-items" id="planItems" data-od-id="plan-items"></div>
+        <div class="plan-foot">
+          <span class="meta" id="planCount">已选择 0 个知识点</span
+          ><button class="btn btn-primary" data-plan-save data-od-id="plan-save">保存计划</button>
+        </div>
+      </section>
+    </div>
+    <script>
+      const domains = {
+        frontend: {
+          label: "前端开发",
+          sections: [
+            {
+              name: "基础语言",
+              modules: [
+                {
+                  id: "js-runtime",
+                  name: "JavaScript 运行时",
+                  count: 12,
+                  topics: ["事件循环与任务队列", "闭包与词法环境", "原型链查找机制"],
+                },
+                {
+                  id: "ts-type",
+                  name: "TypeScript 类型系统",
+                  count: 9,
+                  topics: ["结构化类型系统", "泛型约束与推断", "类型守卫"],
+                },
+              ],
+            },
+            {
+              name: "界面工程",
+              modules: [
+                {
+                  id: "react-core",
+                  name: "React 核心机制",
+                  count: 14,
+                  topics: ["组件渲染与协调", "Hooks 闭包陷阱", "状态更新批处理"],
+                },
+                {
+                  id: "css-layout",
+                  name: "CSS 布局",
+                  count: 8,
+                  topics: ["Grid 网格布局", "层叠上下文", "容器查询"],
+                },
+              ],
+            },
+          ],
+        },
+        backend: {
+          label: "后端开发",
+          sections: [
+            {
+              name: "服务架构",
+              modules: [
+                {
+                  id: "api-design",
+                  name: "API 设计",
+                  count: 11,
+                  topics: ["幂等性与重试", "分页与排序契约", "错误码设计"],
+                },
+                {
+                  id: "service-auth",
+                  name: "身份与权限",
+                  count: 7,
+                  topics: ["OAuth 2.0 流程", "JWT 校验边界", "RBAC 权限模型"],
+                },
+              ],
+            },
+            {
+              name: "运行基础",
+              modules: [
+                {
+                  id: "go-concurrency",
+                  name: "并发与协程",
+                  count: 10,
+                  topics: ["协程调度模型", "竞态条件与锁", "Channel 通信"],
+                },
+                {
+                  id: "observability",
+                  name: "可观测性",
+                  count: 6,
+                  topics: ["日志结构化", "指标与告警", "分布式追踪"],
+                },
+              ],
+            },
+          ],
+        },
+        database: {
+          label: "数据库",
+          sections: [
+            {
+              name: "关系型数据库",
+              modules: [
+                {
+                  id: "sql-query",
+                  name: "SQL 查询优化",
+                  count: 13,
+                  topics: ["索引覆盖与回表", "执行计划阅读", "连接算法选择"],
+                },
+                {
+                  id: "transaction",
+                  name: "事务与并发",
+                  count: 9,
+                  topics: ["MVCC 可见性", "隔离级别", "死锁检测"],
+                },
+              ],
+            },
+            {
+              name: "分布式存储",
+              modules: [
+                {
+                  id: "redis-model",
+                  name: "Redis 数据模型",
+                  count: 8,
+                  topics: ["缓存淘汰策略", "分布式锁", "Stream 消息流"],
+                },
+                {
+                  id: "data-consistency",
+                  name: "数据一致性",
+                  count: 5,
+                  topics: ["最终一致性", "共识与选主", "读写分离延迟"],
+                },
+              ],
+            },
+          ],
+        },
+        quiz: {
+          label: "刷题",
+          sections: [
+            {
+              name: "题库中心",
+              modules: [
+                {
+                  id: "daily-practice",
+                  name: "每日练习",
+                  count: 20,
+                  topics: ["今日精选 20 题", "高频错题回顾", "昨日未完成"],
+                },
+                {
+                  id: "wrong-answers",
+                  name: "错题本",
+                  count: 16,
+                  topics: ["待重做题目", "概念辨析错题", "代码阅读错题"],
+                },
+              ],
+            },
+            {
+              name: "专项训练",
+              modules: [
+                {
+                  id: "frontend-special",
+                  name: "前端专项",
+                  count: 32,
+                  topics: ["JavaScript 核心", "React 高频题", "浏览器原理"],
+                },
+                {
+                  id: "backend-special",
+                  name: "后端专项",
+                  count: 28,
+                  topics: ["系统设计", "并发编程", "数据库基础"],
+                },
+              ],
+            },
+          ],
+        },
+      };
+      const knowledge = {
+        "js-runtime": [
+          {
+            id: "event-loop",
+            q: "浏览器事件循环如何协调宏任务与微任务？",
+            depth: "深",
+            rich: "图",
+            difficulty: 4,
+            summary: "事件循环决定 JavaScript 何时从任务队列取出回调执行。",
+            content: [
+              "JavaScript 在浏览器中通常运行于单线程执行栈。同步代码先进入调用栈，异步 API 完成后将回调放入对应队列。",
+              "每轮循环会先清空当前宏任务产生的微任务，再进入渲染时机，最后选择下一个宏任务。理解这个顺序，是判断 Promise、定时器与 UI 更新先后的关键。",
+            ],
+            code: 'console.log("A");\nsetTimeout(() => console.log("B"));\nqueueMicrotask(() => console.log("C"));\nconsole.log("D");',
+            mermaid: ["同步代码", "调用栈清空", "清空微任务", "渲染检查", "取下一个宏任务"],
+            quiz: {
+              type: "single",
+              question: "下面代码的输出顺序是什么？",
+              options: ["A → B → C → D", "A → D → C → B", "A → D → B → C", "D → A → C → B"],
+              answer: 1,
+              explanation:
+                "同步代码先输出 A、D；当前宏任务结束后清空微任务 C，最后才执行定时器 B。",
+            },
+            related: [
+              ["Promise 微任务", true],
+              ["浏览器渲染时机", true],
+              ["Node.js 事件循环", true],
+              ["Web Worker 通信", false],
+            ],
+          },
+        ],
+        "react-core": [
+          {
+            id: "react-reconcile",
+            q: "React 如何通过协调过程更新组件树？",
+            depth: "深",
+            rich: "交互",
+            difficulty: 5,
+            summary: "协调过程比较前后两棵元素树，并将必要变更提交到宿主环境。",
+            content: [
+              "React 将渲染分为 render 与 commit 两个阶段。render 阶段计算下一棵树，commit 阶段将副作用一次性写入 DOM。",
+              "Key 并不是为了让列表拥有唯一标识这么简单，它帮助 React 判断同层节点是否可以复用，从而减少不必要的卸载与重建。",
+            ],
+            code: "items.map(item => <Row key={item.id} value={item} />)",
+            mermaid: ["状态更新", "render 计算", "协调 Diff", "commit 提交", "浏览器绘制"],
+            quiz: {
+              type: "multi",
+              question: "以下哪些说法符合 React 中 key 的作用？",
+              options: [
+                "帮助同层节点匹配",
+                "提升所有组件的网络速度",
+                "支持列表节点复用",
+                "替代组件的 props",
+              ],
+              answer: [0, 2],
+              explanation:
+                "key 用于同层节点的稳定匹配，帮助 React 复用节点并减少不必要的卸载。它不负责网络性能，也不能替代 props。",
+            },
+            related: [
+              ["Fiber 架构", true],
+              ["Hooks 闭包陷阱", true],
+              ["虚拟 DOM", true],
+              ["服务端组件", false],
+            ],
+          },
+        ],
+        "sql-query": [
+          {
+            id: "index-cover",
+            q: "什么是覆盖索引？它为什么能减少回表？",
+            depth: "中",
+            rich: "图",
+            difficulty: 3,
+            summary: "查询所需字段全部位于索引叶子节点时，可以直接返回结果。",
+            content: [
+              "覆盖索引不是一种特殊索引类型，而是查询场景。当索引包含 SELECT、WHERE、ORDER BY 所需要的全部字段时，存储引擎无需再次访问聚簇索引。",
+              "减少回表的收益来自更少的随机 I/O，但索引列并非越多越好。要结合查询频率、写入成本和数据分布共同判断。",
+            ],
+            code: "CREATE INDEX idx_user_status ON users(status, created_at);",
+            mermaid: ["SQL 查询", "索引定位", "叶子节点已含字段", "直接返回"],
+            quiz: {
+              type: "judge",
+              question: "判断：只要查询使用了索引，就一定不会发生回表。",
+              options: ["正确", "错误"],
+              answer: 1,
+              explanation:
+                "错误。只有当查询所需字段都能从索引叶子节点获得时，才可能覆盖查询；否则仍需回到数据页取列。",
+            },
+            related: [
+              ["执行计划阅读", true],
+              ["回表与随机 I/O", true],
+              ["联合索引顺序", true],
+              ["列存储原理", false],
+            ],
+          },
+        ],
+      };
+      const fallback = {
+        id: "generic",
+        q: "如何建立一个可复用的知识点学习路径？",
+        depth: "浅",
+        rich: "文",
+        difficulty: 2,
+        summary: "先建立概念地图，再通过可验证问题逐步补齐细节。",
+        content: [
+          "把一个主题拆成问题、回答和扩展知识三个层次，可以让学习内容既便于检索，也便于复习。",
+          "先掌握术语与边界，再用例子验证理解，最后通过关联知识扩大上下文。",
+        ],
+        code: "question -> answer -> related knowledge",
+        mermaid: ["提出问题", "建立回答", "连接上下文", "回顾验证"],
+        quiz: {
+          type: "sort",
+          question: "请按一次高质量学习的合理顺序排列步骤。",
+          items: ["提出具体问题", "阅读回答并理解边界", "连接关联知识", "通过题目回顾验证"],
+          options: ["提出具体问题", "阅读回答并理解边界", "连接关联知识", "通过题目回顾验证"],
+          answer: [0, 1, 2, 3],
+          explanation: "先提出问题，再建立核心回答，随后连接更大的知识上下文，最后用题目验证记忆。",
+        },
+        related: [
+          ["基础概念", true],
+          ["学习统计", true],
+          ["待补充知识", false],
+        ],
+      };
+      let state = {
+        domain: "frontend",
+        module: null,
+        topic: null,
+        tab: "explain",
+        mode: "learn",
+        home: true,
+        masteryFilter: null,
+      };
+      const $ = (s) => document.querySelector(s);
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"']/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+        );
+      const masteryKey = "noteviz-mastery";
+      const masteryLabels = { 1: "未学习", 2: "初学", 3: "熟悉", 4: "熟练", 5: "滚瓜烂熟" };
+      function dots(n) {
+        return (
+          '<span class="dots" aria-label="难度 ' +
+          n +
+          ' 级">' +
+          [1, 2, 3, 4, 5]
+            .map((i) => '<i class="dot ' + (i <= n ? "filled" : "") + '"></i>')
+            .join("") +
+          "</span>"
+        );
+      }
+      function masteryStore() {
+        try {
+          return JSON.parse(localStorage.getItem(masteryKey) || "{}");
+        } catch (e) {
+          return {};
+        }
+      }
+      function masteryLevel(id) {
+        const item = masteryStore()[id];
+        if (!item) return 1;
+        if (item.manualLevel) return item.manualLevel;
+        if (!item.attempts) return 1;
+        const accuracy = item.correct / item.attempts;
+        if (accuracy < 0.6) return 2;
+        if (accuracy < 0.8 || item.streak < 2) return 3;
+        if (item.attempts < 5 || item.streak < 3) return 4;
+        return 5;
+      }
+      function masteryDot(id) {
+        const level = masteryLevel(id);
+        return (
+          '<span class="mastery-dot level-' +
+          level +
+          '" title="' +
+          masteryLabels[level] +
+          '" aria-label="' +
+          masteryLabels[level] +
+          '"></span>'
+        );
+      }
+      function applyMasteryFilter() {
+        const sidebar = $("#sidebarSections");
+        sidebar.querySelectorAll(".module").forEach((module) => {
+          let visible = false;
+          module.querySelectorAll("[data-topic]").forEach((topic) => {
+            const keep =
+              state.masteryFilter === null ||
+              masteryLevel(topic.dataset.topic) === state.masteryFilter;
+            topic.hidden = !keep;
+            visible = visible || keep;
+          });
+          module.hidden = !visible;
+        });
+        sidebar.querySelectorAll(".sidebar-section").forEach((section) => {
+          section.hidden = !section.querySelector(".module:not([hidden])");
+        });
+      }
+      function syncMasteryFilter() {
+        document
+          .querySelectorAll("[data-mastery-filter]")
+          .forEach((button) =>
+            button.classList.toggle(
+              "active",
+              Number(button.dataset.masteryFilter) === state.masteryFilter,
+            ),
+          );
+      }
+      function recordMastery(id, correct) {
+        const store = masteryStore();
+        const item = store[id] || { attempts: 0, correct: 0, streak: 0 };
+        item.attempts += 1;
+        if (correct) {
+          item.correct += 1;
+          item.streak += 1;
+        } else item.streak = 0;
+        store[id] = item;
+        try {
+          localStorage.setItem(masteryKey, JSON.stringify(store));
+        } catch (e) {}
+        syncStatus();
+        renderSidebar();
+      }
+      function setMasteryRating(id, level) {
+        const store = masteryStore();
+        const item = store[id] || { attempts: 0, correct: 0, streak: 0 };
+        item.manualLevel = level;
+        store[id] = item;
+        try {
+          localStorage.setItem(masteryKey, JSON.stringify(store));
+        } catch (e) {}
+        syncStatus("掌握度已更新");
+        renderSidebar();
+      }
+      function syncStatus(label = "学习状态已同步") {
+        const node = $("#syncStatus");
+        if (node)
+          node.textContent =
+            label +
+            " · " +
+            new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+      }
+      function bookmarkStore() {
+        try {
+          return JSON.parse(localStorage.getItem("noteviz-bookmarks") || "{}");
+        } catch (e) {
+          return {};
+        }
+      }
+      function saveBookmark(topicId, chapterId, label) {
+        const store = bookmarkStore();
+        store[topicId] = store[topicId] || {};
+        store[topicId][chapterId] = label;
+        try {
+          localStorage.setItem("noteviz-bookmarks", JSON.stringify(store));
+        } catch (e) {}
+        syncStatus("书签已保存");
+        renderDetail();
+      }
+      function bookmarkButton(topicId, chapterId) {
+        const current = (bookmarkStore()[topicId] || {})[chapterId];
+        const labels = ["学这个", "有点难懂", "完全不懂", "回头来学"];
+        return (
+          '<span class="bookmark-wrap"><button class="bookmark-btn" data-bookmark-toggle="' +
+          chapterId +
+          '" data-od-id="bookmark-toggle-' +
+          chapterId +
+          '">' +
+          (current || "添加书签") +
+          '</button><span class="bookmark-menu" data-bookmark-menu="' +
+          chapterId +
+          '">' +
+          labels
+            .map(
+              (label) =>
+                '<button class="bookmark-option" data-bookmark-label="' +
+                label +
+                '" data-bookmark-chapter="' +
+                chapterId +
+                '" data-od-id="bookmark-option-' +
+                chapterId +
+                "-" +
+                label +
+                '">' +
+                label +
+                "</button>",
+            )
+            .join("") +
+          "</span></span>"
+        );
+      }
+      function enhanceExplain(t) {
+        const panel = $("#panel-explain");
+        panel.classList.toggle("review-mode", state.mode === "review");
+        panel.insertAdjacentHTML(
+          "afterbegin",
+          '<div class="study-mode-bar" data-od-id="study-mode-bar"><div class="mode-tabs"><button class="mode-btn ' +
+            (state.mode === "learn" ? "active" : "") +
+            '" data-study-mode="learn">初学模式</button><button class="mode-btn ' +
+            (state.mode === "review" ? "active" : "") +
+            '" data-study-mode="review">复习模式</button></div><span class="mode-summary">' +
+            (state.mode === "review" ? "复习只需完成一次点击" : "章节标题可添加学习书签") +
+            "</span>" +
+            (state.mode === "learn"
+              ? '<div class="rating-group" aria-label="选择掌握程度">' +
+                [1, 2, 3, 4, 5]
+                  .map(
+                    (level) =>
+                      '<button class="rating-btn" data-rating="' +
+                      level +
+                      '" title="' +
+                      masteryLabels[level] +
+                      '">' +
+                      level +
+                      "</button>",
+                  )
+                  .join("") +
+                "</div>"
+              : '<button class="review-complete ' +
+                (localStorage.getItem("noteviz-reviewed-" + t.id) ? "done" : "") +
+                '" data-review-complete>' +
+                (localStorage.getItem("noteviz-reviewed-" + t.id) ? "已完成复习" : "完成本次复习") +
+                "</button>") +
+            "</div>",
+        );
+        const headings = panel.querySelectorAll(".reading-copy h2,.reading-copy h3");
+        headings.forEach((heading, index) => {
+          heading.classList.add("chapter-heading");
+          heading.insertAdjacentHTML("beforeend", bookmarkButton(t.id, "chapter-" + index));
+        });
+        panel.querySelectorAll("[data-study-mode]").forEach((button) =>
+          button.addEventListener("click", () => {
+            state.mode = button.dataset.studyMode;
+            renderDetail();
+          }),
+        );
+        panel.querySelectorAll("[data-bookmark-toggle]").forEach((button) =>
+          button.addEventListener("click", () => {
+            panel
+              .querySelector('[data-bookmark-menu="' + button.dataset.bookmarkToggle + '"]')
+              .classList.toggle("open");
+          }),
+        );
+        panel
+          .querySelectorAll("[data-bookmark-label]")
+          .forEach((button) =>
+            button.addEventListener("click", () =>
+              saveBookmark(t.id, button.dataset.bookmarkChapter, button.dataset.bookmarkLabel),
+            ),
+          );
+        panel
+          .querySelectorAll("[data-rating]")
+          .forEach((button) =>
+            button.addEventListener("click", () =>
+              setMasteryRating(t.id, Number(button.dataset.rating)),
+            ),
+          );
+        const review = panel.querySelector("[data-review-complete]");
+        if (review)
+          review.addEventListener("click", () => {
+            localStorage.setItem("noteviz-reviewed-" + t.id, new Date().toISOString());
+            syncStatus("复习状态已同步");
+            renderDetail();
+          });
+      }
+      const planState = { range: "week" };
+      function planStore() {
+        try {
+          return JSON.parse(localStorage.getItem("noteviz-plans") || "{}");
+        } catch (e) {
+          return {};
+        }
+      }
+      function planTopics() {
+        return currentDomain().sections.flatMap((section) =>
+          section.modules.flatMap((module) =>
+            topicsFor(module.id).map((topic) => ({
+              id: topic.id,
+              q: topic.q,
+              module: module.name,
+            })),
+          ),
+        );
+      }
+      function renderPlan() {
+        const saved = planStore()[planState.range] || [];
+        const selected = new Set(saved);
+        $("#planItems").innerHTML = planTopics()
+          .map(
+            (topic) =>
+              '<label class="plan-item"><input type="checkbox" value="' +
+              topic.id +
+              '" ' +
+              (selected.has(topic.id) ? "checked" : "") +
+              "><span>" +
+              esc(topic.q) +
+              "</span><small>" +
+              esc(topic.module) +
+              "</small></label>",
+          )
+          .join("");
+        $("#planCount").textContent = "已选择 " + saved.length + " 个知识点";
+        $("#planNote").textContent =
+          planState.range === "week"
+            ? "本周选择的知识点会进入你的学习队列。"
+            : "本月选择的知识点会用于安排长期复习节奏。";
+      }
+      function openPlan() {
+        renderPlan();
+        $("#planOverlay").hidden = false;
+      }
+      function closePlan() {
+        $("#planOverlay").hidden = true;
+      }
+      function savePlan() {
+        const values = [...$("#planItems input:checked")].map((input) => input.value);
+        const plans = planStore();
+        plans[planState.range] = values;
+        try {
+          localStorage.setItem("noteviz-plans", JSON.stringify(plans));
+        } catch (e) {}
+        syncStatus((planState.range === "week" ? "周" : "月") + "计划已同步");
+        renderPlan();
+      }
+      function reviewTopics() {
+        return currentDomain()
+          .sections.flatMap((section) =>
+            section.modules.flatMap((module) =>
+              topicsFor(module.id).map((topic) => ({
+                ...topic,
+                moduleId: module.id,
+                moduleName: module.name,
+              })),
+            ),
+          )
+          .filter((topic) => masteryLevel(topic.id) <= 3)
+          .slice(0, 5);
+      }
+      function renderDomainOverview() {
+        const domain = currentDomain();
+        const firstModule = domain.sections[0].modules[0];
+        const recommendations = topicsFor(firstModule.id).slice(0, 3);
+        const reviews = reviewTopics();
+        const weekPlan = planStore().week || [];
+        const monthPlan = planStore().month || [];
+        const planCount = weekPlan.length + monthPlan.length;
+        const attempts = Object.values(masteryStore()).reduce(
+          (sum, item) => sum + (item.attempts || 0),
+          0,
+        );
+        document
+          .querySelectorAll("[data-domain],[data-home]")
+          .forEach((item) =>
+            item.classList.toggle(
+              "active",
+              item.hasAttribute("data-domain") && item.dataset.domain === state.domain,
+            ),
+          );
+        $("#listView").innerHTML =
+          '<div class="overview-hero"><div><p class="eyebrow">' +
+          esc(domain.label) +
+          " / 领域首页</p><h1>围绕 " +
+          esc(domain.label) +
+          ' 建立自己的知识路径。</h1><p>这里聚合当前领域的计划、复习内容、掌握度和推荐知识点。</p></div><button class="btn btn-primary" data-overview-plan data-od-id="domain-plan">配置领域计划</button></div><div class="overview-grid"><article class="overview-card"><h3>领域计划</h3><div class="overview-number num">' +
+          planCount +
+          "</div><p>周计划 " +
+          weekPlan.length +
+          " 个 · 月计划 " +
+          monthPlan.length +
+          ' 个</p></article><article class="overview-card"><h3>领域待复习</h3><div class="overview-number num">' +
+          reviews.length +
+          '</div><p>优先处理掌握度较低的内容</p></article><article class="overview-card"><h3>领域活动</h3><div class="overview-number num">' +
+          attempts +
+          '</div><p>次答题记录，状态持续同步</p></article></div><div class="continue-card"><div><h2>继续学习 · ' +
+          esc(firstModule.name) +
+          '</h2><p>从当前领域最基础的高频问题开始。</p></div><button class="btn btn-primary" data-overview-topic="' +
+          recommendations[0].id +
+          '" data-overview-module="' +
+          firstModule.id +
+          '">继续学习</button></div><div class="home-columns"><section class="home-panel"><div class="home-panel-head"><h2>本周计划</h2><span>' +
+          weekPlan.length +
+          ' 个知识点</span></div><div class="overview-topic-list">' +
+          (weekPlan.length
+            ? planTopics()
+                .filter((topic) => weekPlan.includes(topic.id))
+                .slice(0, 5)
+                .map(
+                  (topic) =>
+                    '<button class="overview-topic" data-overview-topic="' +
+                    topic.id +
+                    '" data-overview-module="' +
+                    moduleForTopic(topic.id) +
+                    '">' +
+                    masteryDot(topic.id) +
+                    "<span>" +
+                    esc(topic.q) +
+                    "</span><small>计划内</small></button>",
+                )
+                .join("")
+            : '<div class="empty-mini">当前领域还没有周计划。</div>') +
+          '</div></section><section class="home-panel"><div class="home-panel-head"><h2>建议复习</h2><span>掌握度 ≤ 熟悉</span></div><div class="review-list">' +
+          (reviews.length
+            ? reviews
+                .map(
+                  (topic) =>
+                    '<button class="review-topic" data-overview-topic="' +
+                    topic.id +
+                    '" data-overview-module="' +
+                    topic.moduleId +
+                    '">' +
+                    masteryDot(topic.id) +
+                    "<span>" +
+                    esc(topic.q) +
+                    '</span><span class="review-arrow">→</span></button>',
+                )
+                .join("")
+            : '<div class="empty-mini">当前领域没有待复习内容。</div>') +
+          '</div></section></div><p class="overview-section-title" style="margin-top:24px">领域推荐知识点</p><div class="overview-topic-list">' +
+          recommendations
+            .map(
+              (topic) =>
+                '<button class="overview-topic" data-overview-topic="' +
+                topic.id +
+                '" data-overview-module="' +
+                firstModule.id +
+                '">' +
+                masteryDot(topic.id) +
+                "<span>" +
+                esc(topic.q) +
+                "</span><small>" +
+                esc(topic.depth) +
+                " · " +
+                esc(topic.rich) +
+                "</small></button>",
+            )
+            .join("") +
+          "</div>";
+        $("#listView").querySelector("[data-overview-plan]").addEventListener("click", openPlan);
+        $("#listView")
+          .querySelectorAll("[data-overview-topic]")
+          .forEach((button) =>
+            button.addEventListener("click", () =>
+              openTopic(button.dataset.overviewTopic, button.dataset.overviewModule),
+            ),
+          );
+      }
+      function renderGlobalOverview() {
+        const allDomains = Object.entries(domains).filter(([key]) => key !== "quiz");
+        const planCount = (planStore().week || []).length + (planStore().month || []).length;
+        const attempts = Object.values(masteryStore()).reduce(
+          (sum, item) => sum + (item.attempts || 0),
+          0,
+        );
+        const reviewCount = Object.keys(masteryStore()).filter(
+          (id) => masteryLevel(id) <= 3,
+        ).length;
+        document
+          .querySelectorAll("[data-domain],[data-home]")
+          .forEach((item) => item.classList.toggle("active", item.hasAttribute("data-home")));
+        $("#listView").innerHTML =
+          '<div class="overview-hero"><div><p class="eyebrow">NoteViz / 全局首页</p><h1>你的全部知识，从这里开始组织。</h1><p>查看所有领域的学习计划、复习队列和整体进度，再进入具体领域继续学习。</p></div><button class="btn btn-primary" data-overview-plan data-od-id="global-plan">打开学习计划</button></div><div class="overview-grid"><article class="overview-card"><h3>全部计划</h3><div class="overview-number num">' +
+          planCount +
+          "</div><p>周计划 " +
+          (planStore().week || []).length +
+          " 个 · 月计划 " +
+          (planStore().month || []).length +
+          ' 个</p></article><article class="overview-card"><h3>全部待复习</h3><div class="overview-number num">' +
+          reviewCount +
+          '</div><p>跨领域待复习知识点</p></article><article class="overview-card"><h3>累计活动</h3><div class="overview-number num">' +
+          attempts +
+          '</div><p>次答题和学习行为已记录</p></article></div><div class="home-columns"><section class="home-panel"><div class="home-panel-head"><h2>知识领域</h2><span>进入领域首页</span></div><div class="overview-topic-list">' +
+          allDomains
+            .map(([key, domain]) => {
+              const total = domain.sections.reduce(
+                (sum, section) =>
+                  sum + section.modules.reduce((inner, module) => inner + module.count, 0),
+                0,
+              );
+              return (
+                '<button class="overview-topic" data-switch-domain="' +
+                key +
+                '"><span class="mastery-dot level-3"></span><span>' +
+                esc(domain.label) +
+                "</span><small>" +
+                total +
+                " 个知识点 · 查看总览 →</small></button>"
+              );
+            })
+            .join("") +
+          '</div></section><section class="home-panel"><div class="home-panel-head"><h2>学习建议</h2><span>从低成本动作开始</span></div><div class="review-list"><button class="review-topic" data-global-action="plan"><span class="mastery-dot level-2"></span><span>配置本周学习计划</span><span class="review-arrow">→</span></button><button class="review-topic" data-global-action="review"><span class="mastery-dot level-3"></span><span>进入待复习内容</span><span class="review-arrow">→</span></button></div></section></div>';
+        $("#listView").querySelector("[data-overview-plan]").addEventListener("click", openPlan);
+        $("#listView")
+          .querySelectorAll("[data-switch-domain]")
+          .forEach((button) =>
+            button.addEventListener("click", () => {
+              state.domain = button.dataset.switchDomain;
+              state.home = false;
+              state.module = null;
+              document
+                .querySelectorAll("[data-domain],[data-home]")
+                .forEach((item) =>
+                  item.classList.toggle("active", item.dataset.domain === state.domain),
+                );
+              renderSidebar();
+              renderList();
+            }),
+          );
+        $("#listView")
+          .querySelector('[data-global-action="plan"]')
+          .addEventListener("click", openPlan);
+        $("#listView")
+          .querySelector('[data-global-action="review"]')
+          .addEventListener("click", () => {
+            state.home = false;
+            state.module = currentDomain().sections[0].modules[0].id;
+            renderSidebar();
+            renderList();
+          });
+      }
+      function renderOverview() {
+        if (state.home) {
+          renderGlobalOverview();
+        } else {
+          renderDomainOverview();
+        }
+      }
+      function moduleForTopic(topicId) {
+        return (
+          currentDomain()
+            .sections.flatMap((section) => section.modules)
+            .find((module) => topicsFor(module.id).some((topic) => topic.id === topicId))?.id ||
+          currentDomain().sections[0].modules[0].id
+        );
+      }
+      function currentDomain() {
+        return domains[state.domain];
+      }
+      function moduleInfo(id) {
+        return currentDomain()
+          .sections.flatMap((s) => s.modules)
+          .find((m) => m.id === id);
+      }
+      function topicsFor(id) {
+        return (
+          knowledge[id] ||
+          moduleInfo(id).topics.map((q, i) => ({
+            ...fallback,
+            id: id + "-" + i,
+            q,
+            depth: i % 3 === 0 ? "浅" : i % 3 === 1 ? "中" : "深",
+            rich: i % 2 ? "图" : "文",
+            difficulty: 2 + (i % 4),
+            summary: "围绕 " + q + " 建立清晰的概念边界与实践判断。",
+            content: [
+              "这是一个适合拆分为问题、回答与扩展知识的学习单元。先确定术语，再用实际场景验证。",
+              "学习时可以从现象倒推机制，并把结论记录为可复用的问答。",
+            ],
+            code: "// " + q,
+            mermaid: ["问题定义", "机制拆解", "案例验证"],
+            quiz: fallback.quiz,
+            related: fallback.related,
+          }))
+        );
+      }
+      function quizTypeLabel(type) {
+        return (
+          { single: "单选题", multi: "多选题", judge: "判断题", sort: "排序题" }[type] || "综合题"
+        );
+      }
+      function showQuizResult(t, correct) {
+        recordMastery(t.id, correct);
+        const feedback = $("#feedback");
+        const explanation = $("#explanation");
+        const list = topicsFor(state.module);
+        const next = list[(list.findIndex((item) => item.id === t.id) + 1) % list.length];
+        feedback.textContent = correct
+          ? "回答正确：判断抓住了关键。"
+          : "回答不正确：请结合解析复盘这一题。";
+        feedback.className = "feedback " + (correct ? "success" : "error");
+        explanation.innerHTML =
+          "<strong>答案解析</strong>" +
+          esc(t.quiz.explanation) +
+          '<br><button class="btn" data-next-topic="' +
+          next.id +
+          '" data-next-module="' +
+          state.module +
+          '">下一题 →</button>';
+        explanation.classList.add("visible");
+        explanation
+          .querySelector("[data-next-topic]")
+          .addEventListener("click", () => openTopic(next.id, state.module));
+      }
+      function enhanceQuiz(t) {
+        const quiz = t.quiz;
+        const card = $("#detailView .quiz-card");
+        const optionBox = card.querySelector(".options");
+        card.querySelector(".eyebrow").textContent = "即时练习 / " + quizTypeLabel(quiz.type);
+        card.insertAdjacentHTML("beforeend", '<div class="explanation" id="explanation"></div>');
+        if (quiz.type === "multi") {
+          card.querySelector("p:not(.eyebrow)").textContent = "可选择多个答案，选完后提交。";
+          optionBox.insertAdjacentHTML(
+            "afterend",
+            '<button class="btn btn-primary quiz-submit" id="submit-multi">提交答案</button>',
+          );
+        }
+        if (quiz.type === "sort") {
+          optionBox.className = "sort-list";
+          optionBox.innerHTML = quiz.items
+            .map(
+              (item, i) =>
+                '<div class="sort-row" data-sort-index="' +
+                i +
+                '"><span class="sort-index">' +
+                (i + 1).toString().padStart(2, "0") +
+                "</span><span>" +
+                esc(item) +
+                '</span><span class="sort-controls"><button class="sort-move" data-move="up" aria-label="上移">↑</button><button class="sort-move" data-move="down" aria-label="下移">↓</button></span></div>',
+            )
+            .join("");
+          optionBox.insertAdjacentHTML(
+            "afterend",
+            '<button class="btn btn-primary quiz-submit" id="submit-sort">提交排序</button>',
+          );
+        }
+      }
+      function renderSidebar() {
+        const wrap = $("#sidebarSections");
+        wrap.innerHTML = currentDomain()
+          .sections.map(
+            (s, si) =>
+              '<div class="sidebar-section" data-od-id="sidebar-section-' +
+              si +
+              '"><button class="section-toggle" aria-expanded="true" data-section="' +
+              si +
+              '">' +
+              esc(s.name) +
+              '<span class="chevron">›</span></button><div class="section-list">' +
+              s.modules
+                .map(
+                  (m) =>
+                    '<div class="module ' +
+                    (state.module === m.id ? "open" : "") +
+                    '" data-module="' +
+                    m.id +
+                    '"><button class="module-head ' +
+                    (state.module === m.id ? "active" : "") +
+                    '" data-module-open="' +
+                    m.id +
+                    '"><span class="module-icon">›</span><span>' +
+                    esc(m.name) +
+                    '</span><span class="count">' +
+                    m.count +
+                    '</span></button><div class="topic-list">' +
+                    topicsFor(m.id)
+                      .map(
+                        (t) =>
+                          '<a class="topic-link ' +
+                          (state.topic && state.topic.id === t.id ? "active" : "") +
+                          '" href="#" data-topic="' +
+                          t.id +
+                          '" data-module-topic="' +
+                          m.id +
+                          '">' +
+                          masteryDot(t.id) +
+                          "<span>" +
+                          esc(t.q) +
+                          "</span></a>",
+                      )
+                      .join("") +
+                    "</div></div>",
+                )
+                .join("") +
+              "</div></div>",
+          )
+          .join("");
+        applyMasteryFilter();
+        syncMasteryFilter();
+        wrap.querySelectorAll("[data-section]").forEach((b) =>
+          b.addEventListener("click", () => {
+            const open = b.getAttribute("aria-expanded") === "true";
+            b.setAttribute("aria-expanded", String(!open));
+            b.nextElementSibling.style.display = open ? "none" : "";
+          }),
+        );
+        wrap.querySelectorAll("[data-module-open]").forEach((b) =>
+          b.addEventListener("click", () => {
+            state.module = b.dataset.moduleOpen;
+            state.home = false;
+            state.topic = null;
+            state.tab = "explain";
+            renderSidebar();
+            renderList();
+          }),
+        );
+        wrap.querySelectorAll("[data-topic]").forEach((a) =>
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            openTopic(a.dataset.topic, a.dataset.moduleTopic);
+          }),
+        );
+      }
+      function renderList() {
+        const d = currentDomain();
+        const m = state.module ? moduleInfo(state.module) : null;
+        const quizMode = state.domain === "quiz";
+        if (!m) {
+          $("#listView").innerHTML =
+            '<div class="empty" data-od-id="empty-state"><div><strong>选择一个' +
+            (quizMode ? "题库模块" : "知识模块") +
+            "开始学习</strong><span>从左侧目录进入" +
+            (quizMode ? "专项题目列表" : "四级知识点列表") +
+            "</span></div></div>";
+          return;
+        }
+        const items = topicsFor(m.id);
+        $("#listView").innerHTML =
+          '<div class="breadcrumb"><span>NoteViz</span><span>/</span><span>' +
+          esc(d.label) +
+          "</span><span>/</span><span>" +
+          esc(m.name) +
+          '</span></div><div class="view-head"><div><p class="eyebrow">' +
+          (quizMode ? "专项题库" : "知识点模块") +
+          " / " +
+          String(m.count).padStart(2, "0") +
+          ' 个单元</p><h1 data-od-id="module-title">' +
+          esc(m.name) +
+          "</h1><p>" +
+          (quizMode
+            ? "按考试式题目组织训练，完成后即时查看解析。"
+            : "按问题组织学习内容，选择一个知识点进入详情。") +
+          '</p></div><div class="head-actions"><button class="btn" data-od-id="filter-button">筛选难度</button><button class="btn" data-od-id="sort-button">' +
+          (quizMode ? "未完成优先" : "最近学习") +
+          '</button></div></div><div class="summary-strip"><div class="summary-item"><div class="summary-label">' +
+          (quizMode ? "完成进度" : "模块进度") +
+          '</div><div class="summary-value num">38%</div></div><div class="summary-item"><div class="summary-label">' +
+          (quizMode ? "已完成题目" : "已掌握") +
+          '</div><div class="summary-value num">' +
+          Math.round(m.count * 0.38) +
+          " / " +
+          m.count +
+          '</div></div><div class="summary-item"><div class="summary-label">' +
+          (quizMode ? "连续学习" : "当前节奏") +
+          '</div><div class="summary-value">' +
+          (quizMode ? "6 天" : "稳定") +
+          '</div></div></div><div class="knowledge-list" data-od-id="knowledge-cards">' +
+          items
+            .map(
+              (t) =>
+                '<button class="knowledge-card" data-topic-card="' +
+                t.id +
+                '" data-module-card="' +
+                m.id +
+                '" data-od-id="knowledge-card-' +
+                t.id +
+                '"><div><h3>' +
+                esc(t.q) +
+                "</h3><p>" +
+                esc(t.summary) +
+                '</p></div><span class="tag depth">' +
+                esc(t.depth) +
+                '</span><span class="tag">' +
+                esc(t.rich) +
+                "</span>" +
+                dots(t.difficulty) +
+                "</button>",
+            )
+            .join("") +
+          "</div>";
+        $("#listView")
+          .querySelectorAll("[data-topic-card]")
+          .forEach((b) =>
+            b.addEventListener("click", () => openTopic(b.dataset.topicCard, b.dataset.moduleCard)),
+          );
+      }
+      function openTopic(topicId, moduleId) {
+        state.module = moduleId;
+        state.home = false;
+        const item = topicsFor(moduleId).find((t) => t.id === topicId) || topicsFor(moduleId)[0];
+        state.topic = item;
+        state.tab = state.domain === "quiz" ? "quiz" : "explain";
+        state.mode = "learn";
+        renderSidebar();
+        renderDetail();
+        $("#listView").classList.add("hidden");
+        $("#detailView").classList.add("visible");
+      }
+      function renderDetail() {
+        const t = state.topic;
+        const m = moduleInfo(state.module);
+        const quizMode = state.domain === "quiz";
+        const tab = (id, label) =>
+          '<button class="tab-btn ' +
+          (state.tab === id ? "active" : "") +
+          '" data-tab="' +
+          id +
+          '" data-od-id="tab-' +
+          id +
+          '">' +
+          label +
+          "</button>";
+        $("#detailView").innerHTML =
+          '<a class="back-link" href="#" data-od-id="back-to-list">← 返回知识点列表</a><div class="detail-title"><div><p class="eyebrow">' +
+          (quizMode ? "刷题详情 / " : "学习详情 / ") +
+          esc(m.name) +
+          '</p><h1 data-od-id="topic-title">' +
+          esc(t.q) +
+          '</h1><div class="meta-row">' +
+          dots(t.difficulty) +
+          '<span class="divider">·</span><span>深度：' +
+          esc(t.depth) +
+          '</span><span class="divider">·</span><span>丰富度：' +
+          esc(t.rich) +
+          '</span></div></div><button class="btn btn-primary" data-od-id="mark-learned">' +
+          (quizMode ? "完成本题" : "标记为已学") +
+          '</button></div><div class="tabs" data-od-id="detail-tabs">' +
+          tab("explain", "讲解") +
+          tab("quiz", "刷题") +
+          tab("related", "关联知识") +
+          tab("stats", "学习统计") +
+          '</div><div class="tab-panel ' +
+          (state.tab === "explain" ? "active" : "") +
+          '" data-panel="explain" data-od-id="panel-explain"><div class="reading-grid"><article class="reading-copy"><h2>先回答：' +
+          esc(t.q) +
+          "</h2>" +
+          t.content.map((p) => "<p>" + esc(p) + "</p>").join("") +
+          '<h3>用一句代码验证</h3><pre class="code-block">' +
+          esc(t.code) +
+          '</pre></article><aside class="diagram"><span class="diagram-label">流程图 / 学习路径</span><div class="diagram-flow">' +
+          t.mermaid
+            .map(
+              (x, i) =>
+                '<div class="flow-node ' +
+                (i === 1 ? "active" : "") +
+                '">' +
+                esc(x) +
+                "</div>" +
+                (i < t.mermaid.length - 1 ? '<span class="flow-arrow">↓</span>' : ""),
+            )
+            .join("") +
+          '</div></aside></div></div><div class="tab-panel ' +
+          (state.tab === "quiz" ? "active" : "") +
+          '" data-panel="quiz" data-od-id="panel-quiz"><div class="quiz-layout"><article class="quiz-card"><p class="eyebrow">即时练习 / 单选题</p><h2>' +
+          esc(t.quiz.question) +
+          '</h2><p>选择一个答案，系统会立即告诉你判断依据。</p><div class="options">' +
+          t.quiz.options
+            .map(
+              (o, i) =>
+                '<button class="option" data-option="' +
+                i +
+                '">' +
+                String.fromCharCode(65 + i) +
+                " · " +
+                esc(o) +
+                "</button>",
+            )
+            .join("") +
+          '</div><div class="feedback" id="feedback">尚未作答</div></article></div></div><div class="tab-panel ' +
+          (state.tab === "related" ? "active" : "") +
+          '" data-panel="related" data-od-id="panel-related"><div class="related-grid">' +
+          t.related
+            .map((r, i) =>
+              r[1]
+                ? '<div class="related-card available" data-od-id="related-card-' +
+                  i +
+                  '"><a href="#" data-related="' +
+                  i +
+                  '">' +
+                  esc(r[0]) +
+                  " <span>↗</span></a><small>已存在 · 可继续深入</small></div>"
+                : '<div class="related-card pending" data-od-id="related-card-' +
+                  i +
+                  '"><span class="pending-mark">⌑</span>' +
+                  esc(r[0]) +
+                  "<small>待学习 · 尚未建立内容</small></div>",
+            )
+            .join("") +
+          '</div></div><div class="tab-panel ' +
+          (state.tab === "stats" ? "active" : "") +
+          '" data-panel="stats" data-od-id="panel-stats"><div class="stats-grid"><div class="stat-card"><div class="stat-label">学习进度</div><div class="stat-value num">38%</div><div class="progress"><span style="width:38%"></span></div></div><div class="stat-card"><div class="stat-label">题目正确率</div><div class="ring"><strong>78%</strong></div></div><div class="stat-card"><div class="stat-label">已学知识点数</div><div class="stat-value num">12 / 45</div><span class="tag">持续积累</span></div><div class="stat-card"><div class="stat-label">记忆强度指数</div><div class="stars">★★★★<span style="color:var(--border)">★</span></div><p style="color:var(--muted);font-size:12px;margin-top:12px">最近一次复习：今天</p></div></div></div>';
+        enhanceQuiz(t);
+        const mark = $('#detailView [data-od-id="mark-learned"]');
+        mark.addEventListener("click", () => {
+          recordMastery(t.id, true);
+          mark.textContent = "已标记";
+          mark.disabled = true;
+        });
+        $("#detailView")
+          .querySelector('[data-od-id="back-to-list"]')
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            $("#detailView").classList.remove("visible");
+            $("#listView").classList.remove("hidden");
+          });
+        $("#detailView")
+          .querySelectorAll("[data-tab]")
+          .forEach((b) =>
+            b.addEventListener("click", () => {
+              state.tab = b.dataset.tab;
+              renderDetail();
+            }),
+          );
+        $("#detailView")
+          .querySelectorAll("[data-option]")
+          .forEach((b) =>
+            b.addEventListener("click", () => {
+              const choice = Number(b.dataset.option);
+              if (t.quiz.type === "multi") {
+                b.classList.toggle("selected");
+                return;
+              }
+              const opts = $("#detailView").querySelectorAll(".option");
+              opts.forEach((x, i) => {
+                x.classList.toggle("correct", i === t.quiz.answer);
+                x.classList.toggle("wrong", i === choice && choice !== t.quiz.answer);
+              });
+              showQuizResult(t, choice === t.quiz.answer);
+            }),
+          );
+        const submitMulti = $("#submit-multi");
+        if (submitMulti)
+          submitMulti.addEventListener("click", () => {
+            const chosen = [...$("#detailView").querySelectorAll(".option.selected")].map((x) =>
+              Number(x.dataset.option),
+            );
+            const correct =
+              chosen.length === t.quiz.answer.length &&
+              chosen.every((x) => t.quiz.answer.includes(x));
+            const opts = $("#detailView").querySelectorAll(".option");
+            opts.forEach((x, i) => {
+              x.classList.toggle("correct", t.quiz.answer.includes(i));
+              x.classList.toggle(
+                "wrong",
+                x.classList.contains("selected") && !t.quiz.answer.includes(i),
+              );
+            });
+            showQuizResult(t, correct);
+          });
+        const sortList = $("#detailView .sort-list");
+        if (sortList) {
+          sortList.querySelectorAll("[data-move]").forEach((b) =>
+            b.addEventListener("click", () => {
+              const row = b.closest(".sort-row");
+              const target =
+                b.dataset.move === "up" ? row.previousElementSibling : row.nextElementSibling;
+              if (!target) return;
+              if (b.dataset.move === "up") sortList.insertBefore(row, target);
+              else sortList.insertBefore(target, row);
+              [...sortList.children].forEach(
+                (x, i) =>
+                  (x.querySelector(".sort-index").textContent = (i + 1)
+                    .toString()
+                    .padStart(2, "0")),
+              );
+            }),
+          );
+          $("#submit-sort").addEventListener("click", () => {
+            const order = [...sortList.children].map((x) => Number(x.dataset.sortIndex));
+            showQuizResult(
+              t,
+              order.every((x, i) => x === t.quiz.answer[i]),
+            );
+          });
+        }
+      }
+      document.querySelectorAll("[data-domain]").forEach((b) =>
+        b.addEventListener("click", () => {
+          state.domain = b.dataset.domain;
+          state.module = null;
+          state.topic = null;
+          state.tab = "explain";
+          state.home = false;
+          document
+            .querySelectorAll("[data-domain],[data-home]")
+            .forEach((x) => x.classList.toggle("active", x === b));
+          $("#detailView").classList.remove("visible");
+          $("#listView").classList.remove("hidden");
+          renderSidebar();
+          renderList();
+        }),
+      );
+      $("[data-home]").addEventListener("click", () => {
+        state.home = true;
+        state.module = null;
+        state.topic = null;
+        state.tab = "explain";
+        document
+          .querySelectorAll("[data-domain],[data-home]")
+          .forEach((x) => x.classList.toggle("active", x.hasAttribute("data-home")));
+        $("#detailView").classList.remove("visible");
+        $("#listView").classList.remove("hidden");
+        renderSidebar();
+        renderList();
+      });
+      $("[data-plan-open]").addEventListener("click", openPlan);
+      $("[data-plan-close]").addEventListener("click", closePlan);
+      $("[data-plan-save]").addEventListener("click", savePlan);
+      $("#planOverlay").addEventListener("click", (event) => {
+        if (event.target.id === "planOverlay") closePlan();
+      });
+      document.querySelectorAll("[data-plan-range]").forEach((button) =>
+        button.addEventListener("click", () => {
+          planState.range = button.dataset.planRange;
+          document
+            .querySelectorAll("[data-plan-range]")
+            .forEach((item) => item.classList.toggle("active", item === button));
+          renderPlan();
+        }),
+      );
+      document.querySelectorAll("[data-mastery-filter]").forEach((button) =>
+        button.addEventListener("click", () => {
+          const level = Number(button.dataset.masteryFilter);
+          state.masteryFilter = state.masteryFilter === level ? null : level;
+          syncMasteryFilter();
+          renderSidebar();
+        }),
+      );
+      const baseRenderList = renderList;
+      renderList = function () {
+        if (state.home || !state.module) {
+          renderOverview();
+          return;
+        }
+        baseRenderList();
+      };
+      const explainObserver = new MutationObserver(() => {
+        const panel = $("#panel-explain");
+        if (panel && !panel.dataset.enhanced && state.topic) {
+          panel.dataset.enhanced = "1";
+          enhanceExplain(state.topic);
+        }
+      });
+      explainObserver.observe($("#detailView"), { childList: true });
+      renderSidebar();
+      renderList();
+    </script>
+  </body>
+</html>

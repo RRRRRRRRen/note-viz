@@ -10,98 +10,132 @@ export default function Sidebar() {
   const domain = domainSlug ? domainTree(domainSlug) : undefined;
   if (!domain) return null;
 
-  const notePath = `/${segs.join("/")}`;
+  const notePath = `/note/${segs.slice(0, 4).join("/")}`;
 
   return (
-    <aside className="w-64 shrink-0 overflow-y-auto border-r border-border px-3 py-4">
-      {domain.techs.map((tech) => {
-        const techActive = segs[1] === tech.slug;
-        return (
-          <section key={tech.slug} className="mb-4">
-            <Link
-              to={`/${domain.slug}/${tech.slug}`}
-              className="inline-block rounded-full px-3 py-1 text-xs font-medium"
-              style={{
-                backgroundColor: techActive ? `${domain.color}1a` : undefined,
-                color: techActive ? domain.color : "var(--color-muted-foreground)",
-                border: `1px solid ${techActive ? domain.color : "var(--color-border)"}`,
-              }}
-            >
-              {tech.label}
-            </Link>
-            <div className="mt-2 space-y-1">
-              {tech.areas.map((area) => {
-                const areaActive = segs[2] === area.slug;
-                return (
-                  <AreaGroup
-                    key={area.slug}
-                    label={area.label}
-                    domainSlug={domain.slug}
-                    techSlug={tech.slug}
-                    areaSlug={area.slug}
-                    active={areaActive}
-                    notePath={notePath}
-                    notes={area.notes.map((n) => ({
-                      path: n.path,
-                      title: n.meta.title,
-                    }))}
-                  />
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
+    <aside className="sticky top-14 h-[calc(100vh-56px)] w-72 shrink-0 overflow-y-auto border-r border-border px-4 py-6">
+      <div className="mb-5 px-2 text-[10px] tracking-[0.1em] text-muted uppercase meta-mono">
+        知识导航 / {domain.label}
+      </div>
+      {domain.techs.map((tech) => (
+        <TechSection
+          key={tech.slug}
+          domainSlug={domain.slug}
+          color={domain.color}
+          tech={tech}
+          segs={segs}
+          notePath={notePath}
+        />
+      ))}
     </aside>
   );
 }
 
+import type { TechNode } from "@/lib/types";
+
+function TechSection(props: {
+  domainSlug: string;
+  color: string;
+  tech: TechNode;
+  segs: string[];
+  notePath: string;
+}) {
+  const { domainSlug, color, tech, segs, notePath } = props;
+  const techActive = segs[1] === tech.slug;
+  const [open, setOpen] = useState(techActive);
+
+  return (
+    <div className="mb-3">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between px-2 py-2 text-[11px] font-bold tracking-[0.1em] text-foreground uppercase"
+      >
+        <Link
+          to={`/${domainSlug}/${tech.slug}`}
+          onClick={(e) => e.stopPropagation()}
+          className="hover:text-accent"
+        >
+          {tech.label}
+        </Link>
+        <ChevronRight
+          size={14}
+          className={`text-muted transition-transform ${open ? "rotate-90" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="mb-3 space-y-2">
+          {tech.areas.map((area) => (
+            <AreaGroup
+              key={area.slug}
+              domainSlug={domainSlug}
+              techSlug={tech.slug}
+              color={color}
+              area={area}
+              segs={segs}
+              notePath={notePath}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AreaGroup(props: {
-  label: string;
   domainSlug: string;
   techSlug: string;
-  areaSlug: string;
-  active: boolean;
+  color: string;
+  area: { slug: string; label: string; notes: { path: string; meta: { title: string } }[] };
+  segs: string[];
   notePath: string;
-  notes: { path: string; title: string }[];
 }) {
-  const [open, setOpen] = useState(
-    props.active || props.notes.some((n) => n.path === props.notePath),
-  );
+  const { domainSlug, techSlug, color, area, segs, notePath } = props;
+  const areaActive = segs[2] === area.slug;
+  const [open, setOpen] = useState(areaActive || area.notes.some((n) => n.path === notePath));
+
   return (
     <div>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`flex w-full items-center gap-1 rounded px-2 py-1 text-left text-sm ${
-          props.active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+        aria-expanded={open}
+        className={`flex min-h-[38px] w-full items-center gap-2 rounded-md border border-transparent px-2.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
+          areaActive ? "text-foreground" : "text-muted hover:text-foreground"
         }`}
       >
         <ChevronRight
           size={12}
-          className={`transition-transform ${open ? "rotate-90" : undefined}`}
+          className={`shrink-0 text-muted transition-transform ${open ? "rotate-90" : ""}`}
         />
-        {props.label}
+        <span className="truncate">{area.label}</span>
+        <span className="ml-auto rounded border border-border px-1.5 py-px text-[10px] text-muted meta-mono">
+          {area.notes.length}
+        </span>
       </button>
       {open && (
-        <div className="ml-3 border-l border-border pl-2">
+        <div className="mt-0.5 mb-1 ml-4 border-l border-border pl-2">
           <Link
-            to={`/${props.domainSlug}/${props.techSlug}/${props.areaSlug}`}
-            className="block rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+            to={`/${domainSlug}/${techSlug}/${area.slug}`}
+            className={`block rounded px-2 py-1 text-xs text-muted hover:text-foreground ${
+              areaActive && notePath === `/note/${segs.slice(0, 4).join("/")}` ? "" : ""
+            }`}
           >
-            全部笔记
+            <span className="text-accent">›</span> 模块总览
           </Link>
-          {props.notes.map((n) => (
+          {area.notes.map((n) => (
             <Link
               key={n.path}
               to={n.path}
-              className={`block truncate rounded px-2 py-1 text-xs hover:text-foreground ${
-                n.path === props.notePath
-                  ? "bg-accent/10 font-medium text-accent"
-                  : "text-muted-foreground"
+              className={`flex items-center gap-2 border-l border-border px-2 py-1 text-xs ${
+                n.path === notePath
+                  ? "-ml-px border-l-2 font-medium text-foreground"
+                  : "text-muted hover:text-foreground"
               }`}
+              style={n.path === notePath ? { borderColor: color } : undefined}
             >
-              {n.title}
+              <span className="truncate">{n.meta.title}</span>
             </Link>
           ))}
         </div>
