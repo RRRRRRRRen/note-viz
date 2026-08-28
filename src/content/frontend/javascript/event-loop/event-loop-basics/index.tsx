@@ -182,9 +182,6 @@ console.log(2);
       </Section>
 
       <Section title="事件循环全景图">
-        <p className="mb-2 text-sm text-muted">
-          图被截断时，可拖拽移动、Ctrl/⌘+滚轮缩放，或用右上角按钮复位：
-        </p>
         <EventLoopFlow />
       </Section>
 
@@ -220,23 +217,23 @@ console.log(2);
 
 function EventLoopFlow() {
   const nodes = [
-    { id: "sync", label: "执行同步代码（厨师做菜）", x: 130, y: 30, color: "#f59e0b" },
-    { id: "micro", label: "清空微任务队列（处理补话）", x: 130, y: 110, color: "#8b5cf6" },
-    { id: "render", label: "渲染检查（可选）rAF", x: 30, y: 190, color: "#10b981" },
-    { id: "macro", label: "取 1 个宏任务（拿下一张单）", x: 230, y: 190, color: "#3b82f6" },
+    { id: "sync", label: "执行同步代码（厨师做菜）", x: 160, y: 34, color: "#f59e0b" },
+    { id: "micro", label: "清空微任务队列（处理补话）", x: 160, y: 116, color: "#8b5cf6" },
+    { id: "render", label: "渲染检查（可选）rAF", x: 50, y: 198, color: "#10b981" },
+    { id: "macro", label: "取 1 个宏任务（拿下一张单）", x: 270, y: 198, color: "#3b82f6" },
   ];
   return (
     <PanZoomCanvas>
-      <svg viewBox="0 0 360 240" width={520} height={347} className="block">
+      <svg viewBox="0 0 380 252" width={684} height={454} className="block">
         {nodes.map((n) => (
           <g key={n.id}>
             <motion.rect
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              x={n.x - 85}
+              x={n.x - 105}
               y={n.y - 18}
-              width={170}
+              width={210}
               height={36}
               rx={8}
               fill={`${n.color}1a`}
@@ -253,41 +250,41 @@ function EventLoopFlow() {
           </marker>
         </defs>
         <line
-          x1={130}
-          y1={48}
-          x2={130}
-          y2={88}
+          x1={160}
+          y1={52}
+          x2={160}
+          y2={94}
           stroke="#888"
           strokeWidth={1.2}
           markerEnd="url(#arrow)"
         />
         <line
-          x1={80}
-          y1={128}
-          x2={50}
-          y2={168}
+          x1={105}
+          y1={134}
+          x2={70}
+          y2={176}
           stroke="#888"
           strokeWidth={1.2}
           markerEnd="url(#arrow)"
         />
         <line
-          x1={180}
-          y1={128}
-          x2={215}
-          y2={168}
+          x1={215}
+          y1={134}
+          x2={250}
+          y2={176}
           stroke="#888"
           strokeWidth={1.2}
           markerEnd="url(#arrow)"
         />
         <path
-          d="M 30 208 C 30 235, 320 235, 255 200"
+          d="M 50 216 C 50 244, 340 244, 292 212"
           fill="none"
           stroke="#888"
           strokeWidth={1.2}
           strokeDasharray="4 3"
           markerEnd="url(#arrow)"
         />
-        <text x={140} y={232} fontSize={10} fill="#888">
+        <text x={160} y={240} fontSize={10} fill="#888">
           循环
         </text>
       </svg>

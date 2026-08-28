@@ -36,14 +36,14 @@ import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "
 
 可视化组件选型：
 
-| 组件 | 用途 | 参数 |
-|---|---|---|
-| `<CompareTable left={...} right={...} />` | 两个概念的左右对照（var vs let、微任务 vs 宏任务） | `{title, points[], color?}` × 2 |
-| `<Timeline steps={[...]} label? />` | 执行顺序/输出顺序/流转过程 | `{label, sub?, color?}[]` |
-| `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 ≤3 个 | keyword + children, color? |
-| `<BarChart items={[...]} label? title? />` | 相对开销/数量级对比（给直觉，勿当精确值） | `{label, value, color?, suffix?}[]` |
-| `<DoDont dont={...} do={...} label? />` | 错误写法 vs 推荐写法的并排代码对照 | `{code, note}` × 2 |
-| `<PanZoomCanvas>` | 包住自绘 SVG 流程图，防截断 | children 为 svg |
+| 组件                                          | 用途                                               | 参数                                |
+| --------------------------------------------- | -------------------------------------------------- | ----------------------------------- |
+| `<CompareTable left={...} right={...} />`     | 两个概念的左右对照（var vs let、微任务 vs 宏任务） | `{title, points[], color?}` × 2     |
+| `<Timeline steps={[...]} label? />`           | 执行顺序/输出顺序/流转过程                         | `{label, sub?, color?}[]`           |
+| `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 ≤3 个                         | keyword + children, color?          |
+| `<BarChart items={[...]} label? title? />`    | 相对开销/数量级对比（给直觉，勿当精确值）          | `{label, value, color?, suffix?}[]` |
+| `<DoDont dont={...} do={...} label? />`       | 错误写法 vs 推荐写法的并排代码对照                 | `{code, note}` × 2                  |
+| `<PanZoomCanvas>`                             | 包住自绘 SVG 流程图，防截断                        | children 为 svg                     |
 
 产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（五字段：title ≤20 字 / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，私有子组件放同文件底部（超 150 行拆到同目录）。
 
@@ -55,12 +55,12 @@ import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "
 2. **询问两个问题**：① 大纲是否需要增删调整？② 对该主题的熟悉程度：`入门` / `用过但不深` / `熟悉` / `深入过源码`。
 3. **按熟悉度动态调整详略**：
 
-| 熟悉度 | 类比 | 基础概念段 | 机制深拆 | 边界陷阱 | 追问链 |
-|---|---|---|---|---|---|
-| 入门 | 每个概念都配 | 详细，从零讲起 | 标准深度 | 标准覆盖 | 3-4 条偏基础 |
-| 用过但不深 | 核心机制配 | 简短带过（默认） | 标准（默认） | 详细展开 | 4-5 条 |
-| 熟悉 | 仅反直觉处配 | 跳过 | 加深（引擎/规范层面） | 详细展开 | 5-6 条偏刁钻 |
-| 深入过源码 | 不需要 | 跳过 | 直入规范条文与实现 | 结合实际案例 | 6 条+ 硬核 |
+| 熟悉度     | 类比         | 基础概念段       | 机制深拆              | 边界陷阱     | 追问链       |
+| ---------- | ------------ | ---------------- | --------------------- | ------------ | ------------ |
+| 入门       | 每个概念都配 | 详细，从零讲起   | 标准深度              | 标准覆盖     | 3-4 条偏基础 |
+| 用过但不深 | 核心机制配   | 简短带过（默认） | 标准（默认）          | 详细展开     | 4-5 条       |
+| 熟悉       | 仅反直觉处配 | 跳过             | 加深（引擎/规范层面） | 详细展开     | 5-6 条偏刁钻 |
+| 深入过源码 | 不需要       | 跳过             | 直入规范条文与实现    | 结合实际案例 | 6 条+ 硬核   |
 
 4. 大纲有修改意见时先改提案再确认；**调整已有笔记**同样走此流程（给出加深/精简/新增的改动计划 → 确认 → 动笔）。
 
@@ -77,11 +77,11 @@ import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "
 
 ## 视觉规范（三层边界）
 
-| 层 | 包装 | 组件 |
-|---|---|---|
-| 正文层 | 无边框无背景，直接落在页面上 | Prose / Section 标题 |
+| 层       | 包装                                            | 组件                                                                           |
+| -------- | ----------------------------------------------- | ------------------------------------------------------------------------------ |
+| 正文层   | 无边框无背景，直接落在页面上                    | Prose / Section 标题                                                           |
 | 可视化层 | VizBlock 统一包壳：边框 + 彩色标题栏 + 圆点标签 | Timeline / CompareTable / BarChart / DoDont / MemoryCard（**已内置，直接用**） |
-| 演示层 | 自带运行控制（播放/单步/重置 + 日志面板） | 模拟器 / LogPanel / PanZoomCanvas |
+| 演示层   | 自带运行控制（播放/单步/重置 + 日志面板）       | 模拟器 / LogPanel / PanZoomCanvas                                              |
 
 - **禁止双重边框**：viz 组件已内置 VizBlock 包壳，不要再套 border div
 - 自定义可视化（无现成组件）用 `<VizBlock label="示意 / diagram" color="#8b5cf6">` 包壳；label 规范：中文短标签 + 空格 + 英文斜杠小写
@@ -89,10 +89,23 @@ import { VizBlock, CompareTable, Timeline, MemoryCard, BarChart, DoDont } from "
 - **配色语义**：蓝 `#1677ff` 通用强调 / 紫 `#8b5cf6` 对比左·微任务 / 橙 `#f59e0b` 调用栈·同步·警告 / 绿 `#3fb950` 正确·渲染 / 红 `#f85149` 错误·危险
 - **红线**：正文不加 bg 容器；类比不加框（是叙事的一部分）；markdown 语法禁用
 
+## 内容纯净（硬性）
+
+笔记是**面向所有读者的出版物**，不是对话记录。禁止出现：
+
+- 与用户/助手对话过程的痕迹（"你之前说的""按你的要求改""图被截断时"这类修复说明、实现备注）
+- 指代本次写作任务的元话语（"本文将演示""下面我们来看"可以，"接下来我要生成"不行）
+- 工具操作说明（组件怎么缩放拖拽这类 UI 常识，组件自带提示）
+- 未经验证的个人推断冒充事实
+
+自查方法：逐段问"这句是对读者说的，还是对对话方说的？"——对对话方说的，删。
+
 ## 质量自查（提交前）
 
 - [ ] meta 五字段齐全，title ≤20 字
 - [ ] 大纲层级：Section/Subsection 有层次（不是一马平川的 h2）
 - [ ] 可视化块 ≥4 且分布均匀（无连续两屏纯文字）
 - [ ] 每个输出题都有「运行结果解读」
+- [ ] 内容纯净：无对话痕迹、无任务元话语、无工具操作说明
+- [ ] SVG 流程图：所有节点/连线在 viewBox 范围内（不截断），PanZoomCanvas 支持全屏
 - [ ] `pnpm build` 通过（meta 校验是构建时强制的）
