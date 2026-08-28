@@ -94,6 +94,14 @@ export function QA({ q, a, intent, bonus, depth = 3 }: QAItem) {
           <p>
             <strong className="text-accent">答：</strong>
             {a}
+            {bonus && (
+              <>
+                {" "}
+                <span className="text-muted">（</span>
+                {bonus}
+                <span className="text-muted">）</span>
+              </>
+            )}
           </p>
           {bonus && (
             <p className="rounded-md border border-success/30 bg-success/5 px-3 py-2 text-xs leading-relaxed">
