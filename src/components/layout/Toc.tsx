@@ -107,20 +107,42 @@ export function Toc({ containerRef, resetKey }: TocProps) {
     };
   }, [items, containerRef]);
 
-  // 活动项变化时，把大纲滚动到可见位置
+  // 活动项变化时，把大纲滚动到可见位置（仅滚大纲自己，不用 scrollIntoView 避免波及祖先）
   useEffect(() => {
     if (!activeId) return;
     const nav = document.getElementById("toc-nav");
-    nav?.querySelector(`[data-toc-id="${CSS.escape(activeId)}"]`)?.scrollIntoView({
-      block: "nearest",
-    });
+    const el = nav?.querySelector(`[data-toc-id="${CSS.escape(activeId)}"]`) as HTMLElement | null;
+    const box = nav;
+    if (!el || !box) return;
+    const elTop = el.offsetTop - box.offsetTop;
+    if (elTop < box.scrollTop) {
+      box.scrollTop = elTop;
+    } else if (elTop + el.offsetHeight > box.scrollTop + box.clientHeight) {
+      box.scrollTop = elTop + el.offsetHeight - box.clientHeight;
+    }
   }, [activeId, items]);
 
   if (items.length === 0) return null;
 
-  const jump = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  // 计算滚动容器（内容列），把目标小节滚到「阅读线」位置。
+  // 不用 scrollIntoView：它会连带滚动 html/body 等被裁剪的祖先，把固定顶栏卷出视口。
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id);
+    const scroller =
+      containerRef.current && containerRef.current.scrollHeight > containerRef.current.clientHeight
+        ? containerRef.current
+        : (containerRef.current?.closest("main") as HTMLElement | null);
+    if (!target || !scroller) return;
+    const lineOffset = scroller.clientHeight / 3;
+    const top =
+      target.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      lineOffset;
+    scroller.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   };
+
+  const jump = scrollToSection;
 
   return (
     <nav id="toc-nav" aria-label="大纲" className="h-full w-full overflow-y-auto py-7 pl-6 pr-2">

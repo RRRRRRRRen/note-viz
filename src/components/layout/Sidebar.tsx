@@ -98,11 +98,19 @@ function AreaGroup(props: {
     if (areaActive || containsCurrent) setOpen(true);
   }, [areaActive, containsCurrent]);
 
-  // 当前笔记滚动到侧栏可视区
+  // 当前笔记滚动到侧栏可视区（只滚侧栏盒子，不用 scrollIntoView 避免波及被裁剪的祖先）
   useEffect(() => {
     if (notePath && activeRef.current) {
       const timer = setTimeout(() => {
-        activeRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        const el = activeRef.current;
+        const box = el?.closest("aside");
+        if (!el || !box) return;
+        const elTop = el.offsetTop - box.offsetTop;
+        if (elTop < box.scrollTop) {
+          box.scrollTop = elTop;
+        } else if (elTop + el.offsetHeight > box.scrollTop + box.clientHeight) {
+          box.scrollTop = elTop + el.offsetHeight - box.clientHeight;
+        }
       }, 50);
       return () => clearTimeout(timer);
     }
