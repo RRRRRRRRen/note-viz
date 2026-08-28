@@ -1,21 +1,20 @@
 import { useState } from "react";
+import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
+import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
 export default function Note() {
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border-l-4 border-accent bg-accent/5 p-4">
-        <h2 className="mb-1 font-semibold">结论先行</h2>
-        <p className="text-sm leading-relaxed">
-          生产速度 &gt; 消费速度时，数据会在内存里无限堆积。
-          <strong>背压（backpressure）</strong>就是下游告诉上游"先别写了"的机制—— Node 流通过{" "}
-          <code>write() === false</code> 与 <code>drain</code> 事件实现。
-        </p>
-      </section>
+    <NoteShell>
+      <Conclusion>
+        生产速度 &gt; 消费速度时，数据会在内存里无限堆积。
+        <strong>背压（backpressure）</strong>
+        就是下游告诉上游"先别写了"的机制——Node 流通过 <code>write() === false</code> 与{" "}
+        <code>drain</code> 事件实现。
+      </Conclusion>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">逐段拆解</h2>
-        <div className="space-y-4 text-sm leading-relaxed">
+      <Section title="逐段拆解">
+        <Prose>
           <p>
             <strong>1. 两种模式</strong>
             ：暂停模式下要主动 <code>read()</code> 拉数据；流动模式下数据自动推过来。{" "}
@@ -28,10 +27,10 @@ export default function Note() {
           </p>
           <p>
             <strong>3. 正确姿势</strong>
-            ：永远用 <code>pipeline</code> 而不是手写 <code>on('data')</code>——
-            它自动处理背压、错误传播和资源清理。
+            ：永远用 <code>pipeline</code> 而不是手写 <code>on('data')</code>
+            ——它自动处理背压、错误传播和资源清理。
           </p>
-        </div>
+        </Prose>
         <CodeBlock
           code={`// 错误：无视背压，文件多大内存涨多快
 readable.on('data', chunk => writable.write(chunk));
@@ -46,147 +45,111 @@ await pipeline(
   fs.createWriteStream('big.log.gz'),
 );`}
         />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">交互演示</h2>
+      <Section title="交互演示">
         <BackpressureDemo />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">经典追问链</h2>
-        <div className="space-y-3 text-sm leading-relaxed">
-          <QA
-            q="write() 返回 false 后继续 write 会怎样？"
-            a="不会报错，数据继续进缓冲区并撑大内存——这正是很多手写流代码 OOM 的原因。返回 false 后应暂停生产，等 drain。"
-          />
-          <QA
-            q="pipe 和 pipeline 的区别？"
-            a="pipe 不传播上游错误、出错后不销毁流、不清理中间流，容易留下悬挂句柄。pipeline 一次性解决错误传播与清理，推荐永远用它。"
-          />
-          <QA
-            q="objectMode 是什么？"
-            a="让流以 JS 对象为数据单元而不是 Buffer，highWaterMark 的含义从字节变成对象个数。适合逐行解析、数据库游标等场景。"
-          />
-          <QA
-            q="Web 流（ReadableStream）和 Node 流怎么互转？"
-            a="Node 17+ 提供 Readable.fromWeb() / Readable.toWeb()。fetch 的 body 就是 Web 流，可用 Readable.fromWeb(res.body) 无缝接入 pipeline。"
-          />
-        </div>
-      </section>
-    </div>
+      <Section title="经典追问链">
+        <QAChain
+          items={[
+            {
+              q: "write() 返回 false 后继续 write 会怎样？",
+              a: "不会报错，数据继续进缓冲区并撑大内存——这正是很多手写流代码 OOM 的原因。返回 false 后应暂停生产，等 drain。",
+            },
+            {
+              q: "pipe 和 pipeline 的区别？",
+              a: "pipe 不传播上游错误、出错后不销毁流、不清理中间流，容易留下悬挂句柄。pipeline 一次性解决错误传播与清理，推荐永远用它。",
+            },
+            {
+              q: "objectMode 是什么？",
+              a: "让流以 JS 对象为数据单元而不是 Buffer，highWaterMark 的含义从字节变成对象个数。适合逐行解析、数据库游标等场景。",
+            },
+            {
+              q: "Web 流（ReadableStream）和 Node 流怎么互转？",
+              a: "Node 17+ 提供 Readable.fromWeb() / Readable.toWeb()。fetch 的 body 就是 Web 流，可用 Readable.fromWeb(res.body) 无缝接入 pipeline。",
+            },
+          ]}
+        />
+      </Section>
+    </NoteShell>
   );
 }
 
-function QA({ q, a }: { q: string; a: string }) {
-  return (
-    <div className="rounded-lg border border-border p-4">
-      <div className="mb-1 font-medium">Q：{q}</div>
-      <div className="text-muted-foreground">A：{a}</div>
-    </div>
-  );
-}
+const HIGH_WATER_MARK = 64;
 
 function BackpressureDemo() {
-  const [buffer, setBuffer] = useState<number>(0);
+  const [buffer, setBuffer] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
-  const hwm = 64;
   const [running, setRunning] = useState(false);
-  const [ignore, setIgnore] = useState(false);
 
-  const start = () => {
+  const start = (ignoreBackpressure: boolean) => {
     setRunning(true);
     let b = 0;
     const timer = setInterval(() => {
       b += 16;
-      if (ignore || b <= hwm) {
+      if (!ignoreBackpressure && b > HIGH_WATER_MARK) {
+        // 遵守背压：暂停写入，等 drain 消费到阈值以下再继续
+        setLogs((l) => [...l.slice(-4), `达到 highWaterMark，暂停写入，等待 drain`]);
+        b -= 24;
+        if (b < 0) b = 0;
         setBuffer(b);
-        if (ignore && b > hwm) {
+        if (b === 0) {
+          setLogs((l) => [...l.slice(-4), "drain 触发，恢复写入"]);
+        }
+      } else {
+        if (ignoreBackpressure && b > HIGH_WATER_MARK) {
           setLogs((l) => [...l.slice(-4), `write() 返回 false 仍继续写 → 缓冲区 ${b}KB 持续膨胀`]);
         }
-        if (!ignore && b > hwm) {
-          setLogs((l) => [...l.slice(-4), `达到 highWaterMark(${hwm}KB)，暂停写入，等待 drain`]);
-          b = hwm;
-          setBuffer(b);
-        }
-      } else if (!ignore) {
-        b -= 24;
         setBuffer(b);
-        setLogs((l) => [...l.slice(-4), `drain 事件触发，恢复写入`]);
-      } else {
-        b -= 24;
-        setBuffer(b);
+        b -= 8;
       }
-      if (b <= 0) {
+      if (b <= 0 && (!ignoreBackpressure || b <= 0)) {
         clearInterval(timer);
+        setBuffer(0);
         setRunning(false);
         setLogs((l) => [...l.slice(-4), "消费完毕"]);
       }
     }, 300);
   };
 
+  const reset = () => {
+    setLogs([]);
+    setBuffer(0);
+    setRunning(false);
+  };
+
   return (
     <div className="my-4 overflow-hidden rounded-lg border border-border bg-card">
-      <div className="border-b border-border bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">
+      <div className="border-b border-border bg-surface px-4 py-2 text-xs font-medium text-muted">
         背压模拟器：对比遵守与忽略 highWaterMark 的内存表现
       </div>
       <div className="p-4">
         <div className="mb-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={running}
-            onClick={() => {
-              setIgnore(false);
-              start();
-            }}
-            className="rounded bg-accent px-3 py-1.5 text-xs text-accent-foreground disabled:opacity-40"
-          >
+          <DemoButton onClick={() => start(false)} disabled={running}>
             正确：等待 drain
-          </button>
-          <button
-            type="button"
-            disabled={running}
-            onClick={() => {
-              setIgnore(true);
-              start();
-            }}
-            className="rounded border border-danger px-3 py-1.5 text-xs text-danger disabled:opacity-40"
-          >
+          </DemoButton>
+          <DemoButton onClick={() => start(true)} variant="danger" disabled={running}>
             错误：无视返回值
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setLogs([]);
-              setBuffer(0);
-              setRunning(false);
-            }}
-            className="ml-auto rounded border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            重置
-          </button>
+          </DemoButton>
+          <ResetButton onClick={reset} />
         </div>
         <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-surface-2">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
-              buffer > hwm ? "bg-danger" : "bg-accent"
+              buffer > HIGH_WATER_MARK ? "bg-danger" : "bg-accent"
             }`}
             style={{ width: `${Math.min(buffer / 1.28, 100)}%` }}
           />
         </div>
-        <div className="mb-3 flex justify-between text-[10px] text-muted meta-mono">
+        <div className="mb-1 flex justify-between text-[10px] text-muted meta-mono">
           <span>
-            缓冲区 {buffer}KB / highWaterMark {hwm}KB
+            缓冲区 {buffer}KB / highWaterMark {HIGH_WATER_MARK}KB
           </span>
-          <span>{buffer > hwm ? "已超阈值" : "正常"}</span>
+          <span>{buffer > HIGH_WATER_MARK ? "已超阈值" : "正常"}</span>
         </div>
-        <div className="min-h-16 rounded bg-[#0d1117] p-2 font-mono text-xs text-green-400">
-          {logs.length === 0 ? (
-            <span className="text-gray-500">// 选择一种模式开始模拟</span>
-          ) : (
-            logs.map((l, i) => <div key={i}>{l}</div>)
-          )}
-        </div>
+        <LogPanel logs={logs} placeholder="// 选择一种模式开始模拟" className="min-h-16" />
       </div>
     </div>
   );

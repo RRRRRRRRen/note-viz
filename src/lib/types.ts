@@ -25,28 +25,3 @@ export interface TaxonomyNode {
   icon?: string;
   children?: Record<string, TaxonomyNode>;
 }
-
-export interface DomainNode {
-  slug: string;
-  label: string;
-  color: string;
-  icon: string;
-  techs: TechNode[];
-}
-
-export interface TechNode {
-  slug: string;
-  label: string;
-  areas: AreaNode[];
-}
-
-export interface AreaNode {
-  slug: string;
-  label: string;
-  notes: NoteEntry[];
-}
-
-export type ContentPath =
-  | { kind: "root" }
-  | { kind: "category"; slug: string[]; label: string; color?: string; icon?: string }
-  | { kind: "note"; note: NoteEntry };

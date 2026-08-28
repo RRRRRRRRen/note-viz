@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { domainTree } from "@/lib/registry";
+import type { TechTree } from "@/lib/registry";
 
 export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   const location = useLocation();
@@ -35,9 +36,7 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   );
 }
 
-import type { TechNode } from "@/lib/types";
-
-function TechSection(props: { color: string; tech: TechNode; segs: string[]; notePath: string }) {
+function TechSection(props: { color: string; tech: TechTree; segs: string[]; notePath: string }) {
   const { color, tech, segs, notePath } = props;
   const techSlug = segs[0] === "note" ? segs[2] : segs[1];
   const techActive = techSlug === tech.slug;
@@ -72,7 +71,7 @@ function TechSection(props: { color: string; tech: TechNode; segs: string[]; not
       </button>
       {open && (
         <div className="mb-3 space-y-2">
-          {tech.areas.map((area) => (
+          {tech.areas.map((area: TechTree["areas"][number]) => (
             <AreaGroup key={area.slug} color={color} area={area} segs={segs} notePath={notePath} />
           ))}
         </div>

@@ -1,22 +1,19 @@
 import { motion } from "framer-motion";
-import EventLoopSimulator from "./EventLoopSimulator";
+import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
+import EventLoopSimulator from "./EventLoopSimulator";
 
 export default function Note() {
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border-l-4 border-accent bg-accent/5 p-4">
-        <h2 className="mb-1 font-semibold">结论先行</h2>
-        <p className="text-sm leading-relaxed">
-          JS 单线程。同步代码在调用栈执行；栈清空后<strong>先清空全部微任务</strong>
-          （Promise.then、queueMicrotask、MutationObserver），再取<strong>一个宏任务</strong>
-          （setTimeout、I/O、UI 渲染等），如此循环。微任务优先级永远高于下一个宏任务。
-        </p>
-      </section>
+    <NoteShell>
+      <Conclusion>
+        JS 单线程。同步代码在调用栈执行；栈清空后<strong>先清空全部微任务</strong>
+        （Promise.then、queueMicrotask、MutationObserver），再取<strong>一个宏任务</strong>
+        （setTimeout、I/O、UI 渲染等），如此循环。微任务优先级永远高于下一个宏任务。
+      </Conclusion>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">逐段拆解</h2>
-        <div className="space-y-4 text-sm leading-relaxed">
+      <Section title="逐段拆解">
+        <Prose>
           <p>
             <strong>1. 调用栈（Call Stack）</strong>
             ：函数调用形成栈帧，后进先出。栈空是事件循环推进的唯一信号。
@@ -24,8 +21,7 @@ export default function Note() {
           <p>
             <strong>2. 微任务（Microtask）</strong>
             ：Promise.then/catch/finally、queueMicrotask、await 之后的代码。当前宏任务结束后
-            <strong>立即、全部、递归地</strong>
-            清空——执行微任务过程中产生的新微任务也会在本轮处理。
+            <strong>立即、全部、递归地</strong>清空——执行微任务过程中产生的新微任务也会在本轮处理。
           </p>
           <p>
             <strong>3. 宏任务（Macrotask）</strong>
@@ -37,11 +33,10 @@ export default function Note() {
             ：浏览器在每轮宏任务结束后、微任务清空后决定是否渲染（requestAnimationFrame
             在渲染前调用），并非每轮都渲染。
           </p>
-        </div>
-      </section>
+        </Prose>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">经典输出题</h2>
+      <Section title="经典输出题">
         <CodeBlock
           code={`console.log(1);
 
@@ -56,58 +51,48 @@ setTimeout(() => console.log("B"), 0);
 console.log(2);
 // 输出：1 → executor 同步执行 → 2 → 3 → A → B`}
         />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted">
           关键点：Promise 的 executor 是同步的；setTimeout(...,0)
           不代表立即执行，只是"下一轮宏任务"。
         </p>
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="text-xl font-semibold">交互模拟器</h2>
-        <p className="mb-2 text-sm text-muted-foreground">点击播放，观察三个队列如何随步骤流转：</p>
+      <Section title="交互模拟器">
+        <p className="mb-2 text-sm text-muted">点击播放，观察三个队列如何随步骤流转：</p>
         <EventLoopSimulator />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">事件循环全景图</h2>
+      <Section title="事件循环全景图">
         <EventLoopFlow />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">经典追问链</h2>
-        <div className="space-y-3 text-sm leading-relaxed">
-          <QA
-            q="Promise.then 和 queueMicrotask 谁先？"
-            a="同为微任务，严格按入队顺序（FIFO）执行，没有谁更优先。"
-          />
-          <QA
-            q="await 下面的代码在什么时候执行？"
-            a="await 右侧表达式同步求值，之后函数挂起，剩余代码被包装成微任务。等价于 then 回调。"
-          />
-          <QA
-            q="setTimeout(fn, 0) 和 requestAnimationFrame 谁先？"
-            a="不一定。rAF 在「渲染前」执行，而渲染发生在宏任务之后；如果本轮没有渲染机会，rAF 会推迟，setTimeout 可能先跑。"
-          />
-          <QA
-            q="process.nextTick 呢？"
-            a="Node.js 特有，优先级高于 Promise 微任务——每个宏任务后先清 nextTick 队列再清 Promise 队列。"
-          />
-          <QA
-            q="微任务无限递归会怎样？"
-            a="事件循环被卡死在微任务阶段，页面无法渲染、宏任务永远无法执行（如 queueMicrotask 里不断 queueMicrotask）。"
-          />
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function QA({ q, a }: { q: string; a: string }) {
-  return (
-    <div className="rounded-lg border border-border p-4">
-      <div className="mb-1 font-medium">Q：{q}</div>
-      <div className="text-muted-foreground">A：{a}</div>
-    </div>
+      <Section title="经典追问链">
+        <QAChain
+          items={[
+            {
+              q: "Promise.then 和 queueMicrotask 谁先？",
+              a: "同为微任务，严格按入队顺序（FIFO）执行，没有谁更优先。",
+            },
+            {
+              q: "await 下面的代码在什么时候执行？",
+              a: "await 右侧表达式同步求值，之后函数挂起，剩余代码被包装成微任务。等价于 then 回调。",
+            },
+            {
+              q: "setTimeout(fn, 0) 和 requestAnimationFrame 谁先？",
+              a: "不一定。rAF 在「渲染前」执行，而渲染发生在宏任务之后；如果本轮没有渲染机会，rAF 会推迟，setTimeout 可能先跑。",
+            },
+            {
+              q: "process.nextTick 呢？",
+              a: "Node.js 特有，优先级高于 Promise 微任务——每个宏任务后先清 nextTick 队列再清 Promise 队列。",
+            },
+            {
+              q: "微任务无限递归会怎样？",
+              a: "事件循环被卡死在微任务阶段，页面无法渲染、宏任务永远无法执行（如 queueMicrotask 里不断 queueMicrotask）。",
+            },
+          ]}
+        />
+      </Section>
+    </NoteShell>
   );
 }
 

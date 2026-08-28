@@ -142,7 +142,7 @@ export default function EventLoopSimulator() {
   return (
     <div className="my-6 overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border bg-muted/50 px-4 py-2">
-        <span className="text-xs font-medium text-muted-foreground">事件循环模拟器</span>
+        <span className="text-xs font-medium text-muted">事件循环模拟器</span>
         <div className="flex gap-2">
           <button
             type="button"
@@ -156,14 +156,14 @@ export default function EventLoopSimulator() {
             type="button"
             onClick={next}
             disabled={stepIndex >= sc.steps.length}
-            className="rounded border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+            className="rounded border border-border px-2.5 py-1 text-xs text-muted hover:text-foreground disabled:opacity-40"
           >
             单步
           </button>
           <button
             type="button"
             onClick={reset}
-            className="rounded border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground"
+            className="rounded border border-border px-2.5 py-1 text-xs text-muted hover:text-foreground"
           >
             重置
           </button>
@@ -181,7 +181,7 @@ export default function EventLoopSimulator() {
       </div>
 
       <div className="border-t border-border px-4 py-2">
-        <div className="mb-1 text-xs font-medium text-muted-foreground">控制台</div>
+        <div className="mb-1 text-xs font-medium text-muted">控制台</div>
         <div className="max-h-28 min-h-12 overflow-y-auto rounded bg-[#0d1117] p-2 font-mono text-xs text-green-400">
           {view.console.length === 0 ? (
             <span className="text-gray-500">// 点击播放或单步执行</span>
@@ -216,7 +216,7 @@ function Queue(props: { title: string; items: { id: number; label: string }[]; a
             </motion.div>
           ))}
         </AnimatePresence>
-        {props.items.length === 0 && <span className="text-[11px] text-muted-foreground">空</span>}
+        {props.items.length === 0 && <span className="text-[11px] text-muted">空</span>}
       </div>
     </div>
   );

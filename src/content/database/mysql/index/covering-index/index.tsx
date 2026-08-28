@@ -1,20 +1,18 @@
+import { motion } from "framer-motion";
+import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 
 export default function Note() {
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border-l-4 border-accent bg-accent/5 p-4">
-        <h2 className="mb-1 font-semibold">结论先行</h2>
-        <p className="text-sm leading-relaxed">
-          InnoDB 二级索引的叶子节点只存<strong>索引列 + 主键</strong>。
-          查询列不在索引里就要拿着主键回聚簇索引再查一次——这就是<strong>回表</strong>。
-          查询所需列全部在索引里，直接返回，即<strong>覆盖索引</strong>。
-        </p>
-      </section>
+    <NoteShell>
+      <Conclusion>
+        InnoDB 二级索引的叶子节点只存<strong>索引列 + 主键</strong>。
+        查询列不在索引里就要拿着主键回聚簇索引再查一次——这就是<strong>回表</strong>。
+        查询所需列全部在索引里，直接返回，即<strong>覆盖索引</strong>。
+      </Conclusion>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">逐段拆解</h2>
-        <div className="space-y-4 text-sm leading-relaxed">
+      <Section title="逐段拆解">
+        <Prose>
           <p>
             <strong>1. 两棵 B+ 树</strong>
             ：聚簇索引叶子 = 完整行数据；二级索引叶子 = 索引列值 +
@@ -29,7 +27,7 @@ export default function Note() {
             <strong>3. 最左前缀</strong>
             ：联合索引 (a, b, c) 只能命中 a、a+b、a+b+c 前缀。遇到范围查询后面的列停止走索引。
           </p>
-        </div>
+        </Prose>
         <CodeBlock
           code={`CREATE INDEX idx_user_status ON users(status, created_at);
 
@@ -43,48 +41,37 @@ SELECT status, email FROM users WHERE status = 'active';
 SELECT * FROM users
 WHERE status = 'active' AND created_at > '2026-01-01';`}
         />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">索引层级可视化</h2>
+      <Section title="索引层级可视化">
         <BPlusTreeDiagram />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">经典追问链</h2>
-        <div className="space-y-3 text-sm leading-relaxed">
-          <QA
-            q="为什么用 B+ 树不用 B 树 / 哈希表？"
-            a="B+ 树叶子成链表，范围扫描只需顺序遍历；非叶子节点不存数据，单页可容纳更多键，树更矮（千万级数据 3 层）。哈希等值快但不支持范围与排序。"
-          />
-          <QA
-            q="SELECT * 为什么被 DBA 嫌弃？"
-            a="废掉覆盖索引的可能、传输无用列、回表列更多。明确列出所需列是成本最低的优化。"
-          />
-          <QA
-            q="索引列越多越好吗？"
-            a="每个索引都是一棵要维护的 B+ 树，写入时全部要更新。按查询频率建联合索引，能合并的合并，杜绝单列索引堆砌。"
-          />
-          <QA
-            q="什么情况下索引失效？"
-            a="对索引列做函数/运算、隐式类型转换（varchar 列用数字查）、前导模糊 LIKE '%x'、OR 两侧有无索引列。本质都是破坏了有序性，无法走树的查找。"
-          />
-        </div>
-      </section>
-    </div>
+      <Section title="经典追问链">
+        <QAChain
+          items={[
+            {
+              q: "为什么用 B+ 树不用 B 树 / 哈希表？",
+              a: "B+ 树叶子成链表，范围扫描只需顺序遍历；非叶子节点不存数据，单页可容纳更多键，树更矮（千万级数据 3 层）。哈希等值快但不支持范围与排序。",
+            },
+            {
+              q: "SELECT * 为什么被 DBA 嫌弃？",
+              a: "废掉覆盖索引的可能、传输无用列、回表列更多。明确列出所需列是成本最低的优化。",
+            },
+            {
+              q: "索引列越多越好吗？",
+              a: "每个索引都是一棵要维护的 B+ 树，写入时全部要更新。按查询频率建联合索引，能合并的合并，杜绝单列索引堆砌。",
+            },
+            {
+              q: "什么情况下索引失效？",
+              a: "对索引列做函数/运算、隐式类型转换（varchar 列用数字查）、前导模糊 LIKE '%x'、OR 两侧有无索引列。本质都是破坏了有序性，无法走树的查找。",
+            },
+          ]}
+        />
+      </Section>
+    </NoteShell>
   );
 }
-
-function QA({ q, a }: { q: string; a: string }) {
-  return (
-    <div className="rounded-lg border border-border p-4">
-      <div className="mb-1 font-medium">Q：{q}</div>
-      <div className="text-muted-foreground">A：{a}</div>
-    </div>
-  );
-}
-
-import { motion } from "framer-motion";
 
 function BPlusTreeDiagram() {
   return (

@@ -1,20 +1,18 @@
+import { motion } from "framer-motion";
+import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 
 export default function Note() {
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border-l-4 border-accent bg-accent/5 p-4">
-        <h2 className="mb-1 font-semibold">结论先行</h2>
-        <p className="text-sm leading-relaxed">
-          JS 没有"类复制式"继承，只有<strong>对象到对象的链接</strong>。 读属性时若自身没有，就沿{" "}
-          <code>[[Prototype]]</code> 一路向上找，直到 <code>null</code>。class
-          只是这套机制之上的语法糖。
-        </p>
-      </section>
+    <NoteShell>
+      <Conclusion>
+        JS 没有"类复制式"继承，只有<strong>对象到对象的链接</strong>。 读属性时若自身没有，就沿{" "}
+        <code>[[Prototype]]</code> 一路向上找，直到 <code>null</code>
+        。class 只是这套机制之上的语法糖。
+      </Conclusion>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">三个容易混淆的东西</h2>
-        <div className="space-y-4 text-sm leading-relaxed">
+      <Section title="三个容易混淆的东西">
+        <Prose>
           <p>
             <strong>
               1. <code>[[Prototype]]</code>（内部槽）
@@ -33,9 +31,10 @@ export default function Note() {
             <strong>
               3. <code>__proto__</code>
             </strong>
-            ：历史遗留的 getter/setter，等价于读 <code>[[Prototype]]</code>。新代码请用标准 API。
+            ：历史遗留的 getter/setter，等价于读 <code>[[Prototype]]</code>
+            。新代码请用标准 API。
           </p>
-        </div>
+        </Prose>
         <CodeBlock
           code={`const animal = { eat() { return "eating" } };
 const dog = Object.create(animal);
@@ -46,10 +45,9 @@ Object.getPrototypeOf(dog) === animal;   // true
 function Foo() {}
 new Foo().__proto__ === Foo.prototype;   // true（演示用，生产用 getPrototypeOf）`}
         />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">constructor 陷阱</h2>
+      <Section title="constructor 陷阱">
         <CodeBlock
           code={`function Foo() {}
 Foo.prototype = { say() {} };   // 整体替换原型对象
@@ -61,48 +59,37 @@ f.constructor === Object;  // true —— 沿原型链一路找到 Object.protot
 // 正确姿势：替换前保留，或替换时补上
 Foo.prototype = { constructor: Foo, say() {} };`}
         />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">原型链可视化</h2>
+      <Section title="原型链可视化">
         <PrototypeDiagram />
-      </section>
+      </Section>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">经典追问链</h2>
-        <div className="space-y-3 text-sm leading-relaxed">
-          <QA
-            q="class 的方法在实例上还是原型上？"
-            a="在原型上。class 声明的方法等同于挂在 Foo.prototype；只有实例字段（constructor 里的 this.x = ...）在实例自身。"
-          />
-          <QA
-            q="extends 之后 super 是什么？"
-            a="super 不是简单指向父类原型。它绑定当前 this 调用父类原型上的方法——本质是 [[HomeObject]] 元信息驱动的动态派发。"
-          />
-          <QA
-            q="Object.create(null) 有什么用？"
-            a="创建无原型的『纯净对象』，没有 toString/hasOwnProperty 等污染，适合做字典。代价是连基础方法都没有，需要时只能用 Object.keys 等静态方法。"
-          />
-          <QA
-            q="instanceof 的原理？能被绕过吗？"
-            a="沿右侧函数的 prototype 在左侧对象的原型链上查找。Symbol.hasInstance 可自定义判断；跨 iframe 场景会因为原型不共享而失效，用 Array.isArray 代替。"
-          />
-        </div>
-      </section>
-    </div>
+      <Section title="经典追问链">
+        <QAChain
+          items={[
+            {
+              q: "class 的方法在实例上还是原型上？",
+              a: "在原型上。class 声明的方法等同于挂在 Foo.prototype；只有实例字段（constructor 里的 this.x = ...）在实例自身。",
+            },
+            {
+              q: "extends 之后 super 是什么？",
+              a: "super 不是简单指向父类原型。它绑定当前 this 调用父类原型上的方法——本质是 [[HomeObject]] 元信息驱动的动态派发。",
+            },
+            {
+              q: "Object.create(null) 有什么用？",
+              a: "创建无原型的『纯净对象』，没有 toString/hasOwnProperty 等污染，适合做字典。代价是连基础方法都没有，需要时只能用 Object.keys 等静态方法。",
+            },
+            {
+              q: "instanceof 的原理？能被绕过吗？",
+              a: "沿右侧函数的 prototype 在左侧对象的原型链上查找。Symbol.hasInstance 可自定义判断；跨 iframe 场景会因为原型不共享而失效，用 Array.isArray 代替。",
+            },
+          ]}
+        />
+      </Section>
+    </NoteShell>
   );
 }
-
-function QA({ q, a }: { q: string; a: string }) {
-  return (
-    <div className="rounded-lg border border-border p-4">
-      <div className="mb-1 font-medium">Q：{q}</div>
-      <div className="text-muted-foreground">A：{a}</div>
-    </div>
-  );
-}
-
-import { motion } from "framer-motion";
 
 function PrototypeDiagram() {
   const chain = [
