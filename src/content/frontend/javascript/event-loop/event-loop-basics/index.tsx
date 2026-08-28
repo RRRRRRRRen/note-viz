@@ -211,27 +211,51 @@ console.log(2);
       </Section>
 
       <Section title="经典追问链">
+        <p className="mb-2 text-sm text-muted">
+          模拟一场真实面试的连环追问：从热身开始逐层深入，每一问标注面试官的考察意图与加分回答。
+        </p>
         <QAChain
           items={[
             {
-              q: "Promise.then 和 queueMicrotask 谁先？",
-              a: "同为微任务，严格按入队顺序（FIFO）执行，没有谁更优先。",
+              q: "浏览器里 JS 是单线程的吗？为什么要这样设计？",
+              depth: 1,
+              intent: "热身题，确认你理解单线程的存在原因，而不是背一句'JS是单线程的'。",
+              a: "是。设计动机是 DOM 操作：如果两个线程同时改同一个节点，就需要锁机制，语言复杂度陡增。所以 UI 线程与 JS 线程合一，用事件循环做异步调度来弥补'单线程不能并行'的短板。",
+              bonus:
+                "补充 Worker：CPU 密集任务可以用 Web Worker 开独立线程，但 Worker 不能操作 DOM，与主线程靠消息通信——单线程指的是主执行线程。",
             },
             {
-              q: "await 下面的代码在什么时候执行？",
-              a: "await 右侧表达式同步求值，之后函数挂起，剩余代码被包装成微任务。等价于 then 回调。",
+              q: "说说一段脚本从执行到结束，事件循环是怎么走的？",
+              depth: 2,
+              intent: "考察你对整体流程是否有清晰的心智模型，能否讲出'清空微任务'这个关键步骤。",
+              a: "先执行全局同步代码（调用栈）；栈清空后立即清空整个微任务队列；然后浏览器检查是否需要渲染（rAF 回调在渲染前执行）；最后取一个宏任务执行，回到开头循环。",
+              bonus:
+                "强调'每轮只取一个宏任务'与'微任务全部清空'的不对称性，并点出这正是渲染不被饿死的机制。",
             },
             {
-              q: "setTimeout(fn, 0) 和 requestAnimationFrame 谁先？",
-              a: "不一定。rAF 在「渲染前」执行，而渲染发生在宏任务之后；如果本轮没有渲染机会，rAF 会推迟，setTimeout 可能先跑。",
+              q: "await 下面的代码和 Promise.then 的回调，谁先执行？",
+              depth: 3,
+              intent: "区分背题者与理解者：await 是否被当成'特殊的东西'对待。",
+              a: "没有区别，两者都是微任务。await 右侧表达式同步求值，函数在 await 处挂起，剩余代码被包装成微任务，等价于 .then 的回调，严格按入队顺序执行。",
+              bonus:
+                "能进一步指出 await 的实现是 generator/promise 的语法糖（V8 层面已优化为直接挂起），并说明 await 链每层都会引入一次微任务开销。",
             },
             {
-              q: "process.nextTick 呢？",
-              a: "Node.js 特有，优先级高于 Promise 微任务——每个宏任务后先清 nextTick 队列再清 Promise 队列。",
+              q: "setTimeout(fn, 0) 和 requestAnimationFrame 谁先执行？",
+              depth: 4,
+              intent:
+                "很多人背了'宏任务→渲染'就以为 setTimeout 永远先跑。考察你是否真正理解渲染时机的不确定性。",
+              a: "不一定。rAF 在'渲染前'执行，但渲染只发生在浏览器认为需要的帧。如果本轮事件循环没有渲染机会（如页面在后台标签、或两个宏任务间隔过短），rAF 会推迟到下一次渲染前，此时 setTimeout 先跑。",
+              bonus:
+                "能画出'宏任务 → 微任务 → 渲染检查 → 下一轮'的时序，并说明 rAF 的执行频率与显示器刷新率（如 60Hz/120Hz）挂钩。",
             },
             {
-              q: "微任务无限递归会怎样？",
-              a: "事件循环被卡死在微任务阶段，页面无法渲染、宏任务永远无法执行（如 queueMicrotask 里不断 queueMicrotask）。",
+              q: "微任务里无限递归地产生微任务，会发生什么？怎么避免？",
+              depth: 5,
+              intent: "区分知识广度与工程深度：是否踩过坑、是否有系统层面的思考。",
+              a: "事件循环被卡死在微任务阶段：渲染永远不会发生，宏任务全部饿死，页面表现为无响应但不崩溃（没有栈溢出错误，因为每次微任务执行完栈是空的）。经典事故是 queueMicrotask 里不断 queueMicrotask，或 Promise 链互相 resolve。规避手段：大批量任务改用宏任务切片（setTimeout/messageChannel 分批），或用 rAF 对齐渲染节奏。",
+              bonus:
+                "提到这是'活锁'而非'死锁'；能对比 Node.js 端 process.nextTick 的同类问题（nextTick 队列优先级更高，饿死后果更严重，Node 设有 nextTickQueue 上限警戒）。",
             },
           ]}
         />

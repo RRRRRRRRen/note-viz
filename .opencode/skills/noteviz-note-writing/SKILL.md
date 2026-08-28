@@ -19,7 +19,14 @@ description: 为 NoteViz 学习站创建或修改笔记时使用。强制执行�
 
 ```tsx
 // 排版原语
-import { Conclusion, NoteShell, Prose, QAChain, Section, Subsection } from "@/components/note";
+import {
+  Conclusion,
+  NoteShell,
+  Prose,
+  QAChain, // items: QAItem[] { q, a, intent?, bonus?, depth? 1-5 }
+  Section,
+  Subsection,
+} from "@/components/note";
 
 // 代码块  属性: code, lang?: "javascript" | "typescript"
 import CodeBlock from "@/components/demo/CodeBlock";
@@ -54,14 +61,14 @@ import {
 
 可视化组件选型：
 
-| 组件                                          | 用途                                               | 参数                                |
-| --------------------------------------------- | -------------------------------------------------- | ----------------------------------- |
-| `<CompareTable left={...} right={...} />`     | 两个概念的左右对照（var vs let、微任务 vs 宏任务） | `{title, points[], color?}` × 2     |
-| `<Timeline steps={[...]} label? />` | 执行顺序/输出顺序/流转过程 | `{label, sub?, color?}[]` |
-| `<OutputTimeline steps={[...]} label? />` | **输出题专用**：每条输出的逐条解读（必须用这个而不是 Timeline 展示输出） | `{output, phase: 同步\|微任务\|宏任务, why, color?}[]` |
-| `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 ≤3 个                         | keyword + children, color?          |
-| `<BarChart items={[...]} label? title? />`    | 相对开销/数量级对比（给直觉，勿当精确值）          | `{label, value, color?, suffix?}[]` |
-| `<DoDont dont={...} do={...} label? />`       | 错误写法 vs 推荐写法的并排代码对照                 | `{code, note}` × 2                  |
+| 组件                                          | 用途                                                                     | 参数                                                   |
+| --------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
+| `<CompareTable left={...} right={...} />`     | 两个概念的左右对照（var vs let、微任务 vs 宏任务）                       | `{title, points[], color?}` × 2                        |
+| `<Timeline steps={[...]} label? />`           | 执行顺序/输出顺序/流转过程                                               | `{label, sub?, color?}[]`                              |
+| `<OutputTimeline steps={[...]} label? />`     | **输出题专用**：每条输出的逐条解读（必须用这个而不是 Timeline 展示输出） | `{output, phase: 同步\|微任务\|宏任务, why, color?}[]` |
+| `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 ≤3 个                                               | keyword + children, color?                             |
+| `<BarChart items={[...]} label? title? />`    | 相对开销/数量级对比（给直觉，勿当精确值）                                | `{label, value, color?, suffix?}[]`                    |
+| `<DoDont dont={...} do={...} label? />`       | 错误写法 vs 推荐写法的并排代码对照                                       | `{code, note}` × 2                                     |
 
 产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（五字段：title ≤20 字 / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，私有子组件放同文件底部（超 150 行拆到同目录）。
 
@@ -89,9 +96,19 @@ import {
 3. **篇幅**：正文（不含代码）≥800 字（熟悉度高时侧重深度而非字数），每个保留的核心小节 ≥2 段（先"为什么这样设计"，再"引擎层面怎么做"）。
 4. **真实运行（最重要）**：输出题的输出注释必须是真实引擎运行结果，禁止臆测——Node 行为用 `node -e` 验证、浏览器行为注明 Chrome 版本、Node 特有 API 注明版本。代码块后用 `<OutputTimeline>` 逐条解读：每条输出标注阶段（同步/微任务/宏任务）+ 一段「为什么是它」的解释，而不是只罗列顺序。无法实测的场景显式写明不确定性。示例代码必须自包含、可直接复制运行。
 5. **可视化密度**：每篇 ≥4 个可视化块；连续两屏纯文字即不合格。
-6. **追问链**：`<QAChain>` 数量与难度按详略表，答案给确定结论而非「看情况」。
+6. **追问链**：`<QAChain>` 数量与难度按详略表，答案给确定结论而非「看情况」。**必须模拟真实面试的问答模式**（见下方「追问链问答模式」）。
 7. **过渡钩子**：结尾点出与站内相邻主题的关联，为交叉阅读埋线。
 8. **边界与陷阱**：≥3 个易踩的坑，用 `<DoDont>` 呈现对照。
+
+## 追问链问答模式（硬性）
+
+`QAItem` 结构：`{ q, intent?, a, bonus?, depth? }`。一场好的追问链是**递进式面试对话**，不是 FAQ 罗列：
+
+1. **深度递进**：`depth` 从 1-2（热身/基础）逐步升到 4-5（进阶/硬核），后一问必须建立在前一答之上——像面试官听到了你的回答后才决定下一问，而不是各问各的。
+2. **每问标注 `intent`（面试官视角）**：一两句说明"他为什么问这个 / 他想听到什么 / 这道题在筛掉什么人"。例：_"很多人背了'宏任务→渲染'就以为 setTimeout 永远先跑，考察你是否真正理解渲染时机的不确定性。"_
+3. **参考回答先结论后展开**：`a` 字段第一句直接给结论，再补机制解释。禁止"要看情况""大概可能"。
+4. **每问尽量带 `bonus`（加分项）**：答出它能脱颖而出——延伸到实现层面（如 V8 优化）、相邻知识（如 Worker）、工程实战（如怎么避免）。加分项把"答对"和"答好"区分开。
+5. **深度徽章自动渲染**（热身/基础/标准/进阶/硬核），与全局详略表的熟悉度对应：面向"入门"读者的笔记追问链 depth 偏 1-3，面向"深入源码"的偏 3-5。
 
 ## 视觉规范（三层边界）
 
