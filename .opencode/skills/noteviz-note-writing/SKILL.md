@@ -28,14 +28,14 @@ import CodeBlock from "@/components/demo/CodeBlock";
 //   props: code（初始代码，浏览器端 JS）, label?, height?
 import { PlayGround } from "@/components/demo/PlayGround";
 
-// 流程图/拓扑图：React Flow + dagre 自动布局，自带缩放/适应/小地图
+// 流程图/拓扑图：React Flow + dagre 自动布局，自带缩放/适应/Controls
 //   props: data {direction?, nodes[{id,label,color}], edges[{source,target,label?,dashed?}]}, label?, height?
 import { FlowChart } from "@/components/demo/FlowChart";
 
 // 演示通用件：日志面板 / 按钮（轻量交互演示用）
 import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
-// 可缩放拖拽画布：仅用于包住手写 SVG 等无内置缩放的静态内容
+// 可缩放拖拽画布（降级方案）：仅用于包住无法迁移到 React Flow 的既有手写 SVG
 import { PanZoomCanvas } from "@/components/demo/PanZoomCanvas";
 
 // ★ 可视化组件（均自带 VizBlock 包壳）
@@ -50,7 +50,7 @@ import {
 } from "@/components/viz";
 ```
 
-**组件选型优先级**：内容需要某种视觉呈现时，先查有没有成熟 npm 包（流程图 → React Flow/dagre；在线执行 → Sandpack；图表 → 可考虑 recharts 等），确认没有合适的再自研。禁止重复造轮子，也不为简单需求引重型依赖。
+**组件选型优先级**：内容需要某种视觉呈现时，先查有没有成熟 npm 包（流程图 → React Flow + dagre；在线代码执行 → 本地 iframe 沙箱；图表 → 可考虑 recharts 等），确认没有合适的再自研。禁止重复造轮子，也不为简单需求引重型依赖。**禁用依赖外部 CDN/云端 runner 的方案**——执行与渲染必须本地完成、离线可用。
 
 可视化组件选型：
 
@@ -62,7 +62,6 @@ import {
 | `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 ≤3 个                         | keyword + children, color?          |
 | `<BarChart items={[...]} label? title? />`    | 相对开销/数量级对比（给直觉，勿当精确值）          | `{label, value, color?, suffix?}[]` |
 | `<DoDont dont={...} do={...} label? />`       | 错误写法 vs 推荐写法的并排代码对照                 | `{code, note}` × 2                  |
-| `<PanZoomCanvas>`                             | 包住自绘 SVG 流程图，防截断                        | children 为 svg                     |
 
 产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（五字段：title ≤20 字 / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，私有子组件放同文件底部（超 150 行拆到同目录）。
 
@@ -126,5 +125,5 @@ import {
 - [ ] 可视化块 ≥4 且分布均匀（无连续两屏纯文字）
 - [ ] 每个输出题都有「运行结果解读」
 - [ ] 内容纯净：无对话痕迹、无任务元话语、无工具操作说明
-- [ ] SVG 流程图：所有节点/连线在 viewBox 范围内（不截断），PanZoomCanvas 支持全屏
+- [ ] FlowChart 节点/边完整可见（React Flow fitView 保证，不手写坐标）
 - [ ] `pnpm build` 通过（meta 校验是构建时强制的）
