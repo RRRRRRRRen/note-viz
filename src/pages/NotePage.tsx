@@ -79,7 +79,7 @@ export default function NotePage() {
       </div>
 
       {/* 右：大纲栏。与内容列平级，各自独立滚动 */}
-      <aside className="hidden h-full w-56 shrink-0 xl:block">
+      <aside className="hidden h-full w-64 shrink-0 xl:block">
         <Toc containerRef={contentRef} resetKey={note.path} />
       </aside>
     </div>

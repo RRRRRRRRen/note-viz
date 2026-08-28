@@ -136,7 +136,7 @@ export function Toc({ containerRef, resetKey }: TocProps) {
               <button
                 type="button"
                 onClick={() => jump(item.id)}
-                className={`-ml-px block w-full border-l-2 py-1 pr-1 text-left text-xs leading-snug transition-all ${
+                className={`-ml-px block w-full border-l-2 py-1 pr-1 text-left text-[11px] leading-snug transition-all ${
                   isSub ? "pl-6" : "pl-3"
                 } ${
                   active
