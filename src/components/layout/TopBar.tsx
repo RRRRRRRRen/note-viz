@@ -100,7 +100,7 @@ function TabBar() {
   const { tabs, activeIndex } = useTabs();
   const location = useLocation();
   const navigate = useNavigate();
-  const [menu, setMenu] = useState<{ index: number; x: number } | null>(null);
+  const [menu, setMenu] = useState<{ index: number; x: number; y: number } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 点击菜单外部或 Esc 关闭
@@ -144,7 +144,13 @@ function TabBar() {
               key={tab.path}
               onContextMenu={(e) => {
                 e.preventDefault();
-                setMenu({ index: i, x: e.clientX });
+                // Menu 键触发时 clientX/Y 为 0，回退到标签自身位置
+                const rect = e.currentTarget.getBoundingClientRect();
+                setMenu({
+                  index: i,
+                  x: e.clientX || rect.left,
+                  y: e.clientY || rect.bottom,
+                });
               }}
               className={`group relative flex shrink-0 items-stretch border-b-2 ${
                 active
@@ -181,7 +187,10 @@ function TabBar() {
         <div
           ref={menuRef}
           className="fixed z-50 min-w-36 rounded-md border border-border bg-background py-1 shadow-lg"
-          style={{ left: Math.min(menu.x, window.innerWidth - 160), top: 92 }}
+          style={{
+            left: Math.min(menu.x, window.innerWidth - 160),
+            top: Math.min(menu.y, window.innerHeight - 200),
+          }}
         >
           {[
             {

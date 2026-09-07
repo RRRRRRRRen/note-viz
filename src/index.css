@@ -99,13 +99,10 @@ pre {
   animation: pulse-dot 2.4s ease-in-out infinite;
 }
 
-/* 大纲跳转后的标题高亮渐隐 */
+/* 大纲跳转后的标题高亮渐隐（1s 黄色快闪定位反馈） */
 @keyframes toc-flash {
   0% {
-    background-color: color-mix(in oklab, var(--accent) 60%, transparent);
-  }
-  60% {
-    background-color: color-mix(in oklab, var(--accent) 35%, transparent);
+    background-color: color-mix(in oklab, #ffd666 60%, transparent);
   }
   100% {
     background-color: transparent;
@@ -113,5 +110,5 @@ pre {
 }
 
 .toc-flash {
-  animation: toc-flash 2.6s ease-out forwards;
+  animation: toc-flash 1s ease-out forwards;
 }

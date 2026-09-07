@@ -54,10 +54,10 @@ export default function NotePage() {
   const crumbs = breadcrumbParts(note.slug.slice(0, 3));
 
   return (
-    /* 内容区自己拆两栏：左栏滚动内容，右栏固定高度只滚大纲 */
-    <div className="mx-auto flex h-full max-w-[1200px] overflow-hidden">
-      {/* 左：内容，独立滚动 */}
-      <div ref={contentRef} className="h-full min-w-0 flex-1 overflow-y-auto px-8 py-7">
+    /* main 是唯一滚动容器：外壳随内容增长（min-h-full），内容列不再自带滚动 */
+    <div className="relative mx-auto flex min-h-full max-w-[1200px] items-start">
+      {/* 左：内容块流（高度随内容增长，滚动交给 main） */}
+      <div ref={contentRef} className="min-w-0 flex-1 px-8 py-7">
         <nav className="mb-5 flex items-center gap-2 text-[11px] text-muted meta-mono">
           <span>NoteViz</span>
           {crumbs.map((c) => (
@@ -93,8 +93,8 @@ export default function NotePage() {
         </Suspense>
       </div>
 
-      {/* 右：大纲栏。与内容列平级，各自独立滚动 */}
-      <aside className="hidden h-full w-64 shrink-0 xl:block">
+      {/* 右：大纲栏。sticky 钉在 main 可视区（顶栏+标签栏 92px 之外），自身内滚 */}
+      <aside className="sticky top-0 hidden h-[calc(100vh-92px)] w-64 shrink-0 self-start xl:block">
         <Toc containerRef={contentRef} resetKey={note.path} />
       </aside>
     </div>

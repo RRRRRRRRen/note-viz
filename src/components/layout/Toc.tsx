@@ -140,13 +140,13 @@ export function Toc({ containerRef, resetKey }: TocProps) {
       scroller.getBoundingClientRect().top +
       scroller.scrollTop -
       lineOffset;
-    scroller.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    scroller.scrollTo({ top: Math.max(top, 0), behavior: "auto" });
   };
 
   const jump = (id: string) => {
     scrollToSection(id);
-    // 滚动结束后高亮目标标题
-    setTimeout(() => flashHeading(id), 450);
+    // 瞬时定位，目标已就位，立即高亮
+    flashHeading(id);
   };
 
   return (
