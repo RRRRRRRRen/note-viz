@@ -112,8 +112,9 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
 
   return (
     <VizBlock label={label ?? "在线运行 / playground"}>
-      <div className="grid grid-cols-2 gap-0 overflow-hidden rounded-lg border border-border">
-        <div className="flex flex-col border-r border-border">
+      {/* 盒子只有 VizBlock 一层；编辑/控制台仅用分隔线切分 */}
+      <div className="grid md:grid-cols-2">
+        <div className="flex flex-col border-b border-border md:border-b-0 md:border-r">
           <div className="flex h-10 items-center gap-2 border-b border-border bg-surface-2/50 px-3">
             <button
               type="button"
@@ -135,8 +136,9 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            aria-label="代码编辑区"
             spellCheck={false}
-            className="resize-none bg-[#0d1117] p-3 font-mono text-xs leading-relaxed text-[#e6edf3] outline-none"
+            className="resize-none bg-[#0d1117] p-3 font-mono text-xs leading-relaxed text-[#e6edf3] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70"
             style={{ height }}
           />
         </div>
@@ -145,6 +147,8 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
             控制台输出
           </div>
           <div
+            role="log"
+            aria-live="polite"
             className="overflow-y-auto bg-[#0d1117] p-3 font-mono text-xs leading-relaxed"
             style={{ height }}
           >

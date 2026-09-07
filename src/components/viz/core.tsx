@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle } from "lucide-react";
 import type { ReactNode } from "react";
+import { PALETTE } from "../palette";
 
 /* =====================================================================
  * 视觉规范（三层内容边界）
@@ -12,9 +13,9 @@ import type { ReactNode } from "react";
 
 /** 可视化块统一外壳：边框 + 标题栏，建立与正文的视觉边界 */
 export function VizBlock(props: { label: string; color?: string; children: ReactNode }) {
-  const color = props.color ?? "#1677ff";
+  const color = props.color ?? PALETTE.blue;
   return (
-    <div className="my-5 overflow-hidden rounded-lg border border-border bg-card">
+    <div className="my-5 overflow-hidden rounded-lg border border-border bg-background">
       <div
         className="flex items-center gap-2 border-b border-border px-3.5 py-2"
         style={{ backgroundColor: `${color}0d` }}
@@ -32,51 +33,128 @@ export function VizBlock(props: { label: string; color?: string; children: React
   );
 }
 
-/* ---------- 对比表：左右两列对照（如 防抖 vs 节流、var vs let） ---------- */
+/* ---------- 对比表：两概念对照（rows 维度逐行对齐为首选；points 要点并列兼容旧数据） ---------- */
+
+interface CompareSide {
+  title: string;
+  color?: string;
+  points?: string[];
+}
+
+function ComparePill(props: { title: string; color: string }) {
+  return (
+    <span
+      className="inline-block max-w-full truncate rounded-md px-2 py-0.5 text-xs font-semibold"
+      style={{ backgroundColor: `${props.color}1a`, color: props.color }}
+    >
+      {props.title}
+    </span>
+  );
+}
 
 export function CompareTable(props: {
   label?: string;
-  left: { title: string; color?: string; points: string[] };
-  right: { title: string; color?: string; points: string[] };
+  left: CompareSide;
+  right: CompareSide;
+  /**
+   * 维度对照模式（首选）：同一维度上左右值逐行严格对齐。
+   * 传入 rows 时渲染三列对齐表；不传时回退为 points 要点并列模式。
+   */
+  rows?: { aspect: string; left: ReactNode; right: ReactNode }[];
 }) {
   const { left, right } = props;
-  const lColor = left.color ?? "#8b5cf6";
-  const rColor = right.color ?? "#3b82f6";
+  const lColor = left.color ?? PALETTE.purple;
+  const rColor = right.color ?? PALETTE.blueSoft;
+
   return (
     <VizBlock label={props.label ?? "对比 / compare"}>
-      <div className="grid grid-cols-2 gap-3">
-        {[left, right].map((col, i) => {
-          const color = i === 0 ? lColor : rColor;
-          return (
-            <motion.div
-              key={col.title}
-              initial={{ opacity: 0, x: i === 0 ? -12 : 12 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-lg border border-border bg-background p-4"
-            >
-              <div
-                className="mb-3 inline-block rounded-md px-2.5 py-1 text-sm font-semibold"
-                style={{ backgroundColor: `${color}1a`, color }}
-              >
-                {col.title}
+      {/* 维度对照模式 */}
+      {props.rows ? (
+        <>
+          {/* 桌面：维度轴 + 左右值三列严格对齐，整行 hover 联动 */}
+          <table className="hidden w-full table-fixed border-collapse text-xs sm:table">
+            <colgroup>
+              <col className="w-24" />
+              <col />
+              <col />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="pb-2" />
+                <th className="pb-2 pr-3 text-left">
+                  <ComparePill title={left.title} color={lColor} />
+                </th>
+                <th className="pb-2 text-left">
+                  <ComparePill title={right.title} color={rColor} />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {props.rows.map((r) => (
+                <tr
+                  key={r.aspect}
+                  className="border-t border-border transition-colors hover:bg-surface/60"
+                >
+                  <td className="py-2.5 pr-2 align-top font-medium text-muted">{r.aspect}</td>
+                  <td className="py-2.5 pr-3 align-top leading-relaxed text-foreground">
+                    {r.left}
+                  </td>
+                  <td className="py-2.5 align-top leading-relaxed text-foreground">{r.right}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* 移动端：按维度分组，仅用分隔线，不套盒子 */}
+          <div className="divide-y divide-border sm:hidden">
+            {props.rows.map((r) => (
+              <div key={r.aspect} className="py-3 first:pt-0 last:pb-0">
+                <div className="text-[11px] font-semibold tracking-wide text-muted">{r.aspect}</div>
+                <dl className="mt-1.5 space-y-1 text-xs leading-relaxed">
+                  <div className="flex gap-1.5">
+                    <dt className="shrink-0 font-semibold" style={{ color: lColor }}>
+                      {left.title}
+                    </dt>
+                    <dd className="min-w-0 text-muted">{r.left}</dd>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <dt className="shrink-0 font-semibold" style={{ color: rColor }}>
+                      {right.title}
+                    </dt>
+                    <dd className="min-w-0 text-muted">{r.right}</dd>
+                  </div>
+                </dl>
               </div>
-              <ul className="space-y-2">
-                {col.points.map((p) => (
-                  <li key={p} className="flex gap-2 text-xs leading-relaxed text-muted">
-                    <span
-                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        /* 要点并列模式（兼容旧数据）：单层结构——概念徽章 + 中缝竖线分列，盒子只有 VizBlock 一层 */
+        <div>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <ComparePill title={left.title} color={lColor} />
+            <span className="shrink-0 font-mono text-[10px] font-bold text-muted uppercase">
+              vs
+            </span>
+            <ComparePill title={right.title} color={rColor} />
+          </div>
+          <div className="grid sm:grid-cols-2">
+            <ul className="space-y-2.5 sm:pr-4">
+              {(left.points ?? []).map((p, i) => (
+                <li key={i} className="text-xs leading-relaxed text-muted">
+                  {p}
+                </li>
+              ))}
+            </ul>
+            <ul className="space-y-2.5 border-t border-border pt-3 sm:mt-0 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+              {(right.points ?? []).map((p, i) => (
+                <li key={i} className="text-xs leading-relaxed text-muted">
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </VizBlock>
   );
 }
@@ -91,7 +169,7 @@ export function Timeline(props: {
     <VizBlock label={props.label ?? "时间线 / timeline"}>
       <div className="flex items-stretch gap-0 overflow-x-auto pb-1">
         {props.steps.map((s, i) => {
-          const color = s.color ?? "#1677ff";
+          const color = s.color ?? PALETTE.blue;
           const last = i === props.steps.length - 1;
           return (
             <div key={s.label} className="flex min-w-28 flex-1 items-center">
@@ -133,15 +211,15 @@ export function OutputTimeline(props: {
   steps: { output: string; phase: string; why: string; color?: string }[];
 }) {
   const phaseColor: Record<string, string> = {
-    同步: "#f59e0b",
-    微任务: "#8b5cf6",
-    宏任务: "#3b82f6",
+    同步: PALETTE.orange,
+    微任务: PALETTE.purple,
+    宏任务: PALETTE.blueSoft,
   };
   return (
     <VizBlock label={props.label ?? "输出解读 / output explained"}>
       <ol className="space-y-0">
         {props.steps.map((s, i) => {
-          const color = s.color ?? phaseColor[s.phase] ?? "#1677ff";
+          const color = s.color ?? phaseColor[s.phase] ?? PALETTE.blue;
           const last = i === props.steps.length - 1;
           return (
             <li key={i} className="relative flex gap-3 pb-4 last:pb-0">
@@ -188,7 +266,7 @@ export function OutputTimeline(props: {
 /* ---------- 记忆卡片：关键结论，一眼记住 ---------- */
 
 export function MemoryCard(props: { keyword: string; children: ReactNode; color?: string }) {
-  const color = props.color ?? "#1677ff";
+  const color = props.color ?? PALETTE.blue;
   return (
     <div className="my-4 overflow-hidden rounded-lg border" style={{ borderColor: `${color}55` }}>
       <div
@@ -233,7 +311,7 @@ export function BarChart(props: {
       )}
       <div className="space-y-2.5">
         {props.items.map((item, i) => {
-          const color = item.color ?? "#1677ff";
+          const color = item.color ?? PALETTE.blue;
           return (
             <div key={item.label} className="flex items-center gap-3">
               <span className="w-32 shrink-0 truncate text-right text-xs text-muted">
@@ -271,31 +349,25 @@ export function DoDont(props: {
 }) {
   return (
     <VizBlock label={props.label ?? "写法对照 / do & don't"}>
-      <div className="grid grid-cols-2 gap-3">
+      {/* 单层结构：彩色标题直接绑定代码区，说明跟排在下，无嵌套边框 */}
+      <div className="grid gap-4 sm:grid-cols-2">
         {(["dont", "do"] as const).map((kind) => {
           const item = props[kind];
           const bad = kind === "dont";
+          const color = bad ? PALETTE.red : PALETTE.green;
           return (
-            <div
-              key={kind}
-              className={`overflow-hidden rounded-lg border ${
-                bad ? "border-danger/40" : "border-success/40"
-              }`}
-            >
+            <div key={kind} className="min-w-0">
               <div
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold ${
-                  bad ? "bg-danger/10 text-danger" : "bg-success/10 text-success"
-                }`}
+                className="mb-2 flex items-center gap-1.5 text-xs font-semibold"
+                style={{ color }}
               >
                 {bad ? <XCircle size={13} /> : <CheckCircle2 size={13} />}
                 {bad ? "别这样写" : "推荐写法"}
               </div>
-              <pre className="overflow-x-auto bg-[#0d1117] p-3 font-mono text-[11px] leading-relaxed text-[#e6edf3]">
+              <pre className="overflow-x-auto rounded-md bg-[#0d1117] p-3 font-mono text-[11px] leading-relaxed text-[#e6edf3]">
                 {item.code}
               </pre>
-              <div className="border-t border-border px-3 py-2 text-[11px] text-muted">
-                {item.note}
-              </div>
+              <p className="mt-2 text-[11px] leading-relaxed text-muted">{item.note}</p>
             </div>
           );
         })}
