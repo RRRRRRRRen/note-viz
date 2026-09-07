@@ -18,15 +18,18 @@ description: 为 NoteViz 学习站创建或修改笔记时使用。强制执行�
 ## 组件 API
 
 ```tsx
-// 排版原语
+// ★ 块流结构组件（架构见 BLOCK-SYSTEM.md：标题与内容平级平铺，禁止结构容器）
 import {
-  Conclusion,
-  NoteShell,
-  Prose,
-  QAChain, // items: QAItem[] { q, a, intent?, bonus?, depth? 1-5 }
-  Section,
-  Subsection,
+  Conclusion, // 结论块（每篇首个块）
+  Heading, // { level: 2 | 3, title } 标题块——只有标题，内容块是它的兄弟节点
+  Kbd, // 行级：按键胶囊 <Kbd>Ctrl</Kbd>
+  List, // { items: ReactNode[], ordered? } 列表块
+  NoteShell, // 唯一容器：块流垂直布局器
+  Paragraph, // 正文段落块：恰好一段；children 内用原生 strong/em/code
+  QAChain, // { items: QAItem[] { q, a, intent?, bonus?, depth? 1-5 }[], reveal?: "click"|"always", intro? }
+  Tag, // 行级：归类标记胶囊
 } from "@/components/note";
+// 已删除：Section/Subsection → Heading；Prose → 多个 Paragraph（存量已全量迁移）
 
 // 代码块  属性: code, lang?: "javascript" | "typescript"
 import CodeBlock from "@/components/demo/CodeBlock";
@@ -35,14 +38,14 @@ import CodeBlock from "@/components/demo/CodeBlock";
 //   props: code（初始代码，浏览器端 JS）, label?, height?
 import { PlayGround } from "@/components/demo/PlayGround";
 
-// 流程图/拓扑图：React Flow + dagre 自动布局，自带缩放/适应/Controls
-//   props: data {direction?, nodes[{id,label,color}], edges[{source,target,label?,dashed?}]}, label?, height?
+// 流程图/拓扑图：React Flow + dagre 自动布局，自带缩放/适应/Controls；高度自适应图的自然尺寸（封顶 720）
+//   props: data {direction?, nodes[{id,label,color}], edges[{source,target,label?,dashed?}]}, label?, height?（最小高度保底，默认 320）
 import { FlowChart } from "@/components/demo/FlowChart";
 
 // 演示通用件：日志面板 / 按钮（轻量交互演示用）
 import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
-// ★ 可视化组件（均自带 VizBlock 包壳）
+// ★ 可视化组件（均自带 VizBlock 包壳）——完整目录与选型条件见同目录 COMPONENTS.md
 import {
   VizBlock,
   CompareTable,
@@ -51,51 +54,124 @@ import {
   MemoryCard,
   BarChart,
   DoDont,
+  MemoryMap,
+  LayerStack,
+  StateFlow,
+  SequenceDiagram,
+  Callout, // { kind?: "info"|"tip"|"warning"|"danger", title?, children } 四态提示框
+  Table, // { label?, head, rows } 结构化明细表
+  ShortcutTable, // { label?, rows: { keys, desc }[] } 快捷键速查
+  VersionNote, // { label?, note?, versions: { range, text, color? }[] } 版本差异
+  SpecQuote, // { source, children } 规范引用（强制出处）
+  Prerequisite, // { notes: { title, to }[], children? } 前置知识
+  CrossRef, // { title?, notes: { title, to, description? }[] } 延伸阅读
 } from "@/components/viz";
+
+// ★ 演示层：步进推演 / 代码呈现 / 自测
+import { StepThrough } from "@/components/demo/StepThrough";
+import { DiffBlock } from "@/components/demo/DiffBlock"; // { label?, caption?, lines: { type: "add"|"del"|"keep", code }[] }
+import { CodeTabs } from "@/components/demo/CodeTabs"; // { tabs: { name, code, lang? }[] }
+import { CodeAnnotate } from "@/components/demo/CodeAnnotate"; // { code, lang?, annotations: { line, text }[] }
+import { Collapsible } from "@/components/demo/Collapsible"; // { title, children, defaultOpen? }
+import { Exercise } from "@/components/demo/Exercise"; // { question, answer, tags?, hint? }
+import { Quiz } from "@/components/demo/Quiz"; // { question, options, answer, explain? }
 ```
+
+**可视化设计前置分析（强制）**：动笔前（大纲提案阶段）逐个分析本次的重点知识点——它属于哪种认知类型（见下方枚举），应该用什么视觉形式最有效地提升学习效果，而不是拿现成组件硬套内容。分析结果写入大纲提案（每个重点知识点 → 拟用的视觉形式）。**每个拟用组件都必须经过下方四步决策流程**。
+
+**可视化决策流程（每个重点知识点四步走）**：
+
+1. **复杂度门槛（第 1 步：先判断要不要可视化）**：默认纯文字 + `<strong>`/`<code>`。满足任一条才升级组件：
+   - 机制复杂或反直觉——需要展示动态过程或多对象关系才讲得清
+   - 易混淆对比——两个/多个概念用户容易记混
+   - 本篇核心考点——结论、追问链围绕它展开
+   - 用户反复提问——本次对话中二次追问过，或 `PAINPOINTS.md` 已登记
+   - 简单陈述性知识（语法、API 签名、定义性内容）**禁止**为了"看起来丰富"硬配组件
+2. **认知类型判断（第 2 步）**：线性顺序 / 拓扑流程 / 状态迁移 / 层级包含 / 内存布局 / 多角色时序 / 二元对比 / 量级直觉 / 对错对照 / 输出解读 / 记忆锚点 / 步进推演 / 参数模拟 / 在线执行 / 自测考核
+3. **查目录匹配（第 3 步）**：对照同目录 `COMPONENTS.md`——每个组件都有适用/不适用条件，不匹配就换，找不到合适的就进入第 4 步
+4. **实现优先级（第 4 步）**：组件库已有 → 直接用；没有但有成熟 npm 包 → 引包封装（遵守下方选型优先级）；都没有 → 现场开发（先在 COMPONENTS.md 候选区登记再实现，放 `src/components/` 供复用，遵守视觉规范三层边界与配色语义）
 
 **组件选型优先级**：内容需要某种视觉呈现时，先查有没有成熟 npm 包（流程图 → React Flow + dagre；在线代码执行 → 本地 iframe 沙箱；图表 → 可考虑 recharts 等），确认没有合适的再自研。禁止重复造轮子，也不为简单需求引重型依赖。**禁用依赖外部 CDN/云端 runner 的方案**——执行与渲染必须本地完成、离线可用。
 
-可视化组件选型：
+**认知类型 → 组件速查**（每个组件的适用/不适用条件以 COMPONENTS.md 为准）：
 
-| 组件                                          | 用途                                                                     | 参数                                                   |
-| --------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
-| `<CompareTable left={...} right={...} />`     | 两个概念的左右对照（var vs let、微任务 vs 宏任务）                       | `{title, points[], color?}` × 2                        |
-| `<Timeline steps={[...]} label? />`           | 执行顺序/输出顺序/流转过程                                               | `{label, sub?, color?}[]`                              |
-| `<OutputTimeline steps={[...]} label? />`     | **输出题专用**：每条输出的逐条解读（必须用这个而不是 Timeline 展示输出） | `{output, phase: 同步\|微任务\|宏任务, why, color?}[]` |
-| `<MemoryCard keyword="...">内容</MemoryCard>` | 关键结论记忆卡，每篇 ≤3 个                                               | keyword + children, color?                             |
-| `<BarChart items={[...]} label? title? />`    | 相对开销/数量级对比（给直觉，勿当精确值）                                | `{label, value, color?, suffix?}[]`                    |
-| `<DoDont dont={...} do={...} label? />`       | 错误写法 vs 推荐写法的并排代码对照                                       | `{code, note}` × 2                                     |
+| 认知类型          | 首选组件                                                    |
+| ----------------- | ----------------------------------------------------------- |
+| 线性顺序          | `Timeline`                                                  |
+| 拓扑流程/数据流   | `FlowChart`                                                 |
+| 状态迁移          | `StateFlow`                                                 |
+| 层级包含/堆叠     | `LayerStack`                                                |
+| 内存布局/引用关系 | `MemoryMap`                                                 |
+| 多角色消息往返    | `SequenceDiagram`                                           |
+| 二元对比          | `CompareTable`                                              |
+| 量级直觉          | `BarChart`（注明"仅供直觉"）                                |
+| 对错对照          | `DoDont`                                                    |
+| 输出题逐条解读    | `OutputTimeline`（输出题必须用这个，不用 Timeline）         |
+| 关键结论记忆      | `MemoryCard`（每篇 ≤3）                                     |
+| 动态过程逐步推演  | `StepThrough`                                               |
+| 参数探索          | 笔记私有模拟器（参照 FlexShrinkSimulator 模式，放笔记目录） |
+| 在线执行          | `PlayGround`                                                |
+| 面试自测          | `QAChain`（见「追问链问答模式」）                           |
 
-产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（五字段：title ≤20 字 / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，私有子组件放同文件底部（超 150 行拆到同目录）。
+**内容语义 → 组件速查**（语义块按内容含义选用，适用条件见 COMPONENTS.md）：
+
+| 语义                        | 首选组件                                  |
+| --------------------------- | ----------------------------------------- |
+| 提示/技巧/注意/危险         | `Callout`（同屏 ≤3 个，不计入可视化密度） |
+| 代码增删对照                | `DiffBlock`                               |
+| 多种解法/语言               | `CodeTabs`                                |
+| 源码逐段讲解                | `CodeAnnotate`                            |
+| 结构化明细（API/配置/参数） | `Table`                                   |
+| 快捷键速查                  | `ShortcutTable`                           |
+| 行内按键                    | `Kbd`                                     |
+| 版本行为差异                | `VersionNote`                             |
+| 规范/文档原文引用           | `SpecQuote`（强制带出处）                 |
+| 前置知识                    | `Prerequisite`（笔记开头）                |
+| 延伸阅读                    | `CrossRef`（笔记结尾，过渡钩子卡片化）    |
+| 次要细节/完整推导           | `Collapsible`（主线内容禁止折叠）         |
+| 动手练习题                  | `Exercise`                                |
+| 选择题自测                  | `Quiz`                                    |
+| 行内归类标记                | `Tag`（一屏 ≤5 个）                       |
+
+产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（五字段：title ≤20 字 / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，内部是**平铺块流**——`<Heading>` 只放标题本身，段落/图表/列表等块与标题平级依次排列（架构裁决见 BLOCK-SYSTEM.md），私有子组件放同文件底部（超 150 行拆到同目录）。禁止 `<Section>`/`<Prose>` 等结构容器（已 deprecated）。
 
 ## 大纲确认与详略协商
 
 **禁止跳过大纲确认直接生成正文。** 流程：
 
-1. **大纲提案**：知识面路径与 slug、Section 列表（含 Subsection）及每个部分的一句话说明、拟分布的可视化组件。
-2. **询问两个问题**：① 大纲是否需要增删调整？② 对该主题的熟悉程度：`入门` / `用过但不深` / `熟悉` / `深入过源码`。
-3. **按熟悉度动态调整详略**：
+1. **合并检查（强制前置步骤）**：动笔前先扫描 `src/content/` 现有笔记（优先同领域/技术/知识面，再全局按主题关键词扫），判断本次学习内容是否已有归属：
+   - 已有笔记含相似章节 → 大纲提案改为「补充/修改该章节」方案，而非新建笔记；新内容与原章节定位冲突时说明如何改写融合
+   - 确认内容独立成篇才新建；新建时顺带检查与相邻笔记的交叉引用机会（过渡钩子）
+   - 大纲提案中必须写明检查结论：合并到哪篇笔记的哪个章节，或为什么值得独立成篇
+2. **可视化设计前置分析**：逐个分析重点知识点的认知类型与最优视觉形式（走「组件 API」章节的四步决策流程）；先查同目录 `PAINPOINTS.md`——已登记的反复提问知识点直接满足门槛第 4 条，并在大纲提案中说明可视化升级动作。
+3. **大纲提案**：知识面路径与 slug、Section 列表（含 Subsection）及每个部分的一句话说明、拟分布的可视化组件、合并检查结论、重点知识点的可视化形式分析。
+4. **询问两个问题**：① 大纲是否需要增删调整？② 对该主题的熟悉程度：`入门` / `用过但不深` / `熟悉` / `深入过源码`。
+5. **按熟悉度动态调整详略**：
 
-| 熟悉度     | 类比         | 基础概念段       | 机制深拆              | 边界陷阱     | 追问链       |
-| ---------- | ------------ | ---------------- | --------------------- | ------------ | ------------ |
-| 入门       | 每个概念都配 | 详细，从零讲起   | 标准深度              | 标准覆盖     | 3-4 条偏基础 |
-| 用过但不深 | 核心机制配   | 简短带过（默认） | 标准（默认）          | 详细展开     | 4-5 条       |
-| 熟悉       | 仅反直觉处配 | 跳过             | 加深（引擎/规范层面） | 详细展开     | 5-6 条偏刁钻 |
-| 深入过源码 | 不需要       | 跳过             | 直入规范条文与实现    | 结合实际案例 | 6 条+ 硬核   |
+| 熟悉度     | 类比                   | 基础概念段       | 机制深拆              | 边界陷阱     | 追问链       |
+| ---------- | ---------------------- | ---------------- | --------------------- | ------------ | ------------ |
+| 入门       | 仅反直觉机制配技术参照 | 详细，从零讲起   | 标准深度              | 标准覆盖     | 3-4 条偏基础 |
+| 用过但不深 | 核心反直觉机制配       | 简短带过（默认） | 标准（默认）          | 详细展开     | 4-5 条       |
+| 熟悉       | 仅反直觉处配           | 跳过             | 加深（引擎/规范层面） | 详细展开     | 5-6 条偏刁钻 |
+| 深入过源码 | 不需要                 | 跳过             | 直入规范条文与实现    | 结合实际案例 | 6 条+ 硬核   |
 
-4. 大纲有修改意见时先改提案再确认；**调整已有笔记**同样走此流程（给出加深/精简/新增的改动计划 → 确认 → 动笔）。
+6. 大纲有修改意见时先改提案再确认；**调整已有笔记**同样走此流程（给出加深/精简/新增的改动计划 → 确认 → 动笔）。合并检查的结论也一并确认，避免建重复笔记。
 
 ## 内容硬性要求
 
 1. **结论先行**：`<Conclusion>` 3-5 句给出可执行答案，只读这一段能应付 80% 提问。
-2. **类比按需**：只给真正抽象、反直觉的机制配生活化类比（按上表决定有无）；简单/具象概念**不要硬凑类比**。有类比时放「一个生活化的类比」Section 并贯穿后文（括号回扣，如「宏任务（=前台的新单子）」）。
+2. **类比按需（技术参照式，硬性）**：只给真正抽象、反直觉的机制配类比，且**禁止生活化故事**（厨师、餐厅、超市、快递之类）——用**普及度很高的技术**做对照：数据库触发器/批处理、消息队列、HTTP 缓存/ETag、Git 对象模型、OS 进程调度等。读者是程序员，技术参照比生活故事更精确、更省篇幅。确有贯穿价值才独立成节（标题「技术对照：××」），否则正文一句话带过；回扣括号写法如「宏任务（=批处理队列里的一个作业）」。工具操作/具象主题默认无类比。
 3. **篇幅**：正文（不含代码）≥800 字（熟悉度高时侧重深度而非字数），每个保留的核心小节 ≥2 段（先"为什么这样设计"，再"引擎层面怎么做"）。
 4. **真实运行（最重要）**：输出题的输出注释必须是真实引擎运行结果，禁止臆测——Node 行为用 `node -e` 验证、浏览器行为注明 Chrome 版本、Node 特有 API 注明版本。代码块后用 `<OutputTimeline>` 逐条解读：每条输出标注阶段（同步/微任务/宏任务）+ 一段「为什么是它」的解释，而不是只罗列顺序。无法实测的场景显式写明不确定性。示例代码必须自包含、可直接复制运行。
-5. **可视化密度**：每篇 ≥4 个可视化块；连续两屏纯文字即不合格。
+5. **可视化密度（按需，克制）**：只为通过决策流程第 1 步门槛的知识点配组件——每个可视化块必须有明确认知功能（删掉它理解会受损），装饰性、凑数的块禁止添加。参考密度：简单篇（语法/API/工具操作）2-3 块，机制类 4-6 块；连续三屏纯文字时应考虑拆分小节或补一个有认知功能的块，但**不为凑密度硬加**。Callout/SpecQuote/VersionNote/Tag/Kbd 等轻语义块按内容语义自然使用、不计入可视化密度统计，但避免连续堆叠（同屏 ≤3 个 Callout）。
 6. **追问链**：`<QAChain>` 数量与难度按详略表，答案给确定结论而非「看情况」。**必须模拟真实面试的问答模式**（见下方「追问链问答模式」）。
 7. **过渡钩子**：结尾点出与站内相邻主题的关联，为交叉阅读埋线。
 8. **边界与陷阱**：≥3 个易踩的坑，用 `<DoDont>` 呈现对照。
+9. **联网调研（强制）**：编写/修改笔记时必须积极联网检索权威来源，凭训练记忆写深度内容是不合格的。来源可信度从高到低：
+   - **官方文档/规范**（首选）：如 git-scm.com、MDN、ECMA 规范、Node 官方文档、React 官方文档、RFC
+   - **热门社区高质量内容**：如 GitHub 高星仓库的 issue/讨论、知名工程师的技术博客、掘金/Stack Overflow 高票回答（需交叉验证，注意发布时间与版本时效）
+   - **源码**：文档含糊时直接查实现
+   - 检索到的内容用于：校准结论准确性、补充机制细节、发现训练知识盲区；**引用规范/文档级来源时在笔记正文中注明出处**（如「据 ECMA-262 §8.4」）。多来源冲突时以官方文档为准，并在笔记中说明差异。
 
 ## 追问链问答模式（硬性）
 
@@ -104,22 +180,25 @@ import {
 1. **深度递进**：`depth` 从 1-2（热身/基础）逐步升到 4-5（进阶/硬核），后一问必须建立在前一答之上——像面试官听到了你的回答后才决定下一问，而不是各问各的。
 2. **每问标注 `intent`（面试官视角）**：一两句说明"他为什么问这个 / 他想听到什么 / 这道题在筛掉什么人"。例：_"很多人背了'宏任务→渲染'就以为 setTimeout 永远先跑，考察你是否真正理解渲染时机的不确定性。"_
 3. **参考回答先结论后展开**：`a` 字段第一句直接给结论，再补机制解释。禁止"要看情况""大概可能"。
-4. **每问尽量带 `bonus`（加分项）**：答出它能脱颖而出——延伸到实现层面（如 V8 优化）、相邻知识（如 Worker）、工程实战（如怎么避免）。加分项把"答对"和"答好"区分开。**bonus 内容必须同时融入 `a` 的回答正文**（作为回答的自然延伸段），不允许只出现在加分项框里——面试时你只有一个连续的回答，不存在"加分框"。
-5. **深度徽章自动渲染**（热身/基础/标准/进阶/硬核），与全局详略表的熟悉度对应：面向"入门"读者的笔记追问链 depth 偏 1-3，面向"深入源码"的偏 3-5。
-6. **追问链必须进大纲**：QA 组件已自动输出 h3 语义并挂 `data-toc-item` 锚点，每条追问会以子级条目出现在右侧大纲中（标题即问题本身）。不要把追问链写成纯数组渲染的普通列表而绕过大纲；同理，其他可独立跳转的内容单元（如多个练习题、多个案例）也应挂 `data-toc-item`/`Subsection` 纳入大纲。
+4. **每问尽量带 `bonus`（加分项）**：答出它能脱颖而出——延伸到实现层面（如 V8 优化）、相邻知识（如 Worker）、工程实战（如怎么避免）。加分项把"答对"和"答好"区分开。**bonus 内容只写在 bonus 字段**（组件渲染为独立加分框），不要重复抄进 `a`——`a` 是主回答，`bonus` 是拔高要点，二者不重叠。
+5. **深度徽章五档五色**（热身灰 / 基础绿 / 标准蓝 / 进阶橙 / 硬核红），与全局详略表的熟悉度对应：面向"入门"读者的笔记追问链 depth 偏 1-3，面向"深入源码"的偏 3-5。省略 `depth` 时不显示徽章（适合只有 q/a 的轻量问答），不要为凑档位硬标。
+6. **答案默认折叠、点击显示（先想再看）**：模拟真实面试——先自己想，再点「显示参考答案」对照。阅读型笔记可传 `reveal="always"` 直接展开。禁止绕过组件手写问答列表。
+7. **追问链以短标签进大纲**：组件自动把每问以 `① 热身 · 问题摘要` 的短标签收录进右侧大纲（可跳转），问题全文不出现在大纲中。不要把追问链写成纯数组渲染的普通列表而绕过大纲；同理，其他可独立跳转的内容单元（如多个练习题、多个案例）也应挂 `data-toc-item`/`Subsection` 纳入大纲。
 
 ## 视觉规范（三层边界）
 
-| 层       | 包装                                            | 组件                                                                           |
-| -------- | ----------------------------------------------- | ------------------------------------------------------------------------------ |
-| 正文层   | 无边框无背景，直接落在页面上                    | Prose / Section 标题                                                           |
-| 可视化层 | VizBlock 统一包壳：边框 + 彩色标题栏 + 圆点标签 | Timeline / CompareTable / BarChart / DoDont / MemoryCard（**已内置，直接用**） |
-| 演示层   | 自带运行控制（播放/单步/重置 + 日志面板）       | PlayGround / 模拟器 / LogPanel                                                 |
+| 层       | 包装                                            | 组件                                                                                     |
+| -------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 正文层   | 无边框无背景，直接落在页面上                    | Prose / Section 标题                                                                     |
+| 可视化层 | VizBlock 统一包壳：边框 + 彩色标题栏 + 圆点标签 | Timeline / CompareTable / BarChart / DoDont / MemoryCard（**已内置，直接用**）           |
+| 演示层   | 代码呈现与交互演示（运行/切换/步进/日志）       | PlayGround / StepThrough / CodeBlock·DiffBlock·CodeTabs·CodeAnnotate / LogPanel / 模拟器 |
 
 - **禁止双重边框**：viz 组件已内置 VizBlock 包壳，不要再套 border div
 - 自定义可视化（无现成组件）用 `<VizBlock label="示意 / diagram" color="#8b5cf6">` 包壳；label 规范：中文短标签 + 空格 + 英文斜杠小写
-- **重点展示标准**：核心结论 → MemoryCard（≤3 个，多了稀释重点）；流程顺序 → Timeline；概念混淆 → CompareTable；写法对错 → DoDont；量级 → BarChart（注明"仅供直觉"）；一般提示 → 正文 `<strong>`/`<code>` 即可，不升级
-- **配色语义**：蓝 `#1677ff` 通用强调 / 紫 `#8b5cf6` 对比左·微任务 / 橙 `#f59e0b` 调用栈·同步·警告 / 绿 `#3fb950` 正确·渲染 / 红 `#f85149` 错误·危险
+- **重点展示标准**：核心结论 → MemoryCard（≤3 个，多了稀释重点）；流程顺序 → Timeline；概念混淆 → CompareTable；写法对错 → DoDont；量级 → BarChart（注明"仅供直觉"）；输出题 → OutputTimeline；其余认知类型查 COMPONENTS.md；一般提示 → 正文 `<strong>`/`<code>` 即可，不升级
+- **配色语义**：蓝 `#1677ff` 通用强调 / 紫 `#8b5cf6` 对比左·微任务 / 橙 `#f59e0b` 调用栈·同步·警告 / 绿 `#3fb950` 正确·渲染 / 红 `#f85149` 错误·危险 / 灰 `#9ca3af` 中性·热身（追问链热身档、无语义连线）；DiffBlock 增删行沿用绿/红语义；语义色单一来源在 `src/components/palette.ts`，组件内不得再散落硬编码语义色
+- **间距节奏**：VizBlock 包壳块统一 `my-5`（自带）；轻语义卡（Callout/SpecQuote/VersionNote/Prerequisite/CrossRef/Exercise/Quiz/Collapsible/CodeTabs）统一 `my-4`
+- **一知识点一主图**：同一知识点只保留一张 canonical 可视化——两种图形式复述同一信息即违规（反例：旧版事件循环笔记用 Timeline 和 FlowChart 各画了一遍循环）；换更合适的图时必须删除旧图，宁可少一块也不留重复
 - **红线**：正文不加 bg 容器；类比不加框（是叙事的一部分）；markdown 语法禁用
 
 ## 内容纯净（硬性）
@@ -136,11 +215,16 @@ import {
 ## 质量自查（提交前）
 
 - [ ] meta 五字段齐全，title ≤20 字
-- [ ] 大纲层级：Section/Subsection 有层次；追问链每问出现在大纲中
-- [ ] 可视化块 ≥4 且分布均匀（无连续两屏纯文字）
+- [ ] 合并检查已完成：确认无现有笔记/章节可承载本内容（或已合并进对应章节）
+- [ ] 已联网调研权威来源（官方文档/规范优先），关键结论有出处，规范级引用已注明
+- [ ] 大纲层级：Section/Subsection 有层次；追问链以短标签出现在大纲中
+- [ ] 可视化按需密度：每块有明确认知功能、无装饰性块；无连续三屏纯文字
+- [ ] 重点知识点做过可视化形式分析并走完四步决策流程：优先复用组件库/npm 包，新开发的组件已放 `src/components/` 并登记进 COMPONENTS.md
+- [ ] 写大纲前查过 PAINPOINTS.md，反复提问的知识点已做可视化升级
 - [ ] 每个输出题都有 OutputTimeline 逐条解读
 - [ ] 内容纯净：无对话痕迹、无任务元话语、无工具操作说明
 - [ ] FlowChart 节点/边完整可见（React Flow fitView 保证，不手写坐标）
+- [ ] 类比核查：无生活化故事；技术参照（如有）用的是高普及度技术且确有必要
 - [ ] `pnpm build` 通过（meta 校验是构建时强制的）
 
 ## 元约束（对本规范自身的约束）
