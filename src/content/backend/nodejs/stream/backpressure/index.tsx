@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
+import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
@@ -13,26 +13,25 @@ export default function Note() {
         <code>drain</code> 事件实现。
       </Conclusion>
 
-      <Section title="逐段拆解">
-        <Prose>
-          <p>
-            <strong>1. 两种模式</strong>
-            ：暂停模式下要主动 <code>read()</code> 拉数据；流动模式下数据自动推过来。{" "}
-            <code>pipe</code>/<code>pipeline</code> 会自动管理。
-          </p>
-          <p>
-            <strong>2. highWaterMark</strong>
-            ：内部缓冲区阈值（默认 64KB）。超过它 <code>write()</code> 返回 false——
-            这不是报错，只是"缓冲区满了，请等 drain"。
-          </p>
-          <p>
-            <strong>3. 正确姿势</strong>
-            ：永远用 <code>pipeline</code> 而不是手写 <code>on('data')</code>
-            ——它自动处理背压、错误传播和资源清理。
-          </p>
-        </Prose>
-        <CodeBlock
-          code={`// 错误：无视背压，文件多大内存涨多快
+      <Heading level={2} title="逐段拆解" />
+      <Paragraph>
+        <strong>1. 两种模式</strong>
+        ：暂停模式下要主动 <code>read()</code> 拉数据；流动模式下数据自动推过来。 <code>pipe</code>/
+        <code>pipeline</code> 会自动管理。
+      </Paragraph>
+      <Paragraph>
+        <strong>2. highWaterMark</strong>
+        ：内部缓冲区阈值（默认 64KB）。超过它 <code>write()</code> 返回 false——
+        这不是报错，只是"缓冲区满了，请等 drain"。
+      </Paragraph>
+      <Paragraph>
+        <strong>3. 正确姿势</strong>
+        ：永远用 <code>pipeline</code> 而不是手写 <code>on('data')</code>
+        ——它自动处理背压、错误传播和资源清理。
+      </Paragraph>
+
+      <CodeBlock
+        code={`// 错误：无视背压，文件多大内存涨多快
 readable.on('data', chunk => writable.write(chunk));
 
 // 正确：pipeline 全托管
@@ -44,35 +43,32 @@ await pipeline(
   createGzip(),
   fs.createWriteStream('big.log.gz'),
 );`}
-        />
-      </Section>
+      />
 
-      <Section title="交互演示">
-        <BackpressureDemo />
-      </Section>
+      <Heading level={2} title="交互演示" />
+      <BackpressureDemo />
 
-      <Section title="经典追问链">
-        <QAChain
-          items={[
-            {
-              q: "write() 返回 false 后继续 write 会怎样？",
-              a: "不会报错，数据继续进缓冲区并撑大内存——这正是很多手写流代码 OOM 的原因。返回 false 后应暂停生产，等 drain。",
-            },
-            {
-              q: "pipe 和 pipeline 的区别？",
-              a: "pipe 不传播上游错误、出错后不销毁流、不清理中间流，容易留下悬挂句柄。pipeline 一次性解决错误传播与清理，推荐永远用它。",
-            },
-            {
-              q: "objectMode 是什么？",
-              a: "让流以 JS 对象为数据单元而不是 Buffer，highWaterMark 的含义从字节变成对象个数。适合逐行解析、数据库游标等场景。",
-            },
-            {
-              q: "Web 流（ReadableStream）和 Node 流怎么互转？",
-              a: "Node 17+ 提供 Readable.fromWeb() / Readable.toWeb()。fetch 的 body 就是 Web 流，可用 Readable.fromWeb(res.body) 无缝接入 pipeline。",
-            },
-          ]}
-        />
-      </Section>
+      <Heading level={2} title="经典追问链" />
+      <QAChain
+        items={[
+          {
+            q: "write() 返回 false 后继续 write 会怎样？",
+            a: "不会报错，数据继续进缓冲区并撑大内存——这正是很多手写流代码 OOM 的原因。返回 false 后应暂停生产，等 drain。",
+          },
+          {
+            q: "pipe 和 pipeline 的区别？",
+            a: "pipe 不传播上游错误、出错后不销毁流、不清理中间流，容易留下悬挂句柄。pipeline 一次性解决错误传播与清理，推荐永远用它。",
+          },
+          {
+            q: "objectMode 是什么？",
+            a: "让流以 JS 对象为数据单元而不是 Buffer，highWaterMark 的含义从字节变成对象个数。适合逐行解析、数据库游标等场景。",
+          },
+          {
+            q: "Web 流（ReadableStream）和 Node 流怎么互转？",
+            a: "Node 17+ 提供 Readable.fromWeb() / Readable.toWeb()。fetch 的 body 就是 Web 流，可用 Readable.fromWeb(res.body) 无缝接入 pipeline。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

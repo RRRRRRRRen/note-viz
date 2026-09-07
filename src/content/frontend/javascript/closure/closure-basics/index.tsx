@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
+import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
@@ -11,27 +11,23 @@ export default function Note() {
         函数无论被传到哪里，都能访问定义处的变量——因为它的环境记录还被人引用着，不会被回收。
       </Conclusion>
 
-      <Section title="逐段拆解">
-        <Prose>
-          <p>
-            <strong>1. 词法作用域</strong>
-            ：作用域在写代码时就确定了，跟函数在哪调用无关。内层函数可以访问外层函数的变量。
-          </p>
-          <p>
-            <strong>2. 捕获的是引用不是值</strong>
-            ：闭包保存对外层变量环境的引用，外部变量后续被修改，闭包读到的是最新值。
-          </p>
-          <p>
-            <strong>3. 生命周期</strong>
-            ：只要闭包可达，被捕获的变量就不会被
-            GC。这正是闭包能"记住"状态的原因，也是内存泄漏的根源。
-          </p>
-        </Prose>
-      </Section>
+      <Heading level={2} title="逐段拆解" />
+      <Paragraph>
+        <strong>1. 词法作用域</strong>
+        ：作用域在写代码时就确定了，跟函数在哪调用无关。内层函数可以访问外层函数的变量。
+      </Paragraph>
+      <Paragraph>
+        <strong>2. 捕获的是引用不是值</strong>
+        ：闭包保存对外层变量环境的引用，外部变量后续被修改，闭包读到的是最新值。
+      </Paragraph>
+      <Paragraph>
+        <strong>3. 生命周期</strong>
+        ：只要闭包可达，被捕获的变量就不会被 GC。这正是闭包能"记住"状态的原因，也是内存泄漏的根源。
+      </Paragraph>
 
-      <Section title="经典输出题">
-        <CodeBlock
-          code={`for (var i = 0; i < 3; i++) {
+      <Heading level={2} title="经典输出题" />
+      <CodeBlock
+        code={`for (var i = 0; i < 3; i++) {
   setTimeout(() => console.log(i));
 }
 // 3 3 3 —— var 是函数作用域，三个闭包共享同一个 i
@@ -40,42 +36,41 @@ for (let i = 0; i < 3; i++) {
   setTimeout(() => console.log(i));
 }
 // 0 1 2 —— let 每轮迭代创建新的绑定`}
-        />
-        <p className="text-sm text-muted">
+      />
+      <Paragraph>
+        <span className="text-muted">
           修复 var 版本的老办法：用 IIFE 制造独立作用域{" "}
           <code className="rounded bg-surface-2 px-1">
             {"(function(j){ setTimeout(()=>console.log(j)) })(i)"}
           </code>
           。
-        </p>
-      </Section>
+        </span>
+      </Paragraph>
 
-      <Section title="闭包计数器（单步验证）">
-        <ClosureCounter />
-      </Section>
+      <Heading level={2} title="闭包计数器（单步验证）" />
+      <ClosureCounter />
 
-      <Section title="经典追问链">
-        <QAChain
-          items={[
-            {
-              q: "闭包一定造成内存泄漏吗？",
-              a: "不一定。泄漏指「不再需要却无法回收」。闭包是有意持有状态；只有当闭包本身已无用但被意外引用（如遗忘的事件监听器、定时器）时才是泄漏。",
-            },
-            {
-              q: "闭包和 class 怎么选？",
-              a: "需要私有状态且逻辑简单时闭包更轻；状态多、有继承需求、需要 instanceof 判断时用 class（或 #私有字段）。",
-            },
-            {
-              q: "循环里 await 闭包变量会怎样？",
-              a: "let 声明的迭代变量每轮独立，await 后再读也是当轮的值；var 则会读到循环结束后的最终值——异步回调经典事故。",
-            },
-            {
-              q: "React Hooks 和闭包什么关系？",
-              a: "每次渲染都是一个独立的闭包快照。Hooks 的「闭包陷阱」就是因为回调捕获了旧渲染的 state——这正是下一章 React 部分要展开的。",
-            },
-          ]}
-        />
-      </Section>
+      <Heading level={2} title="经典追问链" />
+      <QAChain
+        items={[
+          {
+            q: "闭包一定造成内存泄漏吗？",
+            a: "不一定。泄漏指「不再需要却无法回收」。闭包是有意持有状态；只有当闭包本身已无用但被意外引用（如遗忘的事件监听器、定时器）时才是泄漏。",
+          },
+          {
+            q: "闭包和 class 怎么选？",
+            a: "需要私有状态且逻辑简单时闭包更轻；状态多、有继承需求、需要 instanceof 判断时用 class（或 #私有字段）。",
+          },
+          {
+            q: "循环里 await 闭包变量会怎样？",
+            a: "let 声明的迭代变量每轮独立，await 后再读也是当轮的值；var 则会读到循环结束后的最终值——异步回调经典事故。",
+          },
+          {
+            q: "React Hooks 和闭包什么关系？",
+            a: "每次渲染都是一个独立的闭包快照。Hooks 的「闭包陷阱」就是因为回调捕获了旧渲染的 state——这正是下一章 React 部分要展开的。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

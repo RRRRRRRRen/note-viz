@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Conclusion, NoteShell, Prose, QAChain, Section } from "@/components/note";
+import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 
@@ -11,26 +11,23 @@ export default function Note() {
         自动批处理所有更新（包括 setTimeout/Promise 里），一次事件处理中改 10 次状态也只渲染一次。
       </Conclusion>
 
-      <Section title="渲染流水线">
-        <Prose>
-          <p>
-            <strong>1. Render 阶段</strong>
-            ：调用组件函数，计算新的元素树。这一阶段可被中断、可重放，必须保持纯函数。
-          </p>
-          <p>
-            <strong>2. Commit 阶段</strong>
-            ：把 diff 结果一次性写入 DOM，执行 layoutEffect。
-          </p>
-          <p>
-            <strong>3. 浏览器绘制</strong>：之后才轮到 useEffect（异步）、rAF 等。
-          </p>
-        </Prose>
-      </Section>
+      <Heading level={2} title="渲染流水线" />
+      <Paragraph>
+        <strong>1. Render 阶段</strong>
+        ：调用组件函数，计算新的元素树。这一阶段可被中断、可重放，必须保持纯函数。
+      </Paragraph>
+      <Paragraph>
+        <strong>2. Commit 阶段</strong>
+        ：把 diff 结果一次性写入 DOM，执行 layoutEffect。
+      </Paragraph>
+      <Paragraph>
+        <strong>3. 浏览器绘制</strong>：之后才轮到 useEffect（异步）、rAF 等。
+      </Paragraph>
 
-      <Section title="面试最爱：连续 setState">
-        <CodeBlock
-          lang="typescript"
-          code={`function handle() {
+      <Heading level={2} title="面试最爱：连续 setState" />
+      <CodeBlock
+        lang="typescript"
+        code={`function handle() {
   setCount(count + 1);   // 依赖本次渲染的 count = 0 → 1
   setCount(count + 1);   // 还是 0 → 1（count 是闭包里的旧值！）
   setCount(count + 1);   // 还是 1
@@ -41,35 +38,32 @@ export default function Note() {
   setCount(c => c + 1);  // +1
   // 结果：+3
 }`}
-        />
-      </Section>
+      />
 
-      <Section title="交互演示">
-        <BatchDemo />
-      </Section>
+      <Heading level={2} title="交互演示" />
+      <BatchDemo />
 
-      <Section title="经典追问链">
-        <QAChain
-          items={[
-            {
-              q: "React 18 之前 setTimeout 里的 setState 会批处理吗？",
-              a: "不会，每次 setState 都触发一次渲染。18 的 createRoot 之后所有更新默认批处理，除非放在 flushSync 里。",
-            },
-            {
-              q: "为什么 setState 后立刻读 state 还是旧值？",
-              a: "本次渲染的 state 是不可变快照。更新请求进入队列后，要等下一次渲染组件函数重新执行，才有新值。",
-            },
-            {
-              q: "useEffect 和 useLayoutEffect 的执行时机？",
-              a: "layoutEffect 在 DOM 变更后、浏览器绘制前同步执行（会阻塞绘制）；useEffect 在绘制后异步执行。测量 DOM 尺寸并立刻调整用后者。",
-            },
-            {
-              q: "Hooks 闭包陷阱怎么解？",
-              a: "useRef 保存最新值、函数式更新、或依赖数组里声明清楚。核心认知：每次渲染是独立的一次函数调用，各自有自己的闭包。",
-            },
-          ]}
-        />
-      </Section>
+      <Heading level={2} title="经典追问链" />
+      <QAChain
+        items={[
+          {
+            q: "React 18 之前 setTimeout 里的 setState 会批处理吗？",
+            a: "不会，每次 setState 都触发一次渲染。18 的 createRoot 之后所有更新默认批处理，除非放在 flushSync 里。",
+          },
+          {
+            q: "为什么 setState 后立刻读 state 还是旧值？",
+            a: "本次渲染的 state 是不可变快照。更新请求进入队列后，要等下一次渲染组件函数重新执行，才有新值。",
+          },
+          {
+            q: "useEffect 和 useLayoutEffect 的执行时机？",
+            a: "layoutEffect 在 DOM 变更后、浏览器绘制前同步执行（会阻塞绘制）；useEffect 在绘制后异步执行。测量 DOM 尺寸并立刻调整用后者。",
+          },
+          {
+            q: "Hooks 闭包陷阱怎么解？",
+            a: "useRef 保存最新值、函数式更新、或依赖数组里声明清楚。核心认知：每次渲染是独立的一次函数调用，各自有自己的闭包。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

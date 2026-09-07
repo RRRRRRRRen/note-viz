@@ -56,8 +56,8 @@ function TechSection(props: {
   }, [techActive]);
 
   return (
-    <div className="mb-3">
-      <div className="flex w-full items-center justify-between px-2 py-2">
+    <div className="mb-6">
+      <div className="flex w-full items-center justify-between px-2 py-2.5">
         <Link
           to={`${domainPrefix}/${tech.slug}`}
           className="text-[11px] font-bold tracking-[0.1em] text-foreground uppercase hover:text-accent"
@@ -75,7 +75,7 @@ function TechSection(props: {
         </button>
       </div>
       {open && (
-        <div className="mb-3 space-y-2">
+        <div className="mb-4 space-y-3.5">
           {tech.areas.map((area: TechTree["areas"][number]) => (
             <AreaGroup key={area.slug} area={area} segs={segs} notePath={notePath} />
           ))}
@@ -140,7 +140,7 @@ function AreaGroup(props: {
         </span>
       </button>
       {open && (
-        <div className="mt-0.5 mb-1 ml-4">
+        <div className="mt-1 mb-2 ml-4 space-y-1">
           {area.notes.map((n) => {
             const active = n.path === notePath;
             return (
@@ -148,7 +148,7 @@ function AreaGroup(props: {
                 key={n.path}
                 ref={active ? activeRef : undefined}
                 to={n.path}
-                className={`block rounded-md px-2 py-1 text-xs transition-colors ${
+                className={`block rounded-md px-2 py-1.5 text-xs transition-colors ${
                   active
                     ? "bg-accent/15 font-medium text-foreground"
                     : "text-muted hover:bg-surface-2 hover:text-foreground"
