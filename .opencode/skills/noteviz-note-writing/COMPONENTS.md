@@ -72,7 +72,7 @@
 
 - **签名**：`{ label?, direction?: "LR"|"TB", states: { id, label, kind?: "start"|"normal"|"terminal", color?, desc? }[], transitions: { from, to, label?, color?, dashed? }[] }`
 - **适用**：有限状态机——对象在少数状态间按条件迁移，且**状态数 ≤8**（Promise 三态、XMLHttpRequest readyState、git 引用状态、WebSocket 连接状态、文件读取状态）
-- **不适用**：状态只是流程中的一站、不会驻留/回迁（那是流程 → `Timeline`/`FlowChart`）；节点 >10 个（→ `FlowChart` 自动布局更稳）；需要在线交互改变状态的（→ `PlayGround`/演示层）
+- **不适用**：状态只是流程中的一站、不会驻留/回迁（那是流程 → `Timeline`/`FlowChart`）；节点 >10 个（→ `FlowChart` 自动布局更稳）；需要在线交互改变状态的（→ `PlayGround`/演示层）；**容器/队列的内容流转全景**——状态机只有状态标签、画不出容器语义（如事件循环的调用栈 + 双队列，用 VizBlock 包壳自研，参照 `event-loop-basics` 全景图）
 - **示例**：（新建后由首篇使用的笔记回填）
 
 ### `<LayerStack>` —— 层级包含
@@ -80,21 +80,21 @@
 - **签名**：`{ label?, title?, layers: { name, desc?, color?, emphasis? }[], direction?: "top-down"|"bottom-up" }`
 - **适用**：自上而下的分层结构，强调「谁在上面/谁包含谁/顺序执行」——调用栈帧、浏览器渲染管线分层、网络协议栈、缓存查找层级、事件冒泡层级、优先级排序
 - **不适用**：无序并列的对比（→ `CompareTable`）；各层之间有消息往返（→ `SequenceDiagram`）；层级只是背景知识而非本篇重点时不配组件
-- **示例**：（新建后回填）
+- **示例**：execution-context（执行上下文生命周期）
 
 ### `<MemoryMap>` —— 内存布局
 
 - **签名**：`{ label?, regions: { id, title, desc?, layout?: "column"|"wrap", color? }[], objects: { id, label, region, fields?: { name, value?, refTo?, color? }[], color?, unreachable? }[], note? }`
 - **适用**：讲**引用关系**必须画图的场景——闭包捕获了什么、深/浅拷贝复制了哪层、原型 `__proto__` 指向谁、GC 从根可达哪些对象（`unreachable: true` 标灰虚线）、`this` 指向
 - **不适用**：抽象逻辑流程（→ `FlowChart`）；只是列数据结构字段（正文列表即可）。引用以彩色 `refTo` chip 表示指向（与目标对象同色），不画跨区箭头——保证响应式下不脆断
-- **示例**：（新建后回填）
+- **示例**：ts-feature-surface（三层使用地图）
 
 ### `<SequenceDiagram>` —— 多角色时序
 
 - **签名**：`{ label?, actors: string[], messages: { from: number|string, to: number|string, label, dashed?, color?, note? }[] }`（`from`/`to` 用角色序号或名称；`dashed` 表示返回/异步）
 - **适用**：≥2 个角色之间的消息往返，顺序重要——事件循环各角色协作、HTTP 请求/响应握手、发布订阅、SSH 隧道转发链路、React 调度与渲染角色
 - **不适用**：单对象内部步骤（→ `Timeline`/`StepThrough`）；只讲结构不讲消息顺序（→ `FlowChart`）；角色 >5 个或消息 >12 条时改用 `FlowChart` + 文字
-- **示例**：（新建后回填）
+- **示例**：closure-basics（闭包捕获的内存结构）、prototype-chain（原型引用链）
 
 ### `<CompareTable>` —— 二元对比
 
@@ -139,42 +139,42 @@
 - **签名**：`{ kind?: "info"|"tip"|"warning"|"danger", title?, children }`（默认 info；各态默认标题：提示/技巧/注意/危险，可自定义 title）
 - **适用**：正文中需要跳出视觉层次的注意、坑、技巧、危险操作提醒（info 蓝 / tip 绿 / warning 橙 / danger 红，对齐全局配色语义）。轻语义块，**不计入可视化密度**，按语义自然使用，同屏 ≤3 个防噪音
 - **不适用**：核心结论（→ `MemoryCard`，有记忆价值才升级）；成段的错误代码对照（→ `DoDont`）；大段展开的机制解释（正文小节）
-- **示例**：（新建后回填）
+- **示例**：synthetic-events（合成事件委托与原生事件时序）
 
 ### `<Table>` —— 结构化明细
 
 - **签名**：`{ label?, head: string[], rows: ReactNode[][] }`
 - **适用**：≥3 行的二维明细数据：API 参考（方法/参数/返回）、配置项表、多对象属性对照（≥3 列时替代 CompareTable）
 - **不适用**：两列概念对照（→ `CompareTable`，有更强的视觉对照）；一两行数据用正文列出即可；快捷键（→ `ShortcutTable`，按键有专门渲染）
-- **示例**：（新建后回填）
+- **示例**：declaration-files（供应链信任边界）
 
 ### `<ShortcutTable>` —— 快捷键速查
 
 - **签名**：`{ label?, rows: { keys: string[], desc: string }[] }`（keys 内部用 `Kbd` 渲染，`+` 自动连接）
 - **适用**：工具类笔记的快捷键/命令组合速查（git、ssh、编辑器）
 - **不适用**：非按键类对照数据（→ `Table`）
-- **示例**：（新建后回填）
+- **示例**：flex-shrink-min-width（逐项收缩账本）
 
 ### `<VersionNote>` —— 版本差异
 
 - **签名**：`{ label?, note?, versions: { range, text, color? }[] }`（range 如 "Node < 20"，默认蓝，废弃/移除用红色 `#f85149`）
 - **适用**：同一行为在不同版本/环境下表现不同——Node/浏览器版本、ES 规范阶段、框架大版本迁移
 - **不适用**：普遍对错（→ `DoDont`）；仅一句话提到的差异（正文 `<strong>` 即可）
-- **示例**：（新建后回填）
+- **示例**：declaration-files（TS 7 起 lib 内嵌）、vite-transpile-ts（Vite 8 转译层换 Oxc）
 
 ### `<SpecQuote>` —— 规范引用
 
 - **签名**：`{ source, children }`（source 如 "ECMA-262 §8.4"）
 - **适用**：引用规范/官方文档原文并**必须注明出处**的场合（SKILL.md 联网调研要求的规范级引用载体）
 - **不适用**：非规范级的观点引用（正文引述即可）；转述（转述不加分隔，直接写进正文并括注出处）
-- **示例**：（新建后回填）
+- **示例**：auto-fill-auto-fit（MDN grid-template 列数规则原文）
 
 ### `<Prerequisite>` —— 前置知识
 
 - **签名**：`{ notes: { title, to }[], children? }`（to 为站内笔记路径）
 - **适用**：笔记开头声明学习本篇前应掌握/应读的站内笔记，建立知识图谱入口
 - **不适用**：结尾的延伸阅读（→ `CrossRef`）；一两处行内提及（正文链接即可）
-- **示例**：（新建后回填）
+- **示例**：auto-fill-auto-fit、registry-selection
 
 ### `<CrossRef>` —— 延伸阅读
 
@@ -198,7 +198,7 @@
 - **签名**：`{ label?, steps: { title, desc?, render?, color? }[], autoMs?, height? }`（控制条：上一步/下一步/重置 + 步骤圆点可跳转；传 `autoMs` 出现自动播放）
 - **适用**：**动态过程逐步推演**——每一步状态会变化、需要跟着走才能懂：事件循环单轮（同步→清微任务→取宏任务→渲染）、递归调用展开、Promise 链执行、react setState 到重渲染、git rebase 逐步搬提交。`render` 可放该步的状态快照（自定义 JSX/小图）
 - **不适用**：步骤固定、状态不变的顺序说明（→ `Timeline`，静态更轻）；调参数看结果的（→ 私有模拟器）；能直接跑的代码（→ `PlayGround`）
-- **示例**：（新建后回填）
+- **示例**：event-loop-basics（单轮循环推演）
 
 ### `<PlayGround>` —— 在线执行
 
@@ -225,14 +225,21 @@
 - **签名**：`{ tabs: { name, code, lang? }[] }`（标签切换，内部复用 CodeBlock）
 - **适用**：同一问题的多种解法/多种语言（手写防抖 vs 节流各自实现、ES5 vs ES6 写法、Node vs 浏览器 API）
 - **不适用**：两段代码是对错关系（→ `DoDont`）；需要并排对照而非切换的（→ `DoDont`/`DiffBlock`）
-- **示例**：（新建后回填）
+- **示例**：project-references
 
 ### `<CodeAnnotate>` —— 源码讲解
 
 - **签名**：`{ code, lang?, annotations: { line, text, color? }[] }`（左侧高亮代码，右侧按行号批注；line 为 1 起始行号）
 - **适用**：讲源码片段/规范算法实现——几个关键行各配一句"为什么"
 - **不适用**：批注多于代码（那是正文小节的事）；整文件源码（截取关键片段）
-- **示例**：（新建后回填）
+- **示例**：ts-roles（构建管线逐段讲解）
+
+### `ShellBlock` —— 终端输出块
+
+- **签名**：`{ children: string }`（`import { ShellBlock } from "@/components/demo/ShellBlock"`；黑底等宽 pre，无语法高亮）
+- **适用**：shell 命令与真实输出、配置文件（nginx.conf/Dockerfile/tsconfig）、JSON 等无高亮语言的代码呈现（git/ssh/docker 系列标配）
+- **不适用**：JS/TS 代码（→ `CodeBlock`，有 shiki 高亮与复制按钮）；对输出题的逐条解读（CodeBlock/ShellBlock 之后接 `OutputTimeline`）
+- **示例**：`daily-commands`、`nginx-conf-anatomy` 等
 
 ### `<Collapsible>` —— 次要细节收纳
 
@@ -246,7 +253,7 @@
 - **签名**：`{ question, answer, tags?, hint? }`（question/answer 可为字符串或 JSX；答案默认折叠，先做再看；tags 为考点标签）
 - **适用**：动手题、改错题、实现题——读者应该真的写/改代码再看答案（与 QAChain 区分：QAChain 是面试问答模拟，Exercise 是练习题）
 - **不适用**：面试追问答问练习（→ `QAChain`）；纯选择题（→ `Quiz`）
-- **示例**：（新建后回填）
+- **示例**：deploy-pipeline（离线灌注练习）
 
 ### `<Quiz>` —— 选择自测
 

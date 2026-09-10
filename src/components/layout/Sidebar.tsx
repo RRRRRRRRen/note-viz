@@ -14,8 +14,6 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   const notePath = location.pathname.startsWith("/note/")
     ? location.pathname
     : `/note/${segs.slice(0, 4).join("/")}`;
-  // tech 链接的目标领域前缀：始终挂当前领域，避免分类页丢前缀（/react → 分类不存在）
-  const domainPrefix = `/${domainSlug}`;
 
   return (
     <aside
@@ -26,25 +24,14 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
         知识导航 / {domain.label}
       </div>
       {domain.techs.map((tech) => (
-        <TechSection
-          key={tech.slug}
-          domainPrefix={domainPrefix}
-          tech={tech}
-          segs={segs}
-          notePath={notePath}
-        />
+        <TechSection key={tech.slug} tech={tech} segs={segs} notePath={notePath} />
       ))}
     </aside>
   );
 }
 
-function TechSection(props: {
-  domainPrefix: string;
-  tech: TechTree;
-  segs: string[];
-  notePath: string;
-}) {
-  const { domainPrefix, tech, segs, notePath } = props;
+function TechSection(props: { tech: TechTree; segs: string[]; notePath: string }) {
+  const { tech, segs, notePath } = props;
   const idx = segs[0] === "note" ? 2 : 1;
   const techSlug = segs[idx];
   const techActive = techSlug === tech.slug;
@@ -56,26 +43,24 @@ function TechSection(props: {
   }, [techActive]);
 
   return (
-    <div className="mb-6">
-      <div className="flex w-full items-center justify-between px-2 py-2.5">
-        <Link
-          to={`${domainPrefix}/${tech.slug}`}
-          className="text-[11px] font-bold tracking-[0.1em] text-foreground uppercase hover:text-accent"
-        >
+    <div className="mb-4">
+      {/* 整行都是展开热区，与下方分组头一致 */}
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="flex min-h-[32px] w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-surface-2"
+      >
+        <ChevronRight
+          size={13}
+          className={`shrink-0 text-muted transition-transform ${open ? "rotate-90" : ""}`}
+        />
+        <span className="text-[11px] font-bold tracking-[0.1em] text-foreground uppercase">
           {tech.label}
-        </Link>
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          aria-label={`${open ? "收起" : "展开"} ${tech.label}`}
-          className="p-1 text-muted hover:text-foreground"
-        >
-          <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
-        </button>
-      </div>
+        </span>
+      </button>
       {open && (
-        <div className="mb-4 space-y-3.5">
+        <div className="mb-2 space-y-2">
           {tech.areas.map((area: TechTree["areas"][number]) => (
             <AreaGroup key={area.slug} area={area} segs={segs} notePath={notePath} />
           ))}
@@ -134,8 +119,8 @@ function AreaGroup(props: {
           size={12}
           className={`shrink-0 text-muted transition-transform ${open ? "rotate-90" : ""}`}
         />
-        <span className="truncate">{area.label}</span>
-        <span className="ml-auto rounded border border-border px-1.5 py-px text-[10px] text-muted meta-mono">
+        <span className="min-w-0">{area.label}</span>
+        <span className="ml-auto shrink-0 rounded border border-border px-1.5 py-px text-[10px] text-muted meta-mono">
           {area.notes.length}
         </span>
       </button>
@@ -154,7 +139,7 @@ function AreaGroup(props: {
                     : "text-muted hover:bg-surface-2 hover:text-foreground"
                 }`}
               >
-                <span className="truncate">{n.meta.title}</span>
+                {n.meta.title}
               </Link>
             );
           })}

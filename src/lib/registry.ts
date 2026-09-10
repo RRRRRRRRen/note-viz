@@ -37,6 +37,21 @@ function notesUnder(prefix: string[], exact: boolean): NoteEntry[] {
   );
 }
 
+/** 按 taxonomy 的 order 声明排序笔记：已声明的按声明序在前，未声明的按 slug 排在后 */
+function sortByOrder(notes: NoteEntry[], order?: string[]): NoteEntry[] {
+  if (!order || order.length === 0) return notes;
+  const rank = new Map(order.map((slug, i) => [slug, i] as const));
+  const key = (n: NoteEntry) => n.slug[n.slug.length - 1] ?? "";
+  return [...notes].sort((a, b) => {
+    const ra = rank.get(key(a));
+    const rb = rank.get(key(b));
+    if (ra !== undefined && rb !== undefined) return ra - rb;
+    if (ra !== undefined) return -1;
+    if (rb !== undefined) return 1;
+    return key(a).localeCompare(key(b));
+  });
+}
+
 function buildTree(): DomainTree[] {
   return Object.entries(taxonomy).map(([domainSlug, domain]) => ({
     slug: domainSlug,
@@ -49,7 +64,7 @@ function buildTree(): DomainTree[] {
       areas: Object.entries(tech.children ?? {}).map(([areaSlug, area]) => ({
         slug: areaSlug,
         label: area.label,
-        notes: notesUnder([domainSlug, techSlug, areaSlug], true),
+        notes: sortByOrder(notesUnder([domainSlug, techSlug, areaSlug], true), area.order),
       })),
     })),
   }));
@@ -124,7 +139,7 @@ export function categoryContext(slugParts: string[]): CategoryContext | undefine
     ...(color !== undefined ? { color } : {}),
     ...(icon !== undefined ? { icon } : {}),
     childCategories: Object.entries(children).map(([slug, n]) => toChild(slug, n)),
-    notes: notesUnder(resolved, false),
+    notes: sortByOrder(notesUnder(resolved, false), node.order),
   };
 }
 
