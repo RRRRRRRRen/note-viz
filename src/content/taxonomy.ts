@@ -1,4 +1,4 @@
-import type { TaxonomyNode } from "../lib/types";
+import type { TaxonomyNode } from "../lib/types.ts";
 
 export const taxonomy: Record<string, TaxonomyNode> = {
   frontend: {

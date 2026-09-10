@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
+import { taxonomy } from "../src/content/taxonomy.ts";
+import type { TaxonomyNode } from "../src/lib/types.ts";
 
 const REQUIRED_KEYS = ["title", "description", "difficulty", "tags", "updated"] as const;
 
@@ -32,6 +34,31 @@ function validateMetaFile(filePath: string): string[] {
     if (!interrogative.test(title)) errors.push(`title 必须是问句（含 ？/怎么/为什么 等疑问主干）`);
   }
   return errors;
+}
+
+/** 递归收集内容目录下全部 ts/tsx 源文件（含笔记私有组件，链接校验用） */
+function findSourceFiles(base: string, out: string[] = []): string[] {
+  for (const e of fs.readdirSync(base, { withFileTypes: true })) {
+    const p = path.join(base, e.name);
+    if (e.isDirectory()) findSourceFiles(p, out);
+    else if (/\.(ts|tsx)$/.test(e.name)) out.push(p);
+  }
+  return out;
+}
+
+const LINK_RE = /["'](\/note\/[^"']+)["']/g;
+
+/** 沿 slug 段下钻 taxonomy；任一段缺失时返回缺失段名 */
+function resolveTaxonomyNode(segs: string[]): { node: TaxonomyNode | undefined; missing?: string } {
+  let children = taxonomy;
+  let node: TaxonomyNode | undefined;
+  for (const seg of segs) {
+    const next = children[seg];
+    if (!next) return { node: undefined, missing: seg };
+    node = next;
+    children = node.children ?? {};
+  }
+  return { node };
 }
 
 function toImportPath(contentDir: string, noteDir: string): string {
@@ -75,6 +102,40 @@ export function contentScan(): Plugin {
         }
         for (const err of validateMetaFile(metaPath)) {
           this.error(`[note-viz] ${rel}/meta.ts ${err}`);
+          failed = true;
+        }
+      }
+      // ---- 一致性闸门 1：正文中的内部链接必须指向存在的笔记 ----
+      const validPaths = new Set(
+        noteDirs.map((d) => `/note/${path.relative(contentDir, d).split(path.sep).join("/")}`),
+      );
+      for (const file of findSourceFiles(contentDir)) {
+        const src = fs.readFileSync(file, "utf-8");
+        for (const match of src.matchAll(LINK_RE)) {
+          const target = match[1] ?? "";
+          if (!validPaths.has(target) && !validPaths.has(decodeURI(target))) {
+            this.error(
+              `[note-viz] 内部链接目标不存在: ${target}（${path.relative(process.cwd(), file)}）`,
+            );
+            failed = true;
+          }
+        }
+      }
+      // ---- 一致性闸门 2：每篇笔记必须登记进 taxonomy（所属知识面存在且列入 order）----
+      for (const dir of noteDirs) {
+        const segs = path.relative(contentDir, dir).split(path.sep);
+        const rel = path.relative(process.cwd(), dir);
+        const area = resolveTaxonomyNode(segs.slice(0, -1));
+        if (!area.node) {
+          this.error(`[note-viz] 笔记目录未在 taxonomy.ts 登记（缺 "${area.missing}" 段）: ${rel}`);
+          failed = true;
+          continue;
+        }
+        const noteSlug = segs[segs.length - 1] ?? "";
+        if (!(area.node.order ?? []).includes(noteSlug)) {
+          this.error(
+            `[note-viz] 笔记未列入所属知识面的 order 声明: ${rel}（在 taxonomy.ts 补 "${noteSlug}"）`,
+          );
           failed = true;
         }
       }

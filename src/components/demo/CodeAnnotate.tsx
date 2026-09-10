@@ -1,16 +1,6 @@
 import { useEffect, useState } from "react";
-import { createHighlighter, type Highlighter } from "shiki";
+import { getHighlighter } from "@/lib/highlight";
 import { PALETTE } from "../palette";
-
-let highlighterPromise: Promise<Highlighter> | null = null;
-
-function getHighlighter(): Promise<Highlighter> {
-  highlighterPromise ??= createHighlighter({
-    themes: ["github-dark-default"],
-    langs: ["javascript", "typescript"],
-  });
-  return highlighterPromise;
-}
 
 export interface CodeAnnotation {
   /** 1 起始的代码行号 */

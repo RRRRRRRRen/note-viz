@@ -35,7 +35,7 @@ pnpm preview    # 预览 dist（AI 禁止启动）
 1. **一篇一问**：笔记按知识点组织而非综合指南——一篇笔记 = 一个知识点 = 一个问句标题；话题知识点多时先出拆分表格再逐篇写
 2. **禁止跳过大纲确认直接动笔**——先产出大纲提案（固定表格：标题 / 知识点 / 难度，每行一篇笔记）+ 询问熟悉程度，用户确认后才逐篇写正文
 3. 内容规范、组件 API、视觉规范、详略表全部在 skill 文件里（`.opencode/skills/noteviz-note-writing/SKILL.md`）
-4. 组件签名以源码为准：`src/components/note.tsx`（排版）、`src/components/viz.tsx`（可视化）
+4. 组件签名以源码为准：`src/components/note.tsx`（排版）、`src/components/viz/`（可视化目录）
 5. 构建时自动扫描注册笔记并校验 meta 五字段，缺失直接报错
 
 ## 验证

@@ -17,12 +17,21 @@ importers:
       framer-motion:
         specifier: ^13.1.1
         version: 13.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      lucide-react:
+        specifier: ^1.34.0
+        version: 1.34.0(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
       react-dom:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
+      react-router-dom:
+        specifier: ^7.18.2
+        version: 7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      shiki:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.3
@@ -39,21 +48,12 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.1.0
         version: 6.1.0(vite@8.2.2(@types/node@26.4.0)(jiti@2.7.0))
-      lucide-react:
-        specifier: ^1.34.0
-        version: 1.34.0(react@19.2.8)
       oxfmt:
         specifier: ^0.65.0
         version: 0.65.0
       oxlint:
         specifier: ^1.80.0
         version: 1.80.0
-      react-router-dom:
-        specifier: ^7.18.2
-        version: 7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      shiki:
-        specifier: ^4.4.3
-        version: 4.4.3
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3

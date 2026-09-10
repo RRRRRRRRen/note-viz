@@ -1,4 +1,5 @@
 import { notes } from "virtual:content-registry";
+import { PALETTE } from "../components/palette";
 import type { NoteEntry, TaxonomyNode } from "./types";
 import { taxonomy } from "../content/taxonomy";
 
@@ -56,7 +57,7 @@ function buildTree(): DomainTree[] {
   return Object.entries(taxonomy).map(([domainSlug, domain]) => ({
     slug: domainSlug,
     label: domain.label,
-    color: domain.color ?? "#1677ff",
+    color: domain.color ?? PALETTE.blue,
     icon: domain.icon ?? "Globe",
     techs: Object.entries(domain.children ?? {}).map(([techSlug, tech]) => ({
       slug: techSlug,

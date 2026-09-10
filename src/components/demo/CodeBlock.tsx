@@ -1,16 +1,6 @@
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createHighlighter, type Highlighter } from "shiki";
-
-let highlighterPromise: Promise<Highlighter> | null = null;
-
-function getHighlighter(): Promise<Highlighter> {
-  highlighterPromise ??= createHighlighter({
-    themes: ["github-dark-default"],
-    langs: ["javascript", "typescript"],
-  });
-  return highlighterPromise;
-}
+import { getHighlighter } from "@/lib/highlight";
 
 interface CodeBlockProps {
   code: string;

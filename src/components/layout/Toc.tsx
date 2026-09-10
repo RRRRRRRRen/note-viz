@@ -47,6 +47,8 @@ export function extractHeadings(container: HTMLElement): TocItem[] {
         target.id = id;
       }
     }
+    // 已有 id 也要登记进 used，避免重复提取时 slugify 撞出重复 id
+    used.add(id);
     items.push({ id, title, level: el.tagName === "H2" ? 2 : 3 });
   });
   return items;
@@ -60,15 +62,34 @@ export function Toc({ containerRef, resetKey }: TocProps) {
   const [items, setItems] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
 
-  // 内容渲染完成后提取标题
+  // 提取标题。笔记组件经 Suspense 异步挂载，可能晚于本 effect 首跑——
+  // 靠 MutationObserver 监听容器子树，内容挂载后再补提取；拿到非空大纲即停听。
   useEffect(() => {
     setItems([]);
     setActiveId("");
-    const timer = setTimeout(() => {
-      const el = containerRef.current;
-      if (el) setItems(extractHeadings(el));
-    }, 60);
-    return () => clearTimeout(timer);
+    const el = containerRef.current;
+    if (!el) return;
+    let timer = 0;
+    let done = false;
+    const extract = () => {
+      timer = 0;
+      const next = extractHeadings(el);
+      done = next.length > 0;
+      if (done) observer.disconnect();
+      setItems(next);
+    };
+    const schedule = () => {
+      if (!timer) timer = window.setTimeout(extract, 100);
+    };
+    const observer = new MutationObserver(() => {
+      if (!done) schedule();
+    });
+    observer.observe(el, { childList: true, subtree: true });
+    schedule();
+    return () => {
+      observer.disconnect();
+      if (timer) window.clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey]);
 
