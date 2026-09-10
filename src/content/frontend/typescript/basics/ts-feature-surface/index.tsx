@@ -8,6 +8,7 @@ import {
   Prerequisite,
   Table,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -46,17 +47,17 @@ export default function Note() {
           {
             name: "日常主力（九成书写）",
             desc: "类型标注 · type/interface · 联合与字面量联合 · 泛型的使用 · 收窄 · as const · Partial/Pick/Omit/Record · import type",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             name: "读得懂为主（库作者主战场）",
             desc: "条件类型 + infer · 映射类型修饰符 · 模板字面量类型 · 可变元组 · 递归类型——应用层需要能读懂库的报错，很少需要写",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             name: "应用层基本不碰",
             desc: "namespace（运行时已死）· const enum（被单文件转译器淘汰）· 装饰器（除非框架约定）· 主动 declaration merging · unique symbol",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
         ]}
       />
@@ -198,7 +199,7 @@ export default function Note() {
       <MemoryCard keyword="应用层是类型消费者">
         复杂度被库吸收——你标 props 享受的全链路检查，是库作者的体操换来的。
       </MemoryCard>
-      <MemoryCard keyword="三行说不清就简化" color="#8b5cf6">
+      <MemoryCard keyword="三行说不清就简化" color={PALETTE.purple}>
         类型是写给人看的合同。应用代码里类型体操是负资产：编译慢、报错天书、可读性差。
       </MemoryCard>
 

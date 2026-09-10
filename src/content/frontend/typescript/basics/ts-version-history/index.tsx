@@ -7,6 +7,7 @@ import {
   Timeline,
   VersionNote,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -34,12 +35,12 @@ export default function Note() {
       <Timeline
         label="六条时代主线 / eras"
         steps={[
-          { label: "1.x 立项", sub: "2012-14 · 带标签的 JS", color: "#9ca3af" },
-          { label: "2.x 类型奠基", sub: "strictNullChecks · 条件类型", color: "#8b5cf6" },
-          { label: "3.x 工程化", sub: "references · import type", color: "#1677ff" },
-          { label: "4.x 类型巅峰", sub: "模板字面量 · satisfies", color: "#f59e0b" },
-          { label: "5.x 现代化", sub: "标准装饰器 · 提速", color: "#3fb950" },
-          { label: "6→7 原生化", sub: "过渡 · Go 重写", color: "#f85149" },
+          { label: "1.x 立项", sub: "2012-14 · 带标签的 JS", color: PALETTE.gray },
+          { label: "2.x 类型奠基", sub: "strictNullChecks · 条件类型", color: PALETTE.purple },
+          { label: "3.x 工程化", sub: "references · import type", color: PALETTE.blue },
+          { label: "4.x 类型巅峰", sub: "模板字面量 · satisfies", color: PALETTE.orange },
+          { label: "5.x 现代化", sub: "标准装饰器 · 提速", color: PALETTE.green },
+          { label: "6→7 原生化", sub: "过渡 · Go 重写", color: PALETTE.red },
         ]}
       />
 
@@ -122,13 +123,13 @@ export default function Note() {
       <VersionNote
         label="同一选项的三段命运 / deprecation ladder"
         versions={[
-          { range: "TS 5.x", text: "进入废弃名单：仍可用，文档标记弃用", color: "#9ca3af" },
+          { range: "TS 5.x", text: "进入废弃名单：仍可用，文档标记弃用", color: PALETTE.gray },
           {
             range: "6.0",
             text: '改默认值并发出警告，ignoreDeprecations: "6.0" 可临时缓冲',
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
-          { range: "7.0", text: "硬移除：写了直接报错，缓冲阀失效", color: "#f85149" },
+          { range: "7.0", text: "硬移除：写了直接报错，缓冲阀失效", color: PALETTE.red },
         ]}
       />
       <Callout kind="warning" title="三个升级误区">
@@ -182,7 +183,7 @@ export default function Note() {
       <MemoryCard keyword="现代 TS 始于 2.x">
         strictNullChecks、控制流分析、条件类型——今天写代码的每一刻都踩在 2.x 的地基上。
       </MemoryCard>
-      <MemoryCard keyword="类型主场，语法跟 stage 3" color="#8b5cf6">
+      <MemoryCard keyword="类型主场，语法跟 stage 3" color={PALETTE.purple}>
         3.7 之后 TS 不再抢跑 JS 语法：它是类型系统，不是预言机。破坏走「废弃→警告→硬移除」三级火箭。
       </MemoryCard>
 

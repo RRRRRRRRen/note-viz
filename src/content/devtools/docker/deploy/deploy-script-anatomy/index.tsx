@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeAnnotate, Exercise, ShellBlock } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, OutputTimeline, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 /** deploy.sh 逻辑骨架（单引号数组拼接，避免模板字符串与 shell 变量语法冲突） */
 const SCRIPT = [
@@ -75,52 +76,52 @@ export default function Note() {
           {
             line: 2,
             text: "全脚本最重要的一行：任何命令以非零状态结束，整个脚本立即中止。没有它，build 失败后脚本会继续 push——把旧镜像推上去还报告成功。",
-            color: "#f85149",
+            color: PALETTE.red,
           },
           {
             line: 4,
             text: "环境约定写成常量：仓库地址与材料根目录，换环境才需要改；每次运行会变的输入（镜像名、版本号）则从参数来。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             line: 10,
             text: "getopts 是 bash 的内置参数解析器（会认即可，现代脚本已少手写）：引号串是参数清单，字母带冒号表示「该参数必须跟一个值」。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             line: 18,
             text: "[ -z xxx ] 判断字符串为空。必填参数缺失就在入口拦住并打印用法——防呆逻辑前置，而不是跑到一半才炸。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             line: 23,
             text: "两行拼出全程的路标：镜像全名三段式「仓库/名字:tag」；材料目录 = /home + 镜像名——目录名必须与镜像名一致，这是个没写在注释里的暗约定。",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             line: 26,
             text: "存在性检查：目录、Dockerfile 不在就立即退出。把「环境没准备好」的失败拦在构建开始之前。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             line: 33,
             text: "从这一刻起，脚本的「当前位置」就是材料目录——后面 build 的那个 . 指向的就是这里，COPY 的 ./conf、./dist 也从这里算。",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
           {
             line: 35,
             text: "清理段：本地有同仓库旧镜像就删掉当前 tag。实际上可以整段删——同名 tag 重新 build 会自动顶掉旧的；它只是保持列表干净的化妆步骤。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             line: 39,
             text: "干活 ①：在材料目录装配镜像并打上完整三段式 tag。上下文就是 cd 进来的这个目录。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             line: 40,
             text: "干活 ②：推上私服。前提是这台机器 docker login 过——凭证存在 ~/.docker/config.json，脚本里没有 login，换新机器跑第一步就会死在这里。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
         ]}
       />
@@ -217,7 +218,7 @@ const args = parseArgs(["-n", "cnsig-ems-ui", "-v", "1.0.1"])
         ]}
       />
 
-      <MemoryCard keyword="脚本是接口，不是引擎" color="#1677ff">
+      <MemoryCard keyword="脚本是接口，不是引擎" color={PALETTE.blue}>
         <p>
           部署脚本的骨架四件事：
           <strong>set -e 快速失败 → getopts 收参 → 校验拦错 → cd 进材料目录 build + push</strong>

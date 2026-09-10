@@ -8,6 +8,7 @@ import {
   Prerequisite,
   StateFlow,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -88,10 +89,10 @@ console.log('Inside global execution context');
         label="单个上下文的生命周期 / context lifecycle"
         direction="LR"
         states={[
-          { id: "call", label: "函数被调用", kind: "start", color: "#f59e0b" },
-          { id: "create", label: "创建阶段", desc: "绑定 this · 登记声明", color: "#1677ff" },
-          { id: "run", label: "执行阶段", desc: "逐行赋值与调用", color: "#f59e0b" },
-          { id: "done", label: "出栈等待 GC", kind: "terminal", color: "#9ca3af" },
+          { id: "call", label: "函数被调用", kind: "start", color: PALETTE.orange },
+          { id: "create", label: "创建阶段", desc: "绑定 this · 登记声明", color: PALETTE.blue },
+          { id: "run", label: "执行阶段", desc: "逐行赋值与调用", color: PALETTE.orange },
+          { id: "done", label: "出栈等待 GC", kind: "terminal", color: PALETTE.gray },
         ]}
         transitions={[
           { from: "call", to: "create", label: "新上下文压栈" },
@@ -129,14 +130,14 @@ console.log('Inside global execution context');
             title: "调用栈（栈帧）",
             desc: "上下文的壳，随调用压入弹出",
             layout: "column",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             id: "heap",
             title: "堆（环境记录）",
             desc: "声明登记在这里；规范模型，对应 V8 堆上的 Context 对象",
             layout: "wrap",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
         ]}
         objects={[
@@ -144,7 +145,7 @@ console.log('Inside global execution context');
             id: "firstCtx",
             region: "stack",
             label: "first() 上下文（栈顶）",
-            color: "#f59e0b",
+            color: PALETTE.orange,
             fields: [
               { name: "[[LexicalEnv]]", refTo: "firstEnv" },
               { name: "this", value: "undefined" },
@@ -154,14 +155,14 @@ console.log('Inside global execution context');
             id: "globalCtx",
             region: "stack",
             label: "全局上下文（栈底）",
-            color: "#f59e0b",
+            color: PALETTE.orange,
             fields: [{ name: "[[LexicalEnv]]", refTo: "globalEnv" }],
           },
           {
             id: "firstEnv",
             region: "heap",
             label: "first 的环境记录",
-            color: "#1677ff",
+            color: PALETTE.blue,
             fields: [
               { name: "outer", refTo: "globalEnv" },
               { name: "second", value: "<function>" },
@@ -171,7 +172,7 @@ console.log('Inside global execution context');
             id: "globalEnv",
             region: "heap",
             label: "全局环境记录",
-            color: "#1677ff",
+            color: PALETTE.blue,
             fields: [
               { name: "outer", value: "null" },
               { name: "first", value: "<function>" },

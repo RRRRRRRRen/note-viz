@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Exercise, ShellBlock, StepThrough } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, SpecQuote, Timeline } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -34,10 +35,10 @@ export default function Note() {
       <Timeline
         label="上下文先于清单 / context before build"
         steps={[
-          { label: "本机目录（上下文）", sub: "docker build .", color: "#f59e0b" },
-          { label: "整体打包上传", sub: "全部文件，先搬完", color: "#8b5cf6" },
-          { label: "构建引擎（守护进程/VM）", sub: "收到完整上下文", color: "#1677ff" },
-          { label: "逐行执行 Dockerfile", sub: "COPY 从中挑文件", color: "#3fb950" },
+          { label: "本机目录（上下文）", sub: "docker build .", color: PALETTE.orange },
+          { label: "整体打包上传", sub: "全部文件，先搬完", color: PALETTE.purple },
+          { label: "构建引擎（守护进程/VM）", sub: "收到完整上下文", color: PALETTE.blue },
+          { label: "逐行执行 Dockerfile", sub: "COPY 从中挑文件", color: PALETTE.green },
         ]}
       />
 
@@ -95,8 +96,8 @@ docker build ... docker/             # ② 上下文 = docker/，
 
       <CompareTable
         label="黑名单 vs 白名单 / ignore vs clean context"
-        left={{ title: ".dockerignore 黑名单", color: "#f59e0b" }}
-        right={{ title: "小目录白名单", color: "#3fb950" }}
+        left={{ title: ".dockerignore 黑名单", color: PALETTE.orange }}
+        right={{ title: "小目录白名单", color: PALETTE.green }}
         rows={[
           { aspect: "形态", left: "仓库根做上下文 + 排除清单", right: "专门的干净目录做上下文" },
           { aspect: "心智", left: "全部有资格，按名单剔除", right: "挑出来的才有资格" },
@@ -129,22 +130,22 @@ docker build ... docker/             # ② 上下文 = docker/，
           {
             title: "FROM nginx:stable-alpine",
             desc: "基础镜像没变，命中缓存，瞬间完成。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             title: "COPY ./conf/nginx.conf /etc/nginx/nginx.conf",
             desc: "对比上下文里的 conf/nginx.conf：内容没改，命中缓存，复用。",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
           {
             title: "COPY ./dist /home/cnsig/cnsig-ems-ui",
             desc: "对比上下文里的 dist/：文件变了，这层失效——重新执行 COPY，产出新的文件层。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             title: "后续所有指令",
             desc: "缓存链到这里已断，本行之后（若还有）的每一层都要重做。本清单只有三行，损失到此为止。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
         ]}
       />
@@ -157,7 +158,7 @@ docker build ... docker/             # ② 上下文 = docker/，
         三行清单收益虽小，习惯值得现在养成。
       </Paragraph>
 
-      <MemoryCard keyword="上下文是入场费，缓存按「指令 + 输入」复用" color="#1677ff">
+      <MemoryCard keyword="上下文是入场费，缓存按「指令 + 输入」复用" color={PALETTE.blue}>
         <p>
           build 第一步把上下文<strong>整体打包上传</strong>，COPY
           从中挑文件是上传之后的事——上下文体积决定 下限，与清单内容无关。控制手段：.dockerignore

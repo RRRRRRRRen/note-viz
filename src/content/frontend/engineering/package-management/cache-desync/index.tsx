@@ -8,6 +8,7 @@ import {
   Table,
 } from "@/components/viz";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -56,22 +57,22 @@ export default function Note() {
           {
             name: "④ 进程内存态",
             desc: "源 = 磁盘上的一切。dev server / IDE 语言服务持有的模块图、文件监听状态",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             name: "③ 下载缓存",
             desc: "源 = registry。pnpm store / npm cache，内容寻址 + integrity 校验",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             name: "② 构建缓存",
             desc: "源 = 源码 + 构建配置。Vite 预构建缓存（node_modules/.vite）、tsc 的 .tsbuildinfo、webpack filesystem cache",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             name: "① node_modules",
             desc: "源 = lockfile。安装的物化产物，增量式更新",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
         ]}
       />
@@ -184,7 +185,7 @@ $ pnpm install           # 五分钟后，问题没了
       <MemoryCard keyword="删除 = 手动失效">
         缓存有效的前提是与数据源一致；失效机制有缺口时，「删了重装」就是最后的手动失效手段。它有效不等于缓存坏了。
       </MemoryCard>
-      <MemoryCard keyword="删哪层有效 = 诊断信号" color="#8b5cf6">
+      <MemoryCard keyword="删哪层有效 = 诊断信号" color={PALETTE.purple}>
         四层缓存各有数据源：删 node_modules 有效指向 lockfile 脱节；删构建缓存有效指向 key
         不完备；重启进程有效指向内存态。按成本从低到高逐层试。
       </MemoryCard>

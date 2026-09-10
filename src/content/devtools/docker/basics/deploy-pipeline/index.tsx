@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Exercise } from "@/components/demo";
 import { BarChart, CrossRef, DoDont, MemoryCard, Table, Timeline } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -26,12 +27,12 @@ export default function Note() {
       <Timeline
         label="前端容器部署全景 / deploy pipeline"
         steps={[
-          { label: "代码仓库", sub: "git push / 手动打包触发", color: "#9ca3af" },
-          { label: "构建机：pnpm build", sub: "产出 dist/", color: "#f59e0b" },
-          { label: "docker build", sub: "COPY dist 装配成镜像", color: "#1677ff" },
-          { label: "镜像仓库（私服）", sub: "docker push 中转", color: "#8b5cf6" },
-          { label: "K8s 集群", sub: "docker pull + 更新 Pod", color: "#3fb950" },
-          { label: "用户浏览器", sub: "HTTP :80/:443 拿到页面", color: "#1677ff" },
+          { label: "代码仓库", sub: "git push / 手动打包触发", color: PALETTE.gray },
+          { label: "构建机：pnpm build", sub: "产出 dist/", color: PALETTE.orange },
+          { label: "docker build", sub: "COPY dist 装配成镜像", color: PALETTE.blue },
+          { label: "镜像仓库（私服）", sub: "docker push 中转", color: PALETTE.purple },
+          { label: "K8s 集群", sub: "docker pull + 更新 Pod", color: PALETTE.green },
+          { label: "用户浏览器", sub: "HTTP :80/:443 拿到页面", color: PALETTE.blue },
         ]}
       />
 
@@ -120,9 +121,9 @@ export default function Note() {
         label="基础镜像体积对比 / image size"
         title="解压后体积（MB）· 仅供直觉"
         items={[
-          { label: "nginx:latest（Debian）", value: 190, color: "#f85149", suffix: "MB" },
-          { label: "nginx:stable-alpine", value: 45, color: "#3fb950", suffix: "MB" },
-          { label: "其中 alpine 底座", value: 8, color: "#9ca3af", suffix: "MB" },
+          { label: "nginx:latest（Debian）", value: 190, color: PALETTE.red, suffix: "MB" },
+          { label: "nginx:stable-alpine", value: 45, color: PALETTE.green, suffix: "MB" },
+          { label: "其中 alpine 底座", value: 8, color: PALETTE.gray, suffix: "MB" },
         ]}
       />
 
@@ -134,7 +135,7 @@ export default function Note() {
         glibc 特性的二进制会不兼容——纯静态 托管场景完全碰不到，所以前端镜像放心用。
       </Paragraph>
 
-      <MemoryCard keyword="五步链路：build → build → push → pull → run" color="#1677ff">
+      <MemoryCard keyword="五步链路：build → build → push → pull → run" color={PALETTE.blue}>
         <p>
           <code>pnpm build</code> 产 dist（内容）；<code>docker build</code> 装 成镜像（装配）；
           <code>docker push</code> 推私服（分发）；集群 <code>pull</code> +

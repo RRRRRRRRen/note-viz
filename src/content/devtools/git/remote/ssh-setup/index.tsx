@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, DoDont, MemoryCard, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -30,10 +31,10 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "git", label: "git push", color: "#1677ff" },
-            { id: "challenge", label: "服务器：随机挑战串 + 你的公钥", color: "#f59e0b" },
-            { id: "sign", label: "本机 ssh-agent：私钥签名", color: "#8b5cf6" },
-            { id: "verify", label: "服务器：公钥验签 → 放行", color: "#3fb950" },
+            { id: "git", label: "git push", color: PALETTE.blue },
+            { id: "challenge", label: "服务器：随机挑战串 + 你的公钥", color: PALETTE.orange },
+            { id: "sign", label: "本机 ssh-agent：私钥签名", color: PALETTE.purple },
+            { id: "verify", label: "服务器：公钥验签 → 放行", color: PALETTE.green },
           ],
           edges: [
             { source: "git", target: "challenge", label: "发起连接" },
@@ -87,7 +88,7 @@ Host github.com
   AddKeysToAgent yes
   UseKeychain yes
   IdentityFile ~/.ssh/id_ed25519`}</ShellBlock>
-      <MemoryCard keyword="私钥不出门，公钥随便贴" color="#8b5cf6">
+      <MemoryCard keyword="私钥不出门，公钥随便贴" color={PALETTE.purple}>
         <p>
           密钥对认证的全部安全模型一句话：公钥是锁、私钥是钥匙——锁可以公开挂在网上，钥匙只在你机器里。判断文件：「.pub」结尾的是公钥可外传；不带后缀的是私钥，
           泄露 = 身份被盗，立刻在平台吊销并重新生成。
@@ -131,7 +132,7 @@ Host github-work
         label="两种协议选型 / https vs ssh"
         left={{
           title: "HTTPS（token 认证）",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "零配置开箱即用，clone 即可读",
             "推送需 Personal Access Token（密码已废弃）",
@@ -142,7 +143,7 @@ Host github-work
         }}
         right={{
           title: "SSH（密钥认证）",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "一次配置，之后 push/pull 全免认证",
             "私钥本机持有，不经过网络传输",

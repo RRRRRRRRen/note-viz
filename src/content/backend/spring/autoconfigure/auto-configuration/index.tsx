@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline, VizBlock } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -43,7 +44,7 @@ export default function Note() {
         约定优于配置的核心思想。后面所有机制（imports 清单、类型契约、条件装配）都围绕这一句话展开。
       </Paragraph>
 
-      <MemoryCard keyword="两个条件，缺一不可" color="#1677ff">
+      <MemoryCard keyword="两个条件，缺一不可" color={PALETTE.blue}>
         一个自动配置类要生效，必须同时满足：<strong>① 类上贴 @AutoConfiguration</strong>
         （本质是 @Configuration 的派生，附带 before/after 排序语义）+{" "}
         <strong>② 类名登记在 AutoConfiguration.imports</strong>
@@ -70,7 +71,7 @@ export default function Note() {
 
       <PlainCode
         label="清单 / AutoConfiguration.imports"
-        color="#f59e0b"
+        color={PALETTE.orange}
         code={`# 位置：META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
 com.acme.redis.config.AcmeRedisAutoConfiguration
 com.acme.redis.config.AcmeCacheAutoConfiguration
@@ -87,14 +88,14 @@ com.acme.web.config.AcmeWebAutoConfiguration
         data={{
           direction: "TB",
           nodes: [
-            { id: "app", label: "@SpringBootApplication 启动", color: "#1677ff" },
-            { id: "enable", label: "@EnableAutoConfiguration", color: "#1677ff" },
-            { id: "selector", label: "AutoConfigurationImportSelector", color: "#8b5cf6" },
-            { id: "scan", label: "ClassLoader.getResources 遍历 classpath", color: "#f59e0b" },
-            { id: "collect", label: "收集候选类（starter + 官方清单）", color: "#f59e0b" },
-            { id: "sort", label: "AutoConfigurationSorter 拓扑排序", color: "#8b5cf6" },
-            { id: "filter", label: "@ConditionalOnXxx 条件过滤", color: "#f59e0b" },
-            { id: "register", label: "注册为配置类 → 解析 @Bean", color: "#3fb950" },
+            { id: "app", label: "@SpringBootApplication 启动", color: PALETTE.blue },
+            { id: "enable", label: "@EnableAutoConfiguration", color: PALETTE.blue },
+            { id: "selector", label: "AutoConfigurationImportSelector", color: PALETTE.purple },
+            { id: "scan", label: "ClassLoader.getResources 遍历 classpath", color: PALETTE.orange },
+            { id: "collect", label: "收集候选类（starter + 官方清单）", color: PALETTE.orange },
+            { id: "sort", label: "AutoConfigurationSorter 拓扑排序", color: PALETTE.purple },
+            { id: "filter", label: "@ConditionalOnXxx 条件过滤", color: PALETTE.orange },
+            { id: "register", label: "注册为配置类 → 解析 @Bean", color: PALETTE.green },
           ],
           edges: [
             { source: "app", target: "enable" },
@@ -144,10 +145,10 @@ com.acme.web.config.AcmeWebAutoConfiguration
       <Timeline
         label="从注册到生效 / lifecycle"
         steps={[
-          { label: "注册契约 Bean", sub: "返回类型 = 扩展点", color: "#f59e0b" },
-          { label: "框架按类型发现", sub: "谁实现接口就用谁", color: "#1677ff" },
-          { label: "装配进引擎", sub: "挂到 SqlSessionFactory 等", color: "#8b5cf6" },
-          { label: "运行期回调", sub: "框架执行到点就调", color: "#3fb950" },
+          { label: "注册契约 Bean", sub: "返回类型 = 扩展点", color: PALETTE.orange },
+          { label: "框架按类型发现", sub: "谁实现接口就用谁", color: PALETTE.blue },
+          { label: "装配进引擎", sub: "挂到 SqlSessionFactory 等", color: PALETTE.purple },
+          { label: "运行期回调", sub: "框架执行到点就调", color: PALETTE.green },
         ]}
       />
       <Paragraph>
@@ -201,14 +202,14 @@ public MybatisPlusInterceptor myAwesomeInterceptor() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "acmeRedis", label: "AcmeRedisAutoConfiguration", color: "#1677ff" },
-            { id: "idempotent", label: "AcmeIdempotentAutoConfiguration", color: "#f59e0b" },
-            { id: "redisson", label: "RedissonAutoConfigurationV2（官方）", color: "#8b5cf6" },
-            { id: "acmeMybatis", label: "AcmeMybatisAutoConfiguration", color: "#1677ff" },
+            { id: "acmeRedis", label: "AcmeRedisAutoConfiguration", color: PALETTE.blue },
+            { id: "idempotent", label: "AcmeIdempotentAutoConfiguration", color: PALETTE.orange },
+            { id: "redisson", label: "RedissonAutoConfigurationV2（官方）", color: PALETTE.purple },
+            { id: "acmeMybatis", label: "AcmeMybatisAutoConfiguration", color: PALETTE.blue },
             {
               id: "mybatisPlus",
               label: "MybatisPlusAutoConfiguration（官方）",
-              color: "#8b5cf6",
+              color: PALETTE.purple,
             },
           ],
           edges: [
@@ -249,7 +250,7 @@ public MybatisPlusInterceptor myAwesomeInterceptor() {
         也照样让位；反过来，用户的实现若没实现该接口，默认实现不会让位，会出现两个实现并存的隐患。
       </Paragraph>
 
-      <MemoryCard keyword="用户优先 = 注册顺序 + 条件判断" color="#3fb950">
+      <MemoryCard keyword="用户优先 = 注册顺序 + 条件判断" color={PALETTE.green}>
         自动配置类被统一排在用户配置<strong>之后</strong>处理，所以它们的 @ConditionalOnMissingBean
         评估时用户 Bean 定义已在容器里——「用户定义了就用用户的，否则用默认的」。
         同理，自动配置类之间的 before/after 也直接决定谁的条件判断能看到谁。
@@ -391,7 +392,7 @@ public class AcmeRedisAutoConfiguration {
         label="对比 / hook vs aop"
         left={{
           title: "框架钩子",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "拦「框架自己的执行过程」（SQL 执行、insert 之前）",
             "框架启动时按类型发现并装配，在内部回调",
@@ -401,7 +402,7 @@ public class AcmeRedisAutoConfiguration {
         }}
         right={{
           title: "AOP 切面",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "拦「你写的业务方法」（按切点表达式匹配）",
             "Spring 动态代理在方法前后插入逻辑",

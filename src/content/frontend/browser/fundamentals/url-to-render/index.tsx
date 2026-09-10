@@ -10,6 +10,7 @@ import {
   VizBlock,
 } from "@/components/viz";
 import { motion } from "framer-motion";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -48,20 +49,20 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "url", label: "输入 URL", color: "#1677ff" },
-            { id: "sw", label: "Service Worker 拦截（可编程直接应答）", color: "#8b5cf6" },
-            { id: "strong", label: "强缓存判定：max-age 未过期？", color: "#8b5cf6" },
-            { id: "local", label: "使用本地副本（0 网络往返）", color: "#3fb950" },
-            { id: "dns", label: "DNS 解析（多级缓存 → 权威服务器）", color: "#f59e0b" },
-            { id: "tcp", label: "TCP 三次握手 + TLS 握手", color: "#f59e0b" },
-            { id: "req", label: "发送 HTTP 请求（协商缓存头随请求走）", color: "#f59e0b" },
-            { id: "neg", label: "服务器比对 ETag / Last-Modified", color: "#8b5cf6" },
-            { id: "resp", label: "HTTP 响应（200 新内容 / 304 复用）", color: "#3fb950" },
-            { id: "parse", label: "解析 HTML → DOM 树 + CSSOM 树", color: "#1677ff" },
-            { id: "tree", label: "合成渲染树（排除 display:none）", color: "#1677ff" },
-            { id: "layout", label: "布局 Layout（计算几何 → 回流）", color: "#f85149" },
-            { id: "paint", label: "绘制 Paint（像素填充 → 重绘）", color: "#f85149" },
-            { id: "composite", label: "合成 Composite（GPU 层合成）", color: "#3fb950" },
+            { id: "url", label: "输入 URL", color: PALETTE.blue },
+            { id: "sw", label: "Service Worker 拦截（可编程直接应答）", color: PALETTE.purple },
+            { id: "strong", label: "强缓存判定：max-age 未过期？", color: PALETTE.purple },
+            { id: "local", label: "使用本地副本（0 网络往返）", color: PALETTE.green },
+            { id: "dns", label: "DNS 解析（多级缓存 → 权威服务器）", color: PALETTE.orange },
+            { id: "tcp", label: "TCP 三次握手 + TLS 握手", color: PALETTE.orange },
+            { id: "req", label: "发送 HTTP 请求（协商缓存头随请求走）", color: PALETTE.orange },
+            { id: "neg", label: "服务器比对 ETag / Last-Modified", color: PALETTE.purple },
+            { id: "resp", label: "HTTP 响应（200 新内容 / 304 复用）", color: PALETTE.green },
+            { id: "parse", label: "解析 HTML → DOM 树 + CSSOM 树", color: PALETTE.blue },
+            { id: "tree", label: "合成渲染树（排除 display:none）", color: PALETTE.blue },
+            { id: "layout", label: "布局 Layout（计算几何 → 回流）", color: PALETTE.red },
+            { id: "paint", label: "绘制 Paint（像素填充 → 重绘）", color: PALETTE.red },
+            { id: "composite", label: "合成 Composite（GPU 层合成）", color: PALETTE.green },
           ],
           edges: [
             { source: "url", target: "sw" },
@@ -93,10 +94,10 @@ export default function Note() {
         label="阶段耗时直觉 / rtt scale"
         title="典型网络下的量级直觉，仅供直觉（实际取决于 RTT、缓存与资源形态）"
         items={[
-          { label: "DNS 解析", value: 87, suffix: "ms", color: "#f59e0b" },
-          { label: "TCP 握手", value: 28, suffix: "ms", color: "#f59e0b" },
-          { label: "TLS 握手", value: 56, suffix: "ms", color: "#f59e0b" },
-          { label: "请求 + 响应", value: 42, suffix: "ms", color: "#1677ff" },
+          { label: "DNS 解析", value: 87, suffix: "ms", color: PALETTE.orange },
+          { label: "TCP 握手", value: 28, suffix: "ms", color: PALETTE.orange },
+          { label: "TLS 握手", value: 56, suffix: "ms", color: PALETTE.orange },
+          { label: "请求 + 响应", value: 42, suffix: "ms", color: PALETTE.blue },
         ]}
       />
 
@@ -124,17 +125,17 @@ export default function Note() {
       <Timeline
         label="缓存判定链 / cache flow"
         steps={[
-          { label: "Service Worker", sub: "可编程拦截，可短路应答", color: "#8b5cf6" },
-          { label: "强缓存", sub: "max-age 内直接用，不发请求", color: "#1677ff" },
-          { label: "DNS + 建连", sub: "强缓存未命中才发生", color: "#f85149" },
-          { label: "协商缓存", sub: "校验头随请求走，304/200", color: "#f59e0b" },
+          { label: "Service Worker", sub: "可编程拦截，可短路应答", color: PALETTE.purple },
+          { label: "强缓存", sub: "max-age 内直接用，不发请求", color: PALETTE.blue },
+          { label: "DNS + 建连", sub: "强缓存未命中才发生", color: PALETTE.red },
+          { label: "协商缓存", sub: "校验头随请求走，304/200", color: PALETTE.orange },
         ]}
       />
       <CompareTable
         label="对比 / cache compare"
         left={{
           title: "强缓存",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "决策方：浏览器本地，服务器不参与",
             "命中表现：from memory/disk cache，0 RTT",
@@ -144,7 +145,7 @@ export default function Note() {
         }}
         right={{
           title: "协商缓存",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "决策方：服务器裁定，需要一个 RTT",
             "命中表现：304 Not Modified（空体）",
@@ -169,7 +170,7 @@ index.html  → no-cache`,
           note: "指纹文件名让「永久缓存」安全——内容变即名字变，新版本经 HTML 入口发现",
         }}
       />
-      <MemoryCard keyword="缓存口诀" color="#1677ff">
+      <MemoryCard keyword="缓存口诀" color={PALETTE.blue}>
         先强后协商；<code>no-cache</code> 是「每次协商」、<code>no-store</code> 才是不缓存； ETag
         优先于 Last-Modified；<strong>指纹文件 + 长强缓存 + HTML 入口协商</strong>{" "}
         是现代前端的标配组合。
@@ -189,9 +190,9 @@ index.html  → no-cache`,
         label="成本三档 / cost tiers"
         title="同规模改动的相对成本直觉，仅供直觉；触发清单与引擎机制见专题篇"
         items={[
-          { label: "回流", value: 100, suffix: "%", color: "#f85149" },
-          { label: "重绘", value: 35, suffix: "%", color: "#f59e0b" },
-          { label: "合成", value: 5, suffix: "%", color: "#3fb950" },
+          { label: "回流", value: 100, suffix: "%", color: PALETTE.red },
+          { label: "重绘", value: 35, suffix: "%", color: PALETTE.orange },
+          { label: "合成", value: 5, suffix: "%", color: PALETTE.green },
         ]}
       />
 
@@ -199,10 +200,10 @@ index.html  → no-cache`,
       <Timeline
         label="HTTP 演进 / evolution"
         steps={[
-          { label: "HTTP/1.0", sub: "短连接，每请求一次握手", color: "#8b5cf6" },
-          { label: "HTTP/1.1", sub: "长连接 · 管道未启用 · 队头阻塞", color: "#f59e0b" },
-          { label: "HTTP/2", sub: "二进制分帧 · 多路复用 · HPACK", color: "#1677ff" },
-          { label: "HTTP/3", sub: "QUIC over UDP · 0-RTT · 流独立重传", color: "#3fb950" },
+          { label: "HTTP/1.0", sub: "短连接，每请求一次握手", color: PALETTE.purple },
+          { label: "HTTP/1.1", sub: "长连接 · 管道未启用 · 队头阻塞", color: PALETTE.orange },
+          { label: "HTTP/2", sub: "二进制分帧 · 多路复用 · HPACK", color: PALETTE.blue },
+          { label: "HTTP/3", sub: "QUIC over UDP · 0-RTT · 流独立重传", color: PALETTE.green },
         ]}
       />
       <Paragraph>
@@ -295,15 +296,15 @@ index.html  → no-cache`,
 
 function HolLanes() {
   const frames = [
-    { label: "A1", color: "#1677ff" },
-    { label: "B1", color: "#8b5cf6" },
-    { label: "C1", color: "#f59e0b" },
-    { label: "A2", color: "#1677ff" },
-    { label: "B2", color: "#8b5cf6" },
-    { label: "C2", color: "#f59e0b" },
+    { label: "A1", color: PALETTE.blue },
+    { label: "B1", color: PALETTE.purple },
+    { label: "C1", color: PALETTE.orange },
+    { label: "A2", color: PALETTE.blue },
+    { label: "B2", color: PALETTE.purple },
+    { label: "C2", color: PALETTE.orange },
   ];
   return (
-    <VizBlock label="队头阻塞 vs 多路复用 / head-of-line" color="#8b5cf6">
+    <VizBlock label="队头阻塞 vs 多路复用 / head-of-line" color={PALETTE.purple}>
       <div className="space-y-5">
         <div>
           <div className="mb-1.5 flex items-center justify-between text-xs">
@@ -318,7 +319,7 @@ function HolLanes() {
               whileInView={{ opacity: 1, scaleX: 1 }}
               viewport={{ once: true }}
               className="flex h-11 flex-1 items-center justify-center rounded-md font-mono text-[11px]"
-              style={{ backgroundColor: "#1677ff1a", color: "#1677ff" }}
+              style={{ backgroundColor: "#1677ff1a", color: PALETTE.blue }}
             >
               请求 A · 100ms
             </motion.div>

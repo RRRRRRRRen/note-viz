@@ -8,6 +8,7 @@ import {
   Table,
   VersionNote,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -125,17 +126,17 @@ export default function Note() {
           {
             range: "TS ≤ 4.0",
             text: "paths 依赖 baseUrl 才能工作——要用别名就必须设假根",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             range: "4.1+",
             text: "paths 独立化：路径项直接相对 tsconfig 所在目录解析，baseUrl 失去刚需",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             range: "6.0+",
             text: "进入废弃潮；「7.0 已移除」的传闻以自己仓库的实测为准（tsc -b --dry），不背二手结论",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
         ]}
       />
@@ -224,7 +225,7 @@ export default function Note() {
       <MemoryCard keyword="这个字段谁在读？">
         排查配置失效的第一定律：检查字段归 tsc/tsserver，投影字段才归转译器。
       </MemoryCard>
-      <MemoryCard keyword="转译器只读投影" color="#8b5cf6">
+      <MemoryCard keyword="转译器只读投影" color={PALETTE.purple}>
         target / jsx / paths / useDefineForClassFields /
         verbatimModuleSyntax——背下这份短清单，其余都是检查字段。
       </MemoryCard>

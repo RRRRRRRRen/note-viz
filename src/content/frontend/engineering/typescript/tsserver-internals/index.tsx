@@ -10,6 +10,7 @@ import {
   Table,
   VersionNote,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -52,34 +53,34 @@ export default function Note() {
             from: "编辑器",
             to: "tsserver 进程",
             label: "open：推入文件内容（未保存也算）",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             from: "tsserver 进程",
             to: "编辑器",
             label: "构建/增量更新内存中的 program",
-            color: "#9ca3af",
+            color: PALETTE.gray,
             dashed: true,
           },
-          { from: "编辑器", to: "tsserver 进程", label: "geterr：请求诊断", color: "#f59e0b" },
+          { from: "编辑器", to: "tsserver 进程", label: "geterr：请求诊断", color: PALETTE.orange },
           {
             from: "tsserver 进程",
             to: "编辑器",
             label: "semanticDiag：语义诊断事件 → 红线",
-            color: "#f85149",
+            color: PALETTE.red,
             dashed: true,
           },
           {
             from: "编辑器",
             to: "tsserver 进程",
             label: "completions / definition / quickinfo",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             from: "tsserver 进程",
             to: "编辑器",
             label: "候选列表 / 目标位置 / 类型签名",
-            color: "#3fb950",
+            color: PALETTE.green,
             dashed: true,
           },
         ]}
@@ -124,8 +125,8 @@ export default function Note() {
       </Paragraph>
       <CompareTable
         label="configured vs inferred / project kinds"
-        left={{ title: "Configured Project", color: "#3fb950" }}
-        right={{ title: "Inferred Project", color: "#f85149" }}
+        left={{ title: "Configured Project", color: PALETTE.green }}
+        right={{ title: "Inferred Project", color: PALETTE.red }}
         rows={[
           {
             aspect: "由谁定义",
@@ -175,12 +176,12 @@ export default function Note() {
           {
             range: "TS ≤ 6.x",
             text: "自定义 JSON 协议走 stdin/stdout，VSCode 内置扩展专属对接",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             range: "TS 7.0+",
             text: "原生语言服务改用标准 LSP——Neovim、Zed 等任意 LSP 编辑器同等受益",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
       />
@@ -264,7 +265,7 @@ import { a } from "../../../src/utils/a";`,
         官方定义背下来：封装编译器与语言服务、经 JSON 协议暴露的 node
         可执行文件——进程独立、stdin/stdout、不产文件。
       </MemoryCard>
-      <MemoryCard keyword="一切功能来自常驻 program" color="#8b5cf6">
+      <MemoryCard keyword="一切功能来自常驻 program" color={PALETTE.purple}>
         红线、补全、跳转、重命名全是同一次内存编译上的查询——语言服务的功能不是魔法，是投影。
       </MemoryCard>
 

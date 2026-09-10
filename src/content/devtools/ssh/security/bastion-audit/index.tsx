@@ -8,6 +8,7 @@ import {
   Prerequisite,
   Timeline,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -53,10 +54,10 @@ export default function Note() {
       <Timeline
         label="堡垒机 4A 模型 / 4A"
         steps={[
-          { label: "Authentication", sub: "认证：只对堡垒机证明身份（+MFA）", color: "#1677ff" },
-          { label: "Account", sub: "账号：服务器账号由堡垒机托管映射", color: "#8b5cf6" },
-          { label: "Authorization", sub: "授权：谁能连哪台、用什么账号", color: "#f59e0b" },
-          { label: "Audit", sub: "审计：全程录像，可回放追责", color: "#3fb950" },
+          { label: "Authentication", sub: "认证：只对堡垒机证明身份（+MFA）", color: PALETTE.blue },
+          { label: "Account", sub: "账号：服务器账号由堡垒机托管映射", color: PALETTE.purple },
+          { label: "Authorization", sub: "授权：谁能连哪台、用什么账号", color: PALETTE.orange },
+          { label: "Audit", sub: "审计：全程录像，可回放追责", color: PALETTE.green },
         ]}
       />
       <Paragraph>
@@ -71,7 +72,7 @@ export default function Note() {
         label="跳板机与堡垒机 / jump vs bastion"
         left={{
           title: "跳板机（自建）",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "解决网络可达：借道进入内网",
             "ProxyJump 端到端加密，跳板机看不到内容",
@@ -82,7 +83,7 @@ export default function Note() {
         }}
         right={{
           title: "堡垒机（产品化）",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "解决受控访问：先授权后连接",
             "会话终结代理，能完整录制会话内容",
@@ -112,9 +113,9 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "user", label: "你的终端（加密①）", color: "#1677ff" },
-            { id: "bastion", label: "堡垒机：解密① → 录制 → 加密②", color: "#f59e0b" },
-            { id: "target", label: "目标服务器（加密②）", color: "#3fb950" },
+            { id: "user", label: "你的终端（加密①）", color: PALETTE.blue },
+            { id: "bastion", label: "堡垒机：解密① → 录制 → 加密②", color: PALETTE.orange },
+            { id: "target", label: "目标服务器（加密②）", color: PALETTE.green },
           ],
           edges: [
             { source: "user", target: "bastion", label: "第一段：你 ↔ 堡垒机" },
@@ -134,7 +135,7 @@ export default function Note() {
         连接——终结得更彻底，录制也更原生。
       </Paragraph>
 
-      <MemoryCard keyword="会话终结是审计的前提，经过不等于可见" color="#1677ff">
+      <MemoryCard keyword="会话终结是审计的前提，经过不等于可见" color={PALETTE.blue}>
         <p>
           中间人能看到什么，由它在协议里的角色决定：
           <strong>L4 透传（ProxyJump）只见密文，会话终结（堡垒机）才有明文可录</strong>
@@ -152,8 +153,8 @@ export default function Note() {
 
       <CompareTable
         label="透传与终结的逐维度对比 / L4 proxy vs session proxy"
-        left={{ title: "ProxyJump（透传）", color: "#8b5cf6" }}
-        right={{ title: "堡垒机（会话终结）", color: "#f59e0b" }}
+        left={{ title: "ProxyJump（透传）", color: PALETTE.purple }}
+        right={{ title: "堡垒机（会话终结）", color: PALETTE.orange }}
         rows={[
           { aspect: "加密段数", left: "一段，端到端", right: "两段，各自独立" },
           { aspect: "中间机器的角色", left: "TCP 管道拼接点", right: "协议端点（解密再加密）" },

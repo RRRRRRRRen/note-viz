@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCw } from "lucide-react";
 import { VizBlock } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 const C = {
-  stack: "#f59e0b",
-  micro: "#8b5cf6",
-  macro: "#3b82f6",
-  render: "#3fb950",
+  stack: PALETTE.orange,
+  micro: PALETTE.purple,
+  macro: PALETTE.blueSoft,
+  render: PALETTE.green,
 };
 
 function Box(props: {
@@ -78,7 +79,7 @@ function VLabel(props: { main: string; sub?: string }) {
 /** 事件循环全景图：调用栈 + 双队列容器 + 渲染检查，按顺时针环读一轮 */
 export default function EventLoopDiagram() {
   return (
-    <VizBlock label="事件循环全景 / event loop" color="#1677ff">
+    <VizBlock label="事件循环全景 / event loop" color={PALETTE.blue}>
       <div className="overflow-x-auto pb-1">
         <div
           className="grid min-w-[600px] items-stretch"

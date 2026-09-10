@@ -1,6 +1,7 @@
 import { CodeBlock, FlowChart } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -43,19 +44,19 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "install", label: "pnpm install", color: "#1677ff" },
+            { id: "install", label: "pnpm install", color: PALETTE.blue },
             {
               id: "check",
               label: "对照 lockfile 的 specifier\n与 package.json",
-              color: "#f59e0b",
+              color: PALETTE.orange,
             },
-            { id: "sync", label: "一致：纯物化\nlockfile 一字节不动", color: "#3fb950" },
+            { id: "sync", label: "一致：纯物化\nlockfile 一字节不动", color: PALETTE.green },
             {
               id: "desync",
               label: "脱节：对脱节部分重解析\n写回 lockfile（补账）",
-              color: "#f85149",
+              color: PALETTE.red,
             },
-            { id: "done", label: "物化 node_modules", color: "#1677ff" },
+            { id: "done", label: "物化 node_modules", color: PALETTE.blue },
           ],
           edges: [
             { source: "install", target: "check" },
@@ -185,7 +186,7 @@ $ git add pnpm-lock.yaml   # 顺手 commit
         记账合法且应当提交；补账说明 lockfile 与 package.json
         脱节了——它是红灯，先查脱节来源再写回。frozen 模式的价值就是把补账变成当场报错。
       </MemoryCard>
-      <MemoryCard keyword="看 diff 形状，不逐行读" color="#8b5cf6">
+      <MemoryCard keyword="看 diff 形状，不逐行读" color={PALETTE.purple}>
         邻域扩散是健康连锁；全文件翻转必有真凶（registry URL、格式迁移、全量重解析、行尾）。lockfile
         diff 是团队环境差异最诚实的传感器。
       </MemoryCard>

@@ -1,6 +1,7 @@
 import { Callout, CrossRef, DoDont, LayerStack, MemoryCard, Prerequisite } from "@/components/viz";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock } from "@/components/demo";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -46,22 +47,22 @@ export default function Note() {
           {
             name: "兜底层：CI 校验 + devcontainer",
             desc: "全新环境跑只读安装与构建——唯一能 100% 拦住「忘了提交 lockfile」的关卡",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             name: "依赖层：lockfile + 严格安装",
             desc: "npm ci / --frozen-lockfile / --immutable 三家语义一致，2018 年起已定型",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             name: "解析层：mise（或 fnm + corepack）",
             desc: "读声明、切版本、装工具——可替换的消耗品，坏了十分钟换一个",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             name: "声明层：.nvmrc + packageManager + mise.toml",
             desc: "格式被整个生态认领、十年稳定——你的资产，永不搬家",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
       />
@@ -173,7 +174,7 @@ mise use node@22.11 pnpm@10    # Node、pnpm 都归 mise
         机器层只装一次工具壳（mise）并设全局兜底；每个项目用声明文件写清环境；cd
         进目录自动切换。统一的是解析机制，不是项目本身。
       </MemoryCard>
-      <MemoryCard keyword="统一入口：mise run dev" color="#3fb950">
+      <MemoryCard keyword="统一入口：mise run dev" color={PALETTE.green}>
         声明层 + 任务层 = 适配器结构：无论项目底下用什么
         Node、什么管理器，对外永远是同一条命令。会回来的项目配全，一次性项目靠 npm run 约定。
       </MemoryCard>

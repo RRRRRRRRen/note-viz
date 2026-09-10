@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, DoDont, MemoryCard, Table, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -47,10 +48,10 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "base", label: "merge-base 共同祖先", color: "#9ca3af" },
-            { id: "ours", label: "ours 当前分支（你的稿）", color: "#1677ff" },
-            { id: "theirs", label: "theirs 被合分支（对方的稿）", color: "#f59e0b" },
-            { id: "result", label: "merge 结果（新提交）", color: "#3fb950" },
+            { id: "base", label: "merge-base 共同祖先", color: PALETTE.gray },
+            { id: "ours", label: "ours 当前分支（你的稿）", color: PALETTE.blue },
+            { id: "theirs", label: "theirs 被合分支（对方的稿）", color: PALETTE.orange },
+            { id: "result", label: "merge 结果（新提交）", color: PALETTE.green },
           ],
           edges: [
             { source: "base", target: "ours", label: "diff ①" },
@@ -71,7 +72,7 @@ export default function Note() {
         label="三方裁决表 / resolution"
         left={{
           title: "粗筛即可自动解决",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "只有 ours 改了 → 取 ours",
             "只有 theirs 改了 → 取 theirs",
@@ -82,7 +83,7 @@ export default function Note() {
         }}
         right={{
           title: "进入区域级细判",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "双方都改了、且改出了不同的内容",
             "Git 不立即报冲突，而是做行级 diff",
@@ -106,8 +107,8 @@ export default function Note() {
 
       <CompareTable
         label="同文件合并的两种结局 / same file"
-        left={{ title: "自动合并", color: "#3fb950" }}
-        right={{ title: "冲突", color: "#f59e0b" }}
+        left={{ title: "自动合并", color: PALETTE.green }}
+        right={{ title: "冲突", color: PALETTE.orange }}
         rows={[
           {
             aspect: "改动分布",
@@ -181,7 +182,7 @@ line8`}</ShellBlock>
           [<code>{`>>>>>>> feature`}</code>, "冲突区结束，标注 theirs 来源分支", "删掉此行"],
         ]}
       />
-      <MemoryCard keyword="冲突 = 待人类裁决的决策点" color="#f59e0b">
+      <MemoryCard keyword="冲突 = 待人类裁决的决策点" color={PALETTE.orange}>
         <p>
           冲突不是合并失败，而是三方对比走到「同一区域、两种改法、无法归因取舍」这一步时的显式上交。解决冲突
           = 你替 Git 做那次裁决：编辑文件留下正确版本、删掉标记行、 <code>git add</code>
@@ -243,14 +244,14 @@ $ git push --force-with-lease   # 确需强推时用带条件的版本
         data={{
           direction: "TB",
           nodes: [
-            { id: "ff", label: "fast-forward：main 直接挪到 feature", color: "#3fb950" },
-            { id: "ffbase", label: "base（main == merge-base）", color: "#9ca3af" },
-            { id: "fff", label: "feature 新提交", color: "#f59e0b" },
-            { id: "noff", label: "--no-ff：新建双 parent 提交", color: "#1677ff" },
-            { id: "nfbase", label: "base（分叉的共同祖先）", color: "#9ca3af" },
-            { id: "nfmain", label: "main 的新提交", color: "#1677ff" },
-            { id: "nffeat", label: "feature 的新提交", color: "#f59e0b" },
-            { id: "nfmerge", label: "merge commit（parent ×2）", color: "#3fb950" },
+            { id: "ff", label: "fast-forward：main 直接挪到 feature", color: PALETTE.green },
+            { id: "ffbase", label: "base（main == merge-base）", color: PALETTE.gray },
+            { id: "fff", label: "feature 新提交", color: PALETTE.orange },
+            { id: "noff", label: "--no-ff：新建双 parent 提交", color: PALETTE.blue },
+            { id: "nfbase", label: "base（分叉的共同祖先）", color: PALETTE.gray },
+            { id: "nfmain", label: "main 的新提交", color: PALETTE.blue },
+            { id: "nffeat", label: "feature 的新提交", color: PALETTE.orange },
+            { id: "nfmerge", label: "merge commit（parent ×2）", color: PALETTE.green },
           ],
           edges: [
             { source: "ffbase", target: "fff", label: "唯一的新历史" },
@@ -318,7 +319,7 @@ parent 579ef936dc624822fe5de5c11c098f73798d91e1   ← parent₂：feature 顶端
         label="三种合并产出 / merge flavors"
         left={{
           title: "fast-forward 与 --no-ff",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "ff：0 个新提交，只移动分支指针",
             "--no-ff：1 个新提交，两个 parent",
@@ -328,7 +329,7 @@ parent 579ef936dc624822fe5de5c11c098f73798d91e1   ← parent₂：feature 顶端
         }}
         right={{
           title: "squash（压扁合并）",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "把 feature 全部提交压成 1 个全新的普通提交",
             "单 parent、不写合并关系，原提交全部弃用",

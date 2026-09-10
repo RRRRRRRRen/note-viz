@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, PlayGround } from "@/components/demo";
 import { CrossRef, DoDont, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -45,11 +46,11 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "start", label: "启动 min(maxNum, N) 个 worker", color: "#1677ff" },
-            { id: "claim", label: "worker 从游标领任务 next++", color: "#f59e0b" },
-            { id: "run", label: "执行请求（await 让出时间片）", color: "#8b5cf6" },
-            { id: "place", label: "结果写入 results[i]", color: "#3fb950" },
-            { id: "done", label: "全部完成 → resolve", color: "#3fb950" },
+            { id: "start", label: "启动 min(maxNum, N) 个 worker", color: PALETTE.blue },
+            { id: "claim", label: "worker 从游标领任务 next++", color: PALETTE.orange },
+            { id: "run", label: "执行请求（await 让出时间片）", color: PALETTE.purple },
+            { id: "place", label: "结果写入 results[i]", color: PALETTE.green },
+            { id: "done", label: "全部完成 → resolve", color: PALETTE.green },
           ],
           edges: [
             { source: "start", target: "claim" },

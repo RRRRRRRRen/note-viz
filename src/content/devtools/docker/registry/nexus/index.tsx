@@ -1,6 +1,7 @@
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -108,11 +109,11 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "client", label: "开发机 / CI：只配一个源地址", color: "#1677ff" },
-            { id: "group", label: "group 统一门面（不存数据）", color: "#8b5cf6" },
-            { id: "hosted", label: "hosted：内部私包 / 业务镜像", color: "#3fb950" },
-            { id: "proxy", label: "proxy：外网源缓存（只读）", color: "#f59e0b" },
-            { id: "remote", label: "npmjs / Docker Hub（外网）", color: "#9ca3af" },
+            { id: "client", label: "开发机 / CI：只配一个源地址", color: PALETTE.blue },
+            { id: "group", label: "group 统一门面（不存数据）", color: PALETTE.purple },
+            { id: "hosted", label: "hosted：内部私包 / 业务镜像", color: PALETTE.green },
+            { id: "proxy", label: "proxy：外网源缓存（只读）", color: PALETTE.orange },
+            { id: "remote", label: "npmjs / Docker Hub（外网）", color: PALETTE.gray },
           ],
           edges: [
             { source: "client", target: "group", label: "install / pull（拉取）" },
@@ -134,7 +135,7 @@ export default function Note() {
         缓存有就直出、没有才出外网——外网流量被收敛成「缓存未命中的那一次」。发布（publish/push）则绕过
         group 直达 hosted，因为自家制品的权威存放点只能有一个。
       </Paragraph>
-      <MemoryCard keyword="proxy 收口、hosted 权威、group 组合" color="#1677ff">
+      <MemoryCard keyword="proxy 收口、hosted 权威、group 组合" color={PALETTE.blue}>
         <p>
           三个词覆盖 Nexus 90% 的日常问题：「包从哪来」→ proxy（外网缓存）；「包发到哪」→
           hosted（权威存放）；「源地址填哪个」→

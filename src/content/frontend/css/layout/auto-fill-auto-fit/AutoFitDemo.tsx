@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { PALETTE } from "@/components/palette";
 
 function GridPanel({ mode, count }: { mode: "auto-fill" | "auto-fit"; count: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [tracks, setTracks] = useState("…");
-  const color = mode === "auto-fill" ? "#1677ff" : "#8b5cf6";
+  const color = mode === "auto-fill" ? "#1677ff" : PALETTE.purple;
 
   useEffect(() => {
     const el = ref.current;

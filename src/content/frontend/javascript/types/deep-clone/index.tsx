@@ -8,6 +8,7 @@ import {
   Prerequisite,
   CrossRef,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -83,7 +84,7 @@ const copy = structuredClone(state);`,
         label="对比 / copy depth"
         left={{
           title: "浅拷贝",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "API：{...obj}、Object.assign、arr.slice()",
             "第一层原始值安全断开",
@@ -93,7 +94,7 @@ const copy = structuredClone(state);`,
         }}
         right={{
           title: "深拷贝",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "所有层级断开，互不影响",
             "必须处理循环引用与内建类型（Date/Map/Set…）",
@@ -111,14 +112,14 @@ const copy = structuredClone(state);`,
             title: "变量（栈）",
             desc: "赋值只是复制指针",
             layout: "column",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             id: "heap",
             title: "对象（堆）",
             desc: "{...state} 之后的内存",
             layout: "wrap",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
         ]}
         objects={[
@@ -138,7 +139,7 @@ const copy = structuredClone(state);`,
             id: "o-src",
             label: "state（源对象）",
             region: "heap",
-            color: "#1677ff",
+            color: PALETTE.blue,
             fields: [
               { name: "city", value: '"北京"' },
               { name: "profile", refTo: "o-inner" },
@@ -148,7 +149,7 @@ const copy = structuredClone(state);`,
             id: "o-copy",
             label: "copy（浅拷贝）",
             region: "heap",
-            color: "#3fb950",
+            color: PALETTE.green,
             fields: [
               { name: "city", value: '"北京"' },
               { name: "profile", refTo: "o-inner" },
@@ -158,7 +159,7 @@ const copy = structuredClone(state);`,
             id: "o-inner",
             label: "profile（嵌套对象）",
             region: "heap",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             fields: [{ name: "city", value: '"北京"' }],
           },
         ]}
@@ -204,7 +205,7 @@ const copy = structuredClone(state); // 通用首选
           note: "先判断数据形态再选工具，别把 JSON 拷贝当地图炮",
         }}
       />
-      <MemoryCard keyword="拷贝选型三级" color="#1677ff">
+      <MemoryCard keyword="拷贝选型三级" color={PALETTE.blue}>
         <strong>① structuredClone</strong>（原生、支持循环引用与内建类型）→{" "}
         <strong>② 手写递归 + WeakMap</strong>（面试满分版，可控性最高）→ <strong>③ 业务定制</strong>
         （需保留类方法/函数属性时）。JSON 拷贝只配出现在纯数据场景。

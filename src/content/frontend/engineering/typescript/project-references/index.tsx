@@ -1,6 +1,7 @@
 import { CodeTabs, FlowChart } from "@/components/demo";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -45,19 +46,19 @@ export default function Note() {
             {
               id: "root",
               label: "tsconfig.json（空壳：files: [] + references）",
-              color: "#9ca3af",
+              color: PALETTE.gray,
             },
             {
               id: "app",
               label: "tsconfig.app.json：src/**，lib: DOM，types: vite/client",
-              color: "#1677ff",
+              color: PALETTE.blue,
             },
             {
               id: "node",
               label: "tsconfig.node.json：vite.config + plugins，lib: ES，types: node",
-              color: "#f59e0b",
+              color: PALETTE.orange,
             },
-            { id: "cache", label: "各自独立的 tsbuildinfo 增量缓存", color: "#3fb950" },
+            { id: "cache", label: "各自独立的 tsbuildinfo 增量缓存", color: PALETTE.green },
           ],
           edges: [
             { source: "root", target: "app", label: "reference" },
@@ -261,7 +262,7 @@ tsc -b   # 命中陈旧 tsbuildinfo，依旧跳过`,
         依赖方读的是合同不是实现——core 内部怎么重构，声明面不变 ui 就不动。composite
         曾是备料要求，纯检查型已放宽。
       </MemoryCard>
-      <MemoryCard keyword="tsc -b = 按图的增量编排" color="#8b5cf6">
+      <MemoryCard keyword="tsc -b = 按图的增量编排" color={PALETTE.purple}>
         references 读成 DAG、拓扑序构建、每项目独立 tsbuildinfo；无 references 时退化为带增量的
         tsc。
       </MemoryCard>

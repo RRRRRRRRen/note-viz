@@ -8,6 +8,7 @@ import {
   Prerequisite,
   CrossRef,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -56,10 +57,10 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "work", label: "工作区 Working Directory", color: "#f59e0b" },
-            { id: "index", label: "index 暂存区（下次提交的草稿）", color: "#8b5cf6" },
-            { id: "repo", label: "本地仓库（对象库 + HEAD）", color: "#3fb950" },
-            { id: "remote", label: "远程仓库", color: "#1677ff" },
+            { id: "work", label: "工作区 Working Directory", color: PALETTE.orange },
+            { id: "index", label: "index 暂存区（下次提交的草稿）", color: PALETTE.purple },
+            { id: "repo", label: "本地仓库（对象库 + HEAD）", color: PALETTE.green },
+            { id: "remote", label: "远程仓库", color: PALETTE.blue },
           ],
           edges: [
             { source: "work", target: "index", label: "git add" },
@@ -129,7 +130,7 @@ $ git diff HEAD~1        # 当前工作区 vs 上一个提交：两次改动合�
         label="diff 三形态 / diff flavors"
         left={{
           title: "git diff（工作区 vs index）",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "回答「我改了什么还没暂存」",
             "add 之后这一项会变空——不是改动丢了，是进了草稿",
@@ -138,7 +139,7 @@ $ git diff HEAD~1        # 当前工作区 vs 上一个提交：两次改动合�
         }}
         right={{
           title: "git diff --staged（index vs HEAD）",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "回答「下次 commit 会提交什么」",
             "commit 之前用它做最后检查，防手滑",
@@ -152,7 +153,7 @@ $ git diff HEAD~1        # 当前工作区 vs 上一个提交：两次改动合�
         <code>git status</code> 定位区与区的关系，再挑对应的 diff
         形态看内容。方向搞反是新手最大的困惑源，没有之一。
       </Paragraph>
-      <MemoryCard keyword="先看方向，再谈内容" color="#1677ff">
+      <MemoryCard keyword="先看方向，再谈内容" color={PALETTE.blue}>
         <p>
           status 两列状态码 = index vs HEAD、工作区 vs index；diff 不带参数比工作区 vs index，带
           --staged 比 index vs HEAD。所有 diff/status 输出，先问「比的是哪两区」，再读内容。

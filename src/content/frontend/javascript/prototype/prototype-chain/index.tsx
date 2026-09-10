@@ -1,6 +1,7 @@
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock, StepThrough } from "@/components/demo";
 import { CrossRef, DoDont, MemoryMap, OutputTimeline, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -74,7 +75,7 @@ new Foo().__proto__ === Foo.prototype; // true（演示用，生产用 getProtot
             title: "堆（对象与原型）",
             desc: "整条原型链都长在堆上，函数也是对象",
             layout: "wrap",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
         ]}
         objects={[
@@ -82,7 +83,7 @@ new Foo().__proto__ === Foo.prototype; // true（演示用，生产用 getProtot
             id: "dog",
             region: "heap",
             label: "dog（实例）",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             fields: [
               { name: "name", value: "'旺财'" },
               { name: "[[Prototype]]", refTo: "dogProto" },
@@ -92,7 +93,7 @@ new Foo().__proto__ === Foo.prototype; // true（演示用，生产用 getProtot
             id: "dogProto",
             region: "heap",
             label: "Dog.prototype",
-            color: "#1677ff",
+            color: PALETTE.blue,
             fields: [
               { name: "bark", value: "<function>" },
               { name: "constructor", refTo: "dogFn" },
@@ -103,14 +104,14 @@ new Foo().__proto__ === Foo.prototype; // true（演示用，生产用 getProtot
             id: "dogFn",
             region: "heap",
             label: "Dog（构造函数）",
-            color: "#3fb950",
+            color: PALETTE.green,
             fields: [{ name: "prototype", refTo: "dogProto" }],
           },
           {
             id: "objProto",
             region: "heap",
             label: "Object.prototype",
-            color: "#9ca3af",
+            color: PALETTE.gray,
             fields: [
               { name: "toString", value: "<function>" },
               { name: "hasOwnProperty", value: "<function>" },
@@ -144,22 +145,22 @@ new Foo().__proto__ === Foo.prototype; // true（演示用，生产用 getProtot
           {
             title: "自身：dog",
             desc: "OrdinaryGetOwnProperty(dog, 'toString') 未命中——dog 自身只有 name。取 [[Prototype]] 进入下一级。",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             title: "第一环：Dog.prototype",
             desc: "有 bark 和 constructor，没有 toString——未命中，继续沿 [[Prototype]] 向上。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             title: "第二环：Object.prototype",
             desc: "命中 toString——数据属性直接返回函数值；若是 getter 此刻被调用，查找终止。",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
           {
             title: "反着写一次：dog.toString = fn",
             desc: "写入不走这条链：在 dog 自身创建遮蔽属性，此后实例读 toString 命中自身，原型上的函数不再可达。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
         ]}
       />

@@ -2,6 +2,7 @@ import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components
 import { CodeBlock, FlowChart } from "@/components/demo";
 import { CrossRef, DoDont, MemoryCard, Prerequisite, Timeline } from "@/components/viz";
 import LayoutThrashingSimulator from "./LayoutThrashingSimulator";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -45,13 +46,13 @@ export default function Note() {
       <Timeline
         label="一帧的生命周期 / frame lifecycle"
         steps={[
-          { label: "输入事件", sub: "主线程", color: "#1677ff" },
-          { label: "JS 任务", sub: "主线程", color: "#f59e0b" },
-          { label: "rAF 回调", sub: "本帧最后的写机会", color: "#8b5cf6" },
-          { label: "Style", sub: "样式重算", color: "#1677ff" },
-          { label: "Layout", sub: "脏节点布局", color: "#f85149" },
-          { label: "Paint", sub: "生成绘制指令", color: "#f59e0b" },
-          { label: "Composite", sub: "合成器线程", color: "#3fb950" },
+          { label: "输入事件", sub: "主线程", color: PALETTE.blue },
+          { label: "JS 任务", sub: "主线程", color: PALETTE.orange },
+          { label: "rAF 回调", sub: "本帧最后的写机会", color: PALETTE.purple },
+          { label: "Style", sub: "样式重算", color: PALETTE.blue },
+          { label: "Layout", sub: "脏节点布局", color: PALETTE.red },
+          { label: "Paint", sub: "生成绘制指令", color: PALETTE.orange },
+          { label: "Composite", sub: "合成器线程", color: PALETTE.green },
         ]}
       />
 
@@ -78,12 +79,12 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "change", label: "DOM / 样式改动（打脏位）", color: "#f59e0b" },
-            { id: "style", label: "Style 样式重算（任何改动必经）", color: "#8b5cf6" },
-            { id: "reflow", label: "Layout 回流（几何 / 内容变化）", color: "#f85149" },
-            { id: "paint", label: "Paint 重绘（仅外观变化）", color: "#f59e0b" },
-            { id: "composite", label: "合成器直改（transform / opacity）", color: "#3fb950" },
-            { id: "out", label: "Commit → Raster（栅格化）→ Draw", color: "#1677ff" },
+            { id: "change", label: "DOM / 样式改动（打脏位）", color: PALETTE.orange },
+            { id: "style", label: "Style 样式重算（任何改动必经）", color: PALETTE.purple },
+            { id: "reflow", label: "Layout 回流（几何 / 内容变化）", color: PALETTE.red },
+            { id: "paint", label: "Paint 重绘（仅外观变化）", color: PALETTE.orange },
+            { id: "composite", label: "合成器直改（transform / opacity）", color: PALETTE.green },
+            { id: "out", label: "Commit → Raster（栅格化）→ Draw", color: PALETTE.blue },
           ],
           edges: [
             { source: "change", target: "style" },
@@ -194,7 +195,7 @@ items.forEach((el, i) => {
         }}
       />
 
-      <MemoryCard keyword="属性三分类" color="#3fb950">
+      <MemoryCard keyword="属性三分类" color={PALETTE.green}>
         <strong>仅合成</strong>：transform、opacity（已提升层）；
         <strong>仅重绘</strong>：color、background、visibility、box-shadow、text-decoration；
         <strong>回流</strong>：width/height/top/font-size、文本内容、DOM 增删、display。

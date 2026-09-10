@@ -9,6 +9,7 @@ import {
   VersionNote,
 } from "@/components/viz";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -54,11 +55,11 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "manifest", label: "package.json\n区间（意图）", color: "#f59e0b" },
-            { id: "registry", label: "registry\n此刻状态（会漂移）", color: "#8b5cf6" },
-            { id: "resolve", label: "解析\n只发生一次", color: "#1677ff" },
-            { id: "lock", label: "lockfile\n精确版本 + integrity", color: "#3fb950" },
-            { id: "materialize", label: "物化\nnode_modules", color: "#1677ff" },
+            { id: "manifest", label: "package.json\n区间（意图）", color: PALETTE.orange },
+            { id: "registry", label: "registry\n此刻状态（会漂移）", color: PALETTE.purple },
+            { id: "resolve", label: "解析\n只发生一次", color: PALETTE.blue },
+            { id: "lock", label: "lockfile\n精确版本 + integrity", color: PALETTE.green },
+            { id: "materialize", label: "物化\nnode_modules", color: PALETTE.blue },
           ],
           edges: [
             { source: "manifest", target: "resolve" },
@@ -173,7 +174,7 @@ npm ci          # 或 pnpm install --frozen-lockfile
         package.json 声明兼容范围，lockfile
         记录事实上解析到了哪个版本、内容哈希是什么、依赖关系如何。所有安装从「事实」出发，而不是重新解释「意图」。
       </MemoryCard>
-      <MemoryCard keyword="严格模式 = 只读消费" color="#3fb950">
+      <MemoryCard keyword="严格模式 = 只读消费" color={PALETTE.green}>
         npm ci / --frozen-lockfile / --immutable 的共同语义：lockfile
         对不上就报错，绝不静默重解析。CI 环境默认严格（pnpm 实测报错文案里明说）。
       </MemoryCard>

@@ -1,6 +1,7 @@
 import { CodeAnnotate, FlowChart } from "@/components/demo";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -52,12 +53,12 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "pkg", label: "package.json 声明 ^7.0.2", color: "#9ca3af" },
-            { id: "lock", label: "pnpm-lock.yaml 锁死 7.0.2", color: "#1677ff" },
-            { id: "nm", label: "node_modules/typescript", color: "#f59e0b" },
-            { id: "ci", label: "tsc -b / CI 门禁", color: "#3fb950" },
-            { id: "vsc", label: "VSCode（tsdk 指路 + 一次授权）", color: "#8b5cf6" },
-            { id: "idea", label: "IDEA（默认自动探测）", color: "#8b5cf6" },
+            { id: "pkg", label: "package.json 声明 ^7.0.2", color: PALETTE.gray },
+            { id: "lock", label: "pnpm-lock.yaml 锁死 7.0.2", color: PALETTE.blue },
+            { id: "nm", label: "node_modules/typescript", color: PALETTE.orange },
+            { id: "ci", label: "tsc -b / CI 门禁", color: PALETTE.green },
+            { id: "vsc", label: "VSCode（tsdk 指路 + 一次授权）", color: PALETTE.purple },
+            { id: "idea", label: "IDEA（默认自动探测）", color: PALETTE.purple },
           ],
           edges: [
             { source: "pkg", target: "lock", label: "install" },
@@ -252,7 +253,7 @@ pnpm up typescript@7          # lockfile 锁死
       <MemoryCard keyword="漂移只有两个来源">
         版本不一致 + 推断项目——排查编辑器与构建的结论分歧，先查这两处。
       </MemoryCard>
-      <MemoryCard keyword="lockfile 是版本事实源" color="#8b5cf6">
+      <MemoryCard keyword="lockfile 是版本事实源" color={PALETTE.purple}>
         声明（package.json）→ 锁定（lockfile）→ 落地（node_modules）→
         编辑器指路（tsdk）——一条链，一个真相。
       </MemoryCard>

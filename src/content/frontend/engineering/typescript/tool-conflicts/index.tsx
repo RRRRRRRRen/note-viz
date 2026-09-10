@@ -1,5 +1,6 @@
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -208,7 +209,7 @@ export default function Note() {
       <MemoryCard keyword="允许多形态，禁止多内核">
         tsserver 与 tsc 是同内核的两形态（防漂移）；双 formatter、双 linter 是多内核（必起冲突）。
       </MemoryCard>
-      <MemoryCard keyword="四板斧：投影·委托·契约·锚定" color="#8b5cf6">
+      <MemoryCard keyword="四板斧：投影·委托·契约·锚定" color={PALETTE.purple}>
         UI 渲染内核结论、编辑器降级为触发器、配置收敛单一源、裁判版本来自
         lockfile——多工具治理的完整动作集。
       </MemoryCard>

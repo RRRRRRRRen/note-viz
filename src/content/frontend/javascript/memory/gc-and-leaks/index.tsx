@@ -8,6 +8,7 @@ import {
   MemoryCard,
   Prerequisite,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -57,8 +58,8 @@ export default function Note() {
       </Paragraph>
       <CompareTable
         label="回收算法对比 / mark-sweep vs refcount"
-        left={{ title: "标记清除（主流）", color: "#1677ff" }}
-        right={{ title: "引用计数（已淘汰）", color: "#f85149" }}
+        left={{ title: "标记清除（主流）", color: PALETTE.blue }}
+        right={{ title: "引用计数（已淘汰）", color: PALETTE.red }}
         rows={[
           {
             aspect: "原理",
@@ -293,10 +294,10 @@ function detach(el) {
         label="量级对比 / scale"
         title="GC 暂停耗时量级（随堆大小与存活对象变化，仅供直觉）"
         items={[
-          { label: "次要 GC（新生代）", value: 1, suffix: "ms 量级", color: "#3fb950" },
-          { label: "增量标记单片", value: 2, suffix: "ms 内", color: "#8b5cf6" },
-          { label: "并发回收主线程切片", value: 5, suffix: "ms 量级", color: "#1677ff" },
-          { label: "全量标记-清除（大堆/旧式）", value: 50, suffix: "ms 量级", color: "#f85149" },
+          { label: "次要 GC（新生代）", value: 1, suffix: "ms 量级", color: PALETTE.green },
+          { label: "增量标记单片", value: 2, suffix: "ms 内", color: PALETTE.purple },
+          { label: "并发回收主线程切片", value: 5, suffix: "ms 量级", color: PALETTE.blue },
+          { label: "全量标记-清除（大堆/旧式）", value: 50, suffix: "ms 量级", color: PALETTE.red },
         ]}
       />
       <Paragraph>

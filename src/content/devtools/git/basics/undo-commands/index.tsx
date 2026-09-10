@@ -10,6 +10,7 @@ import {
   Timeline,
 } from "@/components/viz";
 import { ShellBlock } from "@/components/demo";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -152,9 +153,9 @@ a                                ← 工作区内容也回滚了，未提交改�
       <Timeline
         label="reset 三档的清理范围 / reset modes"
         steps={[
-          { label: "--soft", sub: "只动分支指针，index 与工作区原样", color: "#3fb950" },
-          { label: "--mixed", sub: "指针 + 重置 index（默认）", color: "#1677ff" },
-          { label: "--hard", sub: "指针 + index + 工作区全对齐", color: "#f85149" },
+          { label: "--soft", sub: "只动分支指针，index 与工作区原样", color: PALETTE.green },
+          { label: "--mixed", sub: "指针 + 重置 index（默认）", color: PALETTE.blue },
+          { label: "--hard", sub: "指针 + index + 工作区全对齐", color: PALETTE.red },
         ]}
       />
       <Paragraph>
@@ -167,7 +168,7 @@ a                                ← 工作区内容也回滚了，未提交改�
         捞回——真正的不可逆风险只有一类： hard 连工作区一起覆盖，而
         <strong>从未 add 过的工作区内容没有任何对象承载</strong>。
       </Paragraph>
-      <MemoryCard keyword="reset 动的是指针，不是对象" color="#8b5cf6">
+      <MemoryCard keyword="reset 动的是指针，不是对象" color={PALETTE.purple}>
         <p>
           任何档位的 reset
           都不删除提交对象，只是把分支文件改写到目标提交。旧提交从分支链上「摘下来」，靠 reflog
@@ -186,7 +187,7 @@ a                                ← 工作区内容也回滚了，未提交改�
         label="两种撤销哲学 / revert vs reset"
         left={{
           title: "revert：追加抵消（安全）",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "生成新提交，内容 = 目标提交的反向 diff",
             "不改写任何已有提交，无分叉风险",
@@ -196,7 +197,7 @@ a                                ← 工作区内容也回滚了，未提交改�
         }}
         right={{
           title: "reset：回拨指针（强力）",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "分支直接改指到目标提交",
             "目标之后的提交脱离分支链（reflog 可救）",

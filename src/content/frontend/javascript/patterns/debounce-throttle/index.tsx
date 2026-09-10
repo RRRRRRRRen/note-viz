@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock, PlayGround } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -63,7 +64,7 @@ input.addEventListener("compositionend", () => suggest(input.value));`,
         label="对比 / compare"
         left={{
           title: "防抖 debounce",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "语义：停止触发 wait 毫秒后才执行",
             "连续触发不断重置计时器，可能一次都不执行",
@@ -73,7 +74,7 @@ input.addEventListener("compositionend", () => suggest(input.value));`,
         }}
         right={{
           title: "节流 throttle",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "语义：wait 毫秒内至多执行一次",
             "持续触发也有稳定节奏的输出",

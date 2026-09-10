@@ -2,6 +2,7 @@ import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components
 import { CodeAnnotate, Exercise, ShellBlock } from "@/components/demo";
 import { Timeline } from "@/components/viz";
 import { DoDont, MemoryCard, SpecQuote, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -42,27 +43,27 @@ COPY ./dist /home/cnsig/cnsig-ems-ui`}
           {
             line: 2,
             text: "定底座：复制一份官方 nginx 镜像作为起点。继承的不只是文件系统，还有它的默认配置与启动命令——这个清单里没有任何「启动」字样，容器却能自动跑 nginx，能力就是这行带来的。",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             line: 5,
             text: "构建期在镜像内建目录，给 dist 安家。RUN 与 CMD 的区别：前者在构建时执行一次、产物固化进镜像，后者是容器启动时跑的命令。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             line: 8,
             text: "设定后续指令的工作目录（相当于持久生效的 cd）。对本清单而言它是仪式性的一行——后面两条 COPY 全用绝对路径，不参考工作目录。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             line: 11,
             text: "灵魂行：用你的配置覆盖官方默认配置。nginx 镜像默认读 /etc/nginx/nginx.conf，这行一执行，容器的全部行为就由你的这份文件决定了。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             line: 14,
             text: "把构建产物塞进镜像。源是目录时拷的是「内容」——dist 里的 index.html 直接铺在目标目录下，这决定了 nginx root 该指向哪。",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
       />
@@ -91,12 +92,12 @@ COPY ./dist /home/cnsig/cnsig-ems-ui`}
       <Timeline
         label="docker build 三步 / build stages"
         steps={[
-          { label: "① 收材料", sub: "CLI 把构建上下文目录整体打包交给引擎", color: "#f59e0b" },
-          { label: "② 逐行装配", sub: "从上到下执行清单，逐层叠加文件变化", color: "#1677ff" },
+          { label: "① 收材料", sub: "CLI 把构建上下文目录整体打包交给引擎", color: PALETTE.orange },
+          { label: "② 逐行装配", sub: "从上到下执行清单，逐层叠加文件变化", color: PALETTE.blue },
           {
             label: "③ 打标入库",
             sub: "写入元数据，按 -t 打 tag，存入本机镜像库",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
       />
@@ -173,7 +174,10 @@ COPY ./dist /home/cnsig/cnsig-ems-ui
         下载与自动解压 tar 两个能力行为不可预期，最佳实践明确建议常规拷贝用 COPY。
       </Paragraph>
 
-      <MemoryCard keyword="FROM 定底座，COPY 定内容，root 与 COPY 目标必须一致" color="#1677ff">
+      <MemoryCard
+        keyword="FROM 定底座，COPY 定内容，root 与 COPY 目标必须一致"
+        color={PALETTE.blue}
+      >
         <p>
           五行清单里承重的三行：<strong>FROM</strong>（继承 nginx 程序 + 默认配置 + 启动命令）、
           <strong>COPY conf → /etc/nginx/nginx.conf</strong>（覆盖默认配置，决定容器行为）、

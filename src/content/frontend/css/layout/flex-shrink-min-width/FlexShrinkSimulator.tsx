@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PALETTE } from "@/components/palette";
 
 interface SimItem {
   label: string;
@@ -14,9 +15,9 @@ export default function FlexShrinkSimulator() {
   const [shrinkB, setShrinkB] = useState(2);
 
   const items: SimItem[] = [
-    { label: "A", basis: 200, shrink: 1, color: "#1677ff" },
-    { label: "B", basis: 300, shrink: shrinkB, color: "#8b5cf6" },
-    { label: "C", basis: 300, shrink: 1, color: "#f59e0b" },
+    { label: "A", basis: 200, shrink: 1, color: PALETTE.blue },
+    { label: "B", basis: 300, shrink: shrinkB, color: PALETTE.purple },
+    { label: "C", basis: 300, shrink: 1, color: PALETTE.orange },
   ];
 
   const overflow = Math.max(0, TOTAL_BASIS - container);
@@ -73,9 +74,11 @@ export default function FlexShrinkSimulator() {
         <div className="mb-1.5 font-mono text-[11px] text-muted">
           总 basis = 800px ·{" "}
           {overflow > 0 ? (
-            <span style={{ color: "#f85149" }}>溢出 {overflow}px → 触发加权收缩</span>
+            <span style={{ color: PALETTE.red }}>溢出 {overflow}px → 触发加权收缩</span>
           ) : (
-            <span style={{ color: "#3fb950" }}>剩余 {surplus}px 空闲（grow=0，不做正分配）</span>
+            <span style={{ color: PALETTE.green }}>
+              剩余 {surplus}px 空闲（grow=0，不做正分配）
+            </span>
           )}
         </div>
         <div className="overflow-x-auto pb-1">

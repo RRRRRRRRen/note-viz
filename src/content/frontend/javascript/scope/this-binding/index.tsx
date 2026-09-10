@@ -7,6 +7,7 @@ import {
   Prerequisite,
   Timeline,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -52,13 +53,13 @@ export default function Note() {
       <Timeline
         label="this 判定顺序 / decision"
         steps={[
-          { label: "有 new？", sub: "绑定新实例", color: "#3fb950" },
-          { label: "call/apply/bind？", sub: "绑定指定对象", color: "#1677ff" },
-          { label: "有 obj. 前缀？", sub: "绑定最近一层对象", color: "#8b5cf6" },
-          { label: "默认绑定", sub: "window / undefined", color: "#f59e0b" },
+          { label: "有 new？", sub: "绑定新实例", color: PALETTE.green },
+          { label: "call/apply/bind？", sub: "绑定指定对象", color: PALETTE.blue },
+          { label: "有 obj. 前缀？", sub: "绑定最近一层对象", color: PALETTE.purple },
+          { label: "默认绑定", sub: "window / undefined", color: PALETTE.orange },
         ]}
       />
-      <MemoryCard keyword="this 优先级" color="#1677ff">
+      <MemoryCard keyword="this 优先级" color={PALETTE.blue}>
         <strong>new &gt; 显式 &gt; 隐式 &gt; 默认</strong>
         。箭头函数跳过所有规则，直接看外层。判断 this 只需回答一个问题：
         <strong>这个函数是被谁、以什么形式调用的？</strong>
@@ -85,7 +86,7 @@ export default function Note() {
         label="对比 / compare"
         left={{
           title: "普通函数",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "this 由调用方式决定（四条规则）",
             "有 arguments 对象与自身 prototype",
@@ -95,7 +96,7 @@ export default function Note() {
         }}
         right={{
           title: "箭头函数",
-          color: "#3b82f6",
+          color: PALETTE.blueSoft,
           points: [
             "没有自己的 this，词法捕获外层作用域",
             "没有 arguments（可用 rest 参数替代）",

@@ -10,6 +10,7 @@ import {
   Prerequisite,
   VizBlock,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -81,14 +82,14 @@ export default function Note() {
             title: "调用栈",
             desc: "makeCounter 的帧早已弹出",
             layout: "column",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             id: "heap",
             title: "堆",
             desc: "闭包让这部分脱离栈回收通道",
             layout: "wrap",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
         ]}
         objects={[
@@ -96,21 +97,21 @@ export default function Note() {
             id: "globalFrame",
             region: "stack",
             label: "全局上下文（栈底）",
-            color: "#f59e0b",
+            color: PALETTE.orange,
             fields: [{ name: "[[LexicalEnv]]", refTo: "globalEnv" }],
           },
           {
             id: "counterFn",
             region: "heap",
             label: "counter 函数对象",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             fields: [{ name: "[[Environment]]", refTo: "counterEnv" }],
           },
           {
             id: "counterEnv",
             region: "heap",
             label: "makeCounter 的环境记录",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             fields: [
               { name: "count", value: "2" },
               { name: "outer", refTo: "globalEnv" },
@@ -120,7 +121,7 @@ export default function Note() {
             id: "globalEnv",
             region: "heap",
             label: "全局环境记录",
-            color: "#1677ff",
+            color: PALETTE.blue,
             fields: [
               { name: "makeCounter", value: "<function>" },
               { name: "counter", refTo: "counterFn" },
@@ -147,7 +148,7 @@ export default function Note() {
         绑定」篇）。理解「作用域词法、this 动态」的分工， 很多混淆会自动消失。
       </Paragraph>
 
-      <MemoryCard keyword="捕获引用，不是拷贝" color="#1677ff">
+      <MemoryCard keyword="捕获引用，不是拷贝" color={PALETTE.blue}>
         闭包保存的是<strong>环境记录的引用</strong>：读到的永远是变量当前值，写入对外层可见。
         判断闭包相关 bug 时先问一句——这几个函数读的是不是同一条环境记录？
       </MemoryCard>
@@ -393,7 +394,7 @@ function ClosureCounter() {
   };
 
   return (
-    <VizBlock label="闭包计数器 / closure-counter" color="#1677ff">
+    <VizBlock label="闭包计数器 / closure-counter" color={PALETTE.blue}>
       <div className="flex flex-col gap-3">
         <div className="flex gap-2">
           <DemoButton onClick={run}>counter()</DemoButton>

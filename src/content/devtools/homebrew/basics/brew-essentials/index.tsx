@@ -9,6 +9,7 @@ import {
   Table,
   Timeline,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -83,11 +84,11 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "tap", label: "tap 配方仓库（Ruby 脚本）", color: "#f59e0b" },
-            { id: "formula", label: "formula 命令行工具", color: "#3fb950" },
-            { id: "cask", label: "cask GUI 应用", color: "#8b5cf6" },
+            { id: "tap", label: "tap 配方仓库（Ruby 脚本）", color: PALETTE.orange },
+            { id: "formula", label: "formula 命令行工具", color: PALETTE.green },
+            { id: "cask", label: "cask GUI 应用", color: PALETTE.purple },
             { id: "bottle", label: "bottle 预编译二进制", color: "#0ea5e9" },
-            { id: "brew", label: "brew 命令入口", color: "#1677ff" },
+            { id: "brew", label: "brew 命令入口", color: PALETTE.blue },
             { id: "services", label: "services 后台服务", color: "#14b8a6" },
           ],
           edges: [
@@ -169,7 +170,7 @@ $ otool -L "$(which ffmpeg)" | head -3
         label="两种打包哲学 / linking"
         left={{
           title: "静态链接（自包含）",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "所有库代码在编译期嵌进单个二进制（Docker 镜像式自包含）",
             "文件偏大，拷到哪台机器都能跑",
@@ -180,7 +181,7 @@ $ otool -L "$(which ffmpeg)" | head -3
         }}
         right={{
           title: "动态链接（共享库）",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "运行时才加载共享库 dylib（共享一份全局依赖）",
             "二进制小，磁盘与内存共享一份库",
@@ -194,8 +195,8 @@ $ otool -L "$(which ffmpeg)" | head -3
         label="依赖规模 / scale"
         title="brew deps 实测计数（仅供直觉）：动态链接生态的依赖树有多大"
         items={[
-          { label: "ffmpeg（C 动态链接）", value: 14, color: "#8b5cf6", suffix: " 个依赖" },
-          { label: "fzf（Go 静态编译）", value: 0, color: "#3fb950", suffix: " 个依赖" },
+          { label: "ffmpeg（C 动态链接）", value: 14, color: PALETTE.purple, suffix: " 个依赖" },
+          { label: "fzf（Go 静态编译）", value: 0, color: PALETTE.green, suffix: " 个依赖" },
         ]}
       />
       <Paragraph>
@@ -249,7 +250,7 @@ $ otool -L "$(which ffmpeg)" | head -3
         {`$ ls -l /opt/homebrew/bin/ffmpeg
 lrwxr-xr-x@ 1 ren admin 35 Aug 30 00:16 /opt/homebrew/bin/ffmpeg -> ../Cellar/ffmpeg/9.0.1_1/bin/ffmpeg`}
       </ShellBlock>
-      <MemoryCard keyword="升级 = 并排装新，不清旧" color="#3fb950">
+      <MemoryCard keyword="升级 = 并排装新，不清旧" color={PALETTE.green}>
         <p>
           brew 升级一个软件时，旧版本目录原封不动地留在 Cellar 里，opt
           指路牌改指新版本。运行层面永远只有一个版本生效（链接决定），磁盘层面可以多版本并存（目录隔离）。旧版本默认保留约
@@ -264,13 +265,13 @@ lrwxr-xr-x@ 1 ren admin 35 Aug 30 00:16 /opt/homebrew/bin/ffmpeg -> ../Cellar/ff
       <Timeline
         label="upgrade 流转 / lifecycle"
         steps={[
-          { label: "拉取元数据", sub: "brew update 刷新配方索引", color: "#1677ff" },
-          { label: "计算依赖树", sub: "比对新旧配方，得出装哪些", color: "#1677ff" },
-          { label: "下载 bottle", sub: "预编译二进制，通常不本地编译", color: "#1677ff" },
-          { label: "装入新 keg", sub: "解压到 Cellar/新版本，旧目录不动", color: "#1677ff" },
-          { label: "切换 opt 链接", sub: "指路牌改指新版，bin/lib 跟着切", color: "#1677ff" },
-          { label: "旧 keg 留任", sub: "还有软件依赖它，默认留约 30 天", color: "#f59e0b" },
-          { label: "cleanup 回收", sub: "大扫除：删旧版本与下载缓存", color: "#3fb950" },
+          { label: "拉取元数据", sub: "brew update 刷新配方索引", color: PALETTE.blue },
+          { label: "计算依赖树", sub: "比对新旧配方，得出装哪些", color: PALETTE.blue },
+          { label: "下载 bottle", sub: "预编译二进制，通常不本地编译", color: PALETTE.blue },
+          { label: "装入新 keg", sub: "解压到 Cellar/新版本，旧目录不动", color: PALETTE.blue },
+          { label: "切换 opt 链接", sub: "指路牌改指新版，bin/lib 跟着切", color: PALETTE.blue },
+          { label: "旧 keg 留任", sub: "还有软件依赖它，默认留约 30 天", color: PALETTE.orange },
+          { label: "cleanup 回收", sub: "大扫除：删旧版本与下载缓存", color: PALETTE.green },
         ]}
       />
       <Paragraph>
@@ -359,7 +360,7 @@ Reason: image not found`}
         <code>hash -r</code>。macOS 没有系统级强制互斥，这条纪律只能靠自己守。
       </Paragraph>
 
-      <MemoryCard keyword="一个软件一个渠道" color="#1677ff">
+      <MemoryCard keyword="一个软件一个渠道" color={PALETTE.blue}>
         <p>
           发现重复安装时，用 <code>type -a</code> / <code>which -a</code>{" "}
           列出全部副本，按渠道决策表确定唯一归属，删掉其余。与其事后治理，不如装之前就问一句：这个软件归哪层管？

@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { StepThrough } from "@/components/demo";
 import { CrossRef, DoDont, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -70,7 +71,7 @@ export default function Note() {
         steps={[
           {
             title: "初始渲染：身份 = 位置",
-            color: "#1677ff",
+            color: PALETTE.blue,
             desc: "key 取 index：alice→0、bob→1、carol→2。React 记住的是「key 0 = alice 的节点」，身份绑定在位置上。",
             render: (
               <div className="font-mono text-xs leading-6">
@@ -82,7 +83,7 @@ export default function Note() {
           },
           {
             title: "数据层：删除 alice",
-            color: "#f59e0b",
+            color: PALETTE.orange,
             desc: "users 变为 [bob, carol]。新列表的 key 依然是 index：bob→0、carol→1。",
             render: (
               <div className="font-mono text-xs leading-6">
@@ -92,7 +93,7 @@ export default function Note() {
           },
           {
             title: "对账：React 只看 key",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             desc: "新 key 0 在旧树里存在（那是 alice 的节点）→ 复用，props 换成 bob 的数据；新 key 1 同理复用旧 bob 的节点；旧 key 2（carol 节点）在新列表里找不到 → 删除。",
             render: (
               <div className="font-mono text-xs leading-6">
@@ -104,7 +105,7 @@ export default function Note() {
           },
           {
             title: "结果：DOM 没动，数据全体顶位",
-            color: "#3fb950",
+            color: PALETTE.green,
             desc: "第一个输入框里 alice 打的「hi」还在（非受控内容不跟 props 走），选中的是「bob」却显示在「alice 的框」里——身份错认完成。若节点有动画或本地状态，同样串位。",
             render: (
               <div className="font-mono text-xs leading-6">

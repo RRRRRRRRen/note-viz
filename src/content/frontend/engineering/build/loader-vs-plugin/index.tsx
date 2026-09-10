@@ -1,5 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CompareTable, CrossRef, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -44,7 +45,7 @@ export default function Note() {
         label="分界 / loader vs plugin"
         left={{
           title: "Loader = 文件转换器",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "输入源码、输出代码的纯函数",
             "管道式串联，执行顺序从右到左",
@@ -54,7 +55,7 @@ export default function Note() {
         }}
         right={{
           title: "Plugin = 生命周期钩子",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "apply(compiler) + Tapable 钩子订阅",
             "介入任意构建阶段，可改产物、注资源、发日志",

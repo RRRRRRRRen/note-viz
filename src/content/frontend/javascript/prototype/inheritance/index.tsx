@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock } from "@/components/demo";
 import { CrossRef, DoDont, MemoryCard, Prerequisite, Timeline } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -62,10 +63,10 @@ export default function Note() {
       <Timeline
         label="方案演进 / evolution"
         steps={[
-          { label: "原型链", sub: "引用类型共享", color: "#f85149" },
-          { label: "借用构造", sub: "够不着原型方法", color: "#f59e0b" },
-          { label: "组合继承", sub: "父构造执行两次", color: "#8b5cf6" },
-          { label: "寄生组合", sub: "正解 = class 内核", color: "#3fb950" },
+          { label: "原型链", sub: "引用类型共享", color: PALETTE.red },
+          { label: "借用构造", sub: "够不着原型方法", color: PALETTE.orange },
+          { label: "组合继承", sub: "父构造执行两次", color: PALETTE.purple },
+          { label: "寄生组合", sub: "正解 = class 内核", color: PALETTE.green },
         ]}
       />
       <DoDont
@@ -177,7 +178,7 @@ class Child { say() {} } // class 默认挂原型`,
           note: "「属性进 this、方法进 prototype」不只是约定，也是性能决策",
         }}
       />
-      <MemoryCard keyword="一句选型" color="#3fb950">
+      <MemoryCard keyword="一句选型" color={PALETTE.green}>
         手写场景直接背结论：
         <strong>Object.create(Parent.prototype) + Parent.call(this) + 修复 constructor</strong>
         ——这是面试要求的「寄生组合式」，也是 class extends 的行为内核。写 class 的时代它仍是理解

@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock, FlowChart } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -31,7 +32,7 @@ export default function Note() {
         label="心智模型 / mental model"
         left={{
           title: "Flex = 一维流（content-out）",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "先有内容，再沿主轴分配空间",
             "只管一条轴：wrap 后每行独立，行间关系不归它管",
@@ -41,7 +42,7 @@ export default function Note() {
         }}
         right={{
           title: "Grid = 二维网格（layout-out）",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "先定行列轨道，内容填进格子",
             "行列同时约束：跨行跨列、行间对齐成体系",
@@ -50,7 +51,7 @@ export default function Note() {
           ],
         }}
       />
-      <MemoryCard keyword="拿不准时的经验法则" color="#1677ff">
+      <MemoryCard keyword="拿不准时的经验法则" color={PALETTE.blue}>
         组件内部一维排列 → Flex；页面骨架、卡片网格、跨行对齐 → Grid；两者都要 → 外 Grid 定骨架、内
         Flex 排细节。<strong>选型不是二选一，是分工。</strong>
       </MemoryCard>
@@ -64,11 +65,11 @@ export default function Note() {
       <Timeline
         label="弹性分配算法 / flex algorithm"
         steps={[
-          { label: "定基准 basis", sub: "auto = 内容尺寸", color: "#1677ff" },
-          { label: "算剩余空间", sub: "容器 − Σbasis", color: "#f59e0b" },
-          { label: "正剩余 → grow", sub: "按 grow 比例分", color: "#3fb950" },
-          { label: "负剩余 → shrink", sub: "shrink × basis 加权", color: "#f85149" },
-          { label: "min/max 夹逼", sub: "触边冻结，二次分配", color: "#8b5cf6" },
+          { label: "定基准 basis", sub: "auto = 内容尺寸", color: PALETTE.blue },
+          { label: "算剩余空间", sub: "容器 − Σbasis", color: PALETTE.orange },
+          { label: "正剩余 → grow", sub: "按 grow 比例分", color: PALETTE.green },
+          { label: "负剩余 → shrink", sub: "shrink × basis 加权", color: PALETTE.red },
+          { label: "min/max 夹逼", sub: "触边冻结，二次分配", color: PALETTE.purple },
         ]}
       />
       <Paragraph>
@@ -167,7 +168,7 @@ export default function Note() {
           note: "minmax(0, 1fr) 与 Flex 的 min-w-0 异曲同工，分栏场景的默认写法",
         }}
       />
-      <MemoryCard keyword="同源陷阱：自动最小尺寸" color="#f85149">
+      <MemoryCard keyword="同源陷阱：自动最小尺寸" color={PALETTE.red}>
         Flex 的 <code>min-w-0</code> 和 Grid 的 <code>minmax(0, 1fr)</code> 是同一个问题的两副面孔：
         <strong>子项/轨道默认拒绝收缩到内容以下</strong>
         。任何收缩或等分失效，先怀疑隐形下限，解法都是显式把下限钉到 0。
@@ -193,7 +194,7 @@ export default function Note() {
         label="对齐三层 / alignment"
         left={{
           title: "Flex：两轴两族",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "justify-* 沿主轴、align-* 沿交叉轴",
             "-content 分配轴上的剩余/溢出空间（多行时 align-content 才生效）",
@@ -203,7 +204,7 @@ export default function Note() {
         }}
         right={{
           title: "Grid：两轴三层",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "-content：轨道组 vs 容器（分布整组轨道）",
             "-items：项目在格子内的默认对齐",
@@ -246,14 +247,14 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "start", label: "需要同时约束行和列吗？", color: "#f59e0b" },
-            { id: "grid", label: "页面骨架 / 卡片网格 / 跨行对齐 → Grid", color: "#1677ff" },
+            { id: "start", label: "需要同时约束行和列吗？", color: PALETTE.orange },
+            { id: "grid", label: "页面骨架 / 卡片网格 / 跨行对齐 → Grid", color: PALETTE.blue },
             {
               id: "flex",
               label: "组件内一维排列（工具条/导航/表单行）→ Flex",
-              color: "#8b5cf6",
+              color: PALETTE.purple,
             },
-            { id: "both", label: "外 Grid 定骨架，内 Flex 排细节", color: "#3fb950" },
+            { id: "both", label: "外 Grid 定骨架，内 Flex 排细节", color: PALETTE.green },
           ],
           edges: [
             { source: "start", target: "grid", label: "要（二维约束）" },

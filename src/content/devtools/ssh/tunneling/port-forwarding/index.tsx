@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
 import { CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -45,7 +46,7 @@ export default function Note() {
         <strong>谁监听端口，流量就从谁那里进来；对面接谁，数据最终就到谁那里</strong>。加密
         始终只发生在 SSH 连接内部的两点之间。
       </Paragraph>
-      <MemoryCard keyword="谁监听端口流量就从谁进，对面接谁数据就到谁" color="#1677ff">
+      <MemoryCard keyword="谁监听端口流量就从谁进，对面接谁数据就到谁" color={PALETTE.blue}>
         <p>
           判断任何转发场景只问两个问题：① 我在本机（还是远端）连哪个新端口？②
           数据出了隧道后要去哪？答完这两问，-L / -R / -D
@@ -59,10 +60,10 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "gui", label: "本机数据库客户端", color: "#1677ff" },
-            { id: "localport", label: "本机 localhost:3306（-L 监听）", color: "#8b5cf6" },
-            { id: "tunnel", label: "SSH 加密隧道", color: "#f59e0b" },
-            { id: "mysql", label: "服务器本机的 MySQL:3306", color: "#3fb950" },
+            { id: "gui", label: "本机数据库客户端", color: PALETTE.blue },
+            { id: "localport", label: "本机 localhost:3306（-L 监听）", color: PALETTE.purple },
+            { id: "tunnel", label: "SSH 加密隧道", color: PALETTE.orange },
+            { id: "mysql", label: "服务器本机的 MySQL:3306", color: PALETTE.green },
           ],
           edges: [
             { source: "gui", target: "localport", label: "连 localhost:3306" },
@@ -115,11 +116,11 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "browser", label: "浏览器（代理设置 → localhost:1080）", color: "#1677ff" },
-            { id: "socks", label: "SOCKS5 入口（本机 1080）", color: "#8b5cf6" },
-            { id: "tunnel", label: "SSH 加密隧道 → 服务器", color: "#f59e0b" },
-            { id: "wiki", label: "internal.wiki.com（仅内网可达）", color: "#3fb950" },
-            { id: "grafana", label: "grafana.internal（仅内网可达）", color: "#3fb950" },
+            { id: "browser", label: "浏览器（代理设置 → localhost:1080）", color: PALETTE.blue },
+            { id: "socks", label: "SOCKS5 入口（本机 1080）", color: PALETTE.purple },
+            { id: "tunnel", label: "SSH 加密隧道 → 服务器", color: PALETTE.orange },
+            { id: "wiki", label: "internal.wiki.com（仅内网可达）", color: PALETTE.green },
+            { id: "grafana", label: "grafana.internal（仅内网可达）", color: PALETTE.green },
           ],
           edges: [
             { source: "browser", target: "socks", label: "每个请求携带目标地址" },

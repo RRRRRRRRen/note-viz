@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock, DemoButton, LogPanel, ResetButton } from "@/components/demo";
 import { DoDont, MemoryCard, OutputTimeline, Prerequisite, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -66,7 +67,7 @@ new Readable({ objectMode: true }).readableHighWaterMark;  // 16（16 个对象�
 fs.createReadStream("big.log").readableHighWaterMark;      // 65536
 fs.createWriteStream("out.log").writableHighWaterMark;     // 65536`}
       />
-      <MemoryCard keyword="水位线是信号阈值，不是容量上限" color="#1677ff">
+      <MemoryCard keyword="水位线是信号阈值，不是容量上限" color={PALETTE.blue}>
         字节流默认 <strong>64KiB</strong>，objectMode 默认 <strong>16 个对象</strong>
         。越过它只有两个后果：
         <code>write()</code> 返回 <code>false</code>、内部 needDrain

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock, DemoButton, LogPanel, ResetButton } from "@/components/demo";
 import { CrossRef, DoDont, Prerequisite, Timeline, VersionNote } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -48,11 +49,11 @@ export default function Note() {
       <Timeline
         label="一次点击的时间线 / batching"
         steps={[
-          { label: "click 触发", sub: "进入事件处理器", color: "#f59e0b" },
-          { label: "setState × 3", sub: "只入队，不渲染", color: "#8b5cf6" },
-          { label: "事件处理结束", sub: "批次的消费时点", color: "#9ca3af" },
-          { label: "一次 render + commit", sub: "重放队列 · 更新 DOM", color: "#1677ff" },
-          { label: "浏览器绘制", sub: "用户看到的只有结果", color: "#3fb950" },
+          { label: "click 触发", sub: "进入事件处理器", color: PALETTE.orange },
+          { label: "setState × 3", sub: "只入队，不渲染", color: PALETTE.purple },
+          { label: "事件处理结束", sub: "批次的消费时点", color: PALETTE.gray },
+          { label: "一次 render + commit", sub: "重放队列 · 更新 DOM", color: PALETTE.blue },
+          { label: "浏览器绘制", sub: "用户看到的只有结果", color: PALETTE.green },
         ]}
       />
 
@@ -78,12 +79,12 @@ export default function Note() {
           {
             range: "React 17-",
             text: "只在合成事件处理函数内批；setTimeout / Promise / 原生监听里逐次渲染",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             range: "React 18+",
             text: "createRoot 后全场景自动批处理；逃生舱 flushSync；不跨多次有意事件",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
         note="变化的是「谁负责批」：从事件系统的附属行为，升级为调度器的默认行为"

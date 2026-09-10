@@ -1,5 +1,6 @@
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -167,7 +168,7 @@ export default function Note() {
       <MemoryCard keyword="两条管道互不干涉">
         types 白名单管全局注入，管不住显式 import 的解析——配置不生效时先问走的是哪条管道。
       </MemoryCard>
-      <MemoryCard keyword="@types 与主包无版本联动" color="#3fb950">
+      <MemoryCard keyword="@types 与主包无版本联动" color={PALETTE.green}>
         两个独立 semver：主包升级时同步升 @types，Renovate 分组更新绑进同一个 PR。
       </MemoryCard>
 

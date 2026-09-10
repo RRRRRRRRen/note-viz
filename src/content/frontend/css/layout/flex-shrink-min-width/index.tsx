@@ -2,6 +2,7 @@ import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components
 import { CodeBlock } from "@/components/demo";
 import { CrossRef, DoDont, MemoryCard, Prerequisite, SpecQuote, Table } from "@/components/viz";
 import FlexShrinkSimulator from "./FlexShrinkSimulator";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -194,7 +195,7 @@ img { min-width: 0; max-width: 100%; }     /* 图片：下限上限双管齐下 
           note: "每一层会溢出的 flex 中间项都要 min-w-0：下限是逐层传播的",
         }}
       />
-      <MemoryCard keyword="收缩失灵排查口诀" color="#1677ff">
+      <MemoryCard keyword="收缩失灵排查口诀" color={PALETTE.blue}>
         先算加权（shrink × basis），再查下限（min-width:auto）。长内容 flex 项的第一反应是{" "}
         <code>min-w-0</code>；图片配 <code>max-w-full</code>；嵌套布局
         <strong>每一层中间项都要解下限</strong>

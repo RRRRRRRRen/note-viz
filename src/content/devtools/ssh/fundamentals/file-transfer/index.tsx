@@ -8,6 +8,7 @@ import {
   VersionNote,
 } from "@/components/viz";
 import { ShellBlock } from "@/components/demo";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -77,7 +78,7 @@ scp -i ~/.ssh/work_key file host:/path   # 指定私钥，同 ssh -i`}</ShellBlo
           {
             range: "OpenSSH < 9.0",
             text: "scp 走历史遗留的 SCP/RCP 协议：远端文件名由远端 shell 展开，通配符有解释歧义",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             range: "OpenSSH ≥ 9.0（2022-04）",
@@ -165,8 +166,8 @@ sent 228 bytes  received 42 bytes`}</ShellBlock>
       <Heading level={2} title="选型对照" />
       <CompareTable
         label="scp 与 rsync 逐维度对比 / scp vs rsync"
-        left={{ title: "scp", color: "#1677ff" }}
-        right={{ title: "rsync", color: "#8b5cf6" }}
+        left={{ title: "scp", color: PALETTE.blue }}
+        right={{ title: "rsync", color: PALETTE.purple }}
         rows={[
           { aspect: "传输模型", left: "全量重传，无历史状态", right: "delta 增量，只传差异块" },
           { aspect: "适合场景", left: "一次性拷文件、拉日志", right: "反复同步：部署、备份、镜像" },
@@ -177,7 +178,7 @@ sent 228 bytes  received 42 bytes`}</ShellBlock>
           { aspect: "底层协议", left: "SFTP（OpenSSH 9.0 起）", right: "自家协议，走 ssh 通道" },
         ]}
       />
-      <MemoryCard keyword="拷一个文件用 scp，同步一个目录用 rsync" color="#1677ff">
+      <MemoryCard keyword="拷一个文件用 scp，同步一个目录用 rsync" color={PALETTE.blue}>
         <p>
           判断只看一个特征：这条传输<strong>会不会反复执行</strong>
           。一次性动作（拿个配置、传个包）scp 足够；凡是会跑第二遍的（部署、备份、数据搬运）， rsync

@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Exercise, ShellBlock } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, SpecQuote, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -39,8 +40,8 @@ export default function Note() {
 
       <CompareTable
         label="镜像 vs 容器 / image vs container"
-        left={{ title: "镜像 image", color: "#8b5cf6" }}
-        right={{ title: "容器 container", color: "#1677ff" }}
+        left={{ title: "镜像 image", color: PALETTE.purple }}
+        right={{ title: "容器 container", color: PALETTE.blue }}
         rows={[
           {
             aspect: "本质",
@@ -153,7 +154,7 @@ a1b2c3d4e5f6`}</ShellBlock>
         容器里的配置文件、重启后又变回去"这类灵异现象的唯一真相。
       </Paragraph>
 
-      <MemoryCard keyword="仓库管存取，镜像管内容，容器管运行" color="#1677ff">
+      <MemoryCard keyword="仓库管存取，镜像管内容，容器管运行" color={PALETTE.blue}>
         <p>
           镜像是只读的标准化软件包（immutable，更新＝造新镜像）；容器是镜像跑起来的隔离进程（类与实例，
           一个镜像派生 N 个容器）；仓库是存取与分发的服务（push ≈ publish，pull ≈ install）。镜像名

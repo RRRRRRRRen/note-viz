@@ -61,6 +61,9 @@ function findSourceFiles(base: string, out: string[] = []): string[] {
 
 const LINK_RE = /["'](\/note\/[^"']+)["']/g;
 
+/** 语义色字面量闸门：这七个值必须引用 PALETTE 常量，禁止拷贝（防色板漂移） */
+const PALETTE_LITERAL_RE = /(=|:\s*)"#(1677ff|3b82f6|8b5cf6|f59e0b|3fb950|f85149|9ca3af)"/i;
+
 /** 沿 slug 段下钻 taxonomy；任一段缺失时返回缺失段名 */
 function resolveTaxonomyNode(segs: string[]): { node: TaxonomyNode | undefined; missing?: string } {
   let children = taxonomy;
@@ -189,6 +192,17 @@ export function contentScan(): Plugin {
           if (!validPaths.has(target) && !validPaths.has(decodeURI(target))) {
             this.error(
               `[note-viz] 内部链接目标不存在: ${target}（${path.relative(process.cwd(), file)}）`,
+            );
+            failed = true;
+          }
+        }
+      }
+      // ---- 一致性闸门 3：笔记内容的语义色必须引用 PALETTE 常量（taxonomy 的领域色是配置，不算语义色）----
+      for (const dir of noteDirs) {
+        for (const file of noteSourceFiles(dir)) {
+          if (PALETTE_LITERAL_RE.test(fs.readFileSync(file, "utf-8"))) {
+            this.error(
+              `[note-viz] 语义色必须引用 PALETTE 常量（import { PALETTE } from "@/components/palette"），禁止字面量拷贝（${path.relative(process.cwd(), file)}）`,
             );
             failed = true;
           }

@@ -8,6 +8,7 @@ import {
   Prerequisite,
   Timeline,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -57,7 +58,7 @@ export default function Note() {
         label="三代访问模型 / vpn vs bastion vs zt"
         left={{
           title: "VPN → 堡垒机（边界模型）",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "VPN：连上即全网可达，粒度最粗",
             "堡垒机：入口收敛 + 录像，进门查一次",
@@ -68,7 +69,7 @@ export default function Note() {
         }}
         right={{
           title: "零信任",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "粒度到单个应用/资源，无「进入网络」概念",
             "持续验证：身份 + 设备健康 + 行为上下文",
@@ -95,10 +96,10 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "id", label: "身份系统：SSO + MFA", color: "#1677ff" },
-            { id: "cred", label: "短期凭证：证书 / JWT / Cookie", color: "#8b5cf6" },
-            { id: "pep", label: "执行点：代理验证（身份+设备+策略）", color: "#f59e0b" },
-            { id: "res", label: "资源：应用 / DB / 服务器", color: "#3fb950" },
+            { id: "id", label: "身份系统：SSO + MFA", color: PALETTE.blue },
+            { id: "cred", label: "短期凭证：证书 / JWT / Cookie", color: PALETTE.purple },
+            { id: "pep", label: "执行点：代理验证（身份+设备+策略）", color: PALETTE.orange },
+            { id: "res", label: "资源：应用 / DB / 服务器", color: PALETTE.green },
           ],
           edges: [
             { source: "id", target: "cred", label: "核身通过 → 签发" },
@@ -108,7 +109,7 @@ export default function Note() {
           ],
         }}
       />
-      <MemoryCard keyword="短期凭证是整个体系的支点" color="#3fb950">
+      <MemoryCard keyword="短期凭证是整个体系的支点" color={PALETTE.green}>
         <p>
           默认拒绝管「看不见」，代理验证管「进不来」，而<strong>短期凭证管「拿到了也没用」</strong>
           ：凭证限定身份、资源、时长，把「凭证泄露」从灾难降级为小时级事故，把「离职收权限」从运维工程
@@ -141,14 +142,14 @@ export default function Note() {
       <Timeline
         label="外网访问内网页面 / web access"
         steps={[
-          { label: "请求云端代理", sub: "域名解析到代理而非源站", color: "#1677ff" },
-          { label: "302 → SSO", sub: "无会话则跳飞书登录", color: "#1677ff" },
-          { label: "MFA 验证", sub: "账号密码 + 手机确认", color: "#1677ff" },
-          { label: "设备检查", sub: "Agent 上报健康状态", color: "#8b5cf6" },
-          { label: "策略判定", sub: "身份✓ 研发组✓ 设备✓", color: "#f59e0b" },
-          { label: "发会话 Cookie", sub: "一小时有效", color: "#f59e0b" },
-          { label: "隧道进内网", sub: "经连接器到 10.0.1.10", color: "#3fb950" },
-          { label: "页面返回", sub: "Grafana 无感知", color: "#3fb950" },
+          { label: "请求云端代理", sub: "域名解析到代理而非源站", color: PALETTE.blue },
+          { label: "302 → SSO", sub: "无会话则跳飞书登录", color: PALETTE.blue },
+          { label: "MFA 验证", sub: "账号密码 + 手机确认", color: PALETTE.blue },
+          { label: "设备检查", sub: "Agent 上报健康状态", color: PALETTE.purple },
+          { label: "策略判定", sub: "身份✓ 研发组✓ 设备✓", color: PALETTE.orange },
+          { label: "发会话 Cookie", sub: "一小时有效", color: PALETTE.orange },
+          { label: "隧道进内网", sub: "经连接器到 10.0.1.10", color: PALETTE.green },
+          { label: "页面返回", sub: "Grafana 无感知", color: PALETTE.green },
         ]}
       />
       <Paragraph>

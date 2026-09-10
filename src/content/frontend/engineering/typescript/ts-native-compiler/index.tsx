@@ -1,6 +1,7 @@
 import { FlowChart } from "@/components/demo";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, VersionNote } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -52,14 +53,14 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "bin", label: "node_modules/.bin/tsc（shell 脚本）", color: "#9ca3af" },
+            { id: "bin", label: "node_modules/.bin/tsc（shell 脚本）", color: PALETTE.gray },
             {
               id: "launcher",
               label: "typescript/bin/tsc（一行 node 启动器）",
-              color: "#1677ff",
+              color: PALETTE.blue,
             },
-            { id: "exe", label: "lib/tsc.js（getExePath + execve）", color: "#f59e0b" },
-            { id: "native", label: "平台二进制 Mach-O 原生进程", color: "#3fb950" },
+            { id: "exe", label: "lib/tsc.js（getExePath + execve）", color: PALETTE.orange },
+            { id: "native", label: "平台二进制 Mach-O 原生进程", color: PALETTE.green },
           ],
           edges: [
             { source: "bin", target: "launcher", label: "exec node" },
@@ -81,16 +82,16 @@ export default function Note() {
         label="strict 与废弃的三个阶段 / defaults"
         note="三级火箭的最后一站的落点：迁移 7 的第一步永远是补显式配置，否则行为静默改变。"
         versions={[
-          { range: "TS 5.x", text: "strict 默认关闭——老项目大多显式开启", color: "#9ca3af" },
+          { range: "TS 5.x", text: "strict 默认关闭——老项目大多显式开启", color: PALETTE.gray },
           {
             range: "6.0",
             text: '默认值向 7 对齐并警告；废弃项可用 ignoreDeprecations: "6.0" 缓冲',
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             range: "7.0",
             text: "strict 默认 true、module 默认 esnext、5.x 起废弃的选项硬移除",
-            color: "#f85149",
+            color: PALETTE.red,
           },
         ]}
       />
@@ -221,7 +222,7 @@ const program = ts.createProgram(/* ... */);
       <MemoryCard keyword="npm 包是分发容器">
         下载解压链接二进制，执行的是原生进程——node 只是 execve 前的打火机。
       </MemoryCard>
-      <MemoryCard keyword="热路径下沉原生" color="#8b5cf6">
+      <MemoryCard keyword="热路径下沉原生" color={PALETTE.purple}>
         解析/检查/转译/压缩交给原生二进制，编排与 UX 留在 JS——JS 从引擎退成外壳和胶水。
       </MemoryCard>
 

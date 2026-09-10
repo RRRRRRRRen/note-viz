@@ -8,6 +8,7 @@ import {
   MemoryCard,
   Prerequisite,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -81,15 +82,15 @@ TrustedUserCAKeys /etc/ssh/team_user_ca.pub`}</ShellBlock>
         data={{
           direction: "TB",
           nodes: [
-            { id: "ca", label: "团队 CA（私钥签发，公钥给服务器）", color: "#f59e0b" },
-            { id: "cert", label: "证书 = 用户公钥 + 元数据 + CA 签名", color: "#8b5cf6" },
+            { id: "ca", label: "团队 CA（私钥签发，公钥给服务器）", color: PALETTE.orange },
+            { id: "cert", label: "证书 = 用户公钥 + 元数据 + CA 签名", color: PALETTE.purple },
             {
               id: "meta",
               label: "元数据：principal 账号 / 有效期 / 序列号",
-              color: "#8b5cf6",
+              color: PALETTE.purple,
             },
-            { id: "server", label: "服务器：只存一把 CA 公钥", color: "#1677ff" },
-            { id: "verify", label: "登录时三查：验签 / principal / 时间窗", color: "#3fb950" },
+            { id: "server", label: "服务器：只存一把 CA 公钥", color: PALETTE.blue },
+            { id: "verify", label: "登录时三查：验签 / principal / 时间窗", color: PALETTE.green },
           ],
           edges: [
             { source: "ca", target: "cert", label: "签名" },
@@ -112,7 +113,7 @@ TrustedUserCAKeys /etc/ssh/team_user_ca.pub`}</ShellBlock>
         这正是堡垒机的授权逻辑所在。证书管「你是谁、能用哪个账号、到什么时候」，签发流程管「你该到哪去」。
       </Paragraph>
 
-      <MemoryCard keyword="用短生命周期代替撤销机制" color="#3fb950">
+      <MemoryCard keyword="用短生命周期代替撤销机制" color={PALETTE.green}>
         <p>
           传统公钥的难题是「泄露了怎么从几百台机器撤下来」；证书直接让这个问题不存在——有效期 8
           小时，最坏损失 8
@@ -135,8 +136,8 @@ TrustedUserCAKeys /etc/ssh/team_user_ca.pub`}</ShellBlock>
       </Paragraph>
       <CompareTable
         label="名单制与签发制的运维对照 / keys vs certs"
-        left={{ title: "普通密钥（名单制）", color: "#1677ff" }}
-        right={{ title: "SSH 证书（签发制）", color: "#8b5cf6" }}
+        left={{ title: "普通密钥（名单制）", color: PALETTE.blue }}
+        right={{ title: "SSH 证书（签发制）", color: PALETTE.purple }}
         rows={[
           { aspect: "服务器保存什么", left: "每个用户的公钥（名单）", right: "一把 CA 公钥" },
           { aspect: "新用户接入", left: "逐台分发公钥", right: "CA 签一次，全服务器生效" },

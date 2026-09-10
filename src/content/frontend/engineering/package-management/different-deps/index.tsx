@@ -1,5 +1,6 @@
 import { Callout, CrossRef, DoDont, LayerStack, MemoryCard, SpecQuote } from "@/components/viz";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -97,27 +98,27 @@ export default function Note() {
           {
             name: "整机环境",
             desc: "CI 校验兜底 / devcontainer——最后一道闸，拦住前面所有层漏掉的问题",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             name: "安装方式",
             desc: "npm ci · pnpm install --frozen-lockfile · yarn --immutable：只读消费，禁止顺手改锁文件",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             name: "依赖树",
             desc: "lockfile 提交入库，作为解析结果的唯一事实源",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             name: "包管理器",
             desc: "packageManager 字段精确到小版本 + 装错即报错",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             name: "Node 版本",
             desc: ".nvmrc 写精确版本 + engine-strict 让 engines 不满足时报错",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
         ]}
       />
@@ -167,7 +168,7 @@ engine-strict=true
         Node
         版本、包管理器、依赖树、安装方式、整机环境——五层缺任何一层，其余锁得再严也白锁。方案是组合拳，不是单点工具。
       </MemoryCard>
-      <MemoryCard keyword="缓存是替罪羊，脱节是真凶" color="#f59e0b">
+      <MemoryCard keyword="缓存是替罪羊，脱节是真凶" color={PALETTE.orange}>
         下载缓存真损坏会报错；静默出错的都是「缓存与数据源脱节」。删除有效是因为强制失效——「删了就好」应当触发追问：哪一层的
         key 漏看了哪个输入？
       </MemoryCard>

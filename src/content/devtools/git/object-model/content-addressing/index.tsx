@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { Callout, CompareTable, DoDont, MemoryCard, Timeline, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -45,7 +46,7 @@ export default function Note() {
         label="两种版本模型 / snapshot vs delta"
         left={{
           title: "增量补丁模型",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "存储的是「变化」：每个版本 = 上一版 + 补丁",
             "取旧版本要从头回放全部补丁，越老越慢",
@@ -56,7 +57,7 @@ export default function Note() {
         }}
         right={{
           title: "完整快照模型（Git）",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "存储的是「状态」：每个版本 = 一棵完整的指针树",
             "没变的文件引用旧对象，物理上不重复存储",
@@ -153,13 +154,13 @@ ce013625030ba8dba906f756967f9e9ca394464a    ← 一模一样`}</ShellBlock>
         data={{
           direction: "TB",
           nodes: [
-            { id: "commit2", label: "commit（第 2 次提交）", color: "#f59e0b" },
-            { id: "commit1", label: "commit（第 1 次提交）", color: "#f59e0b" },
-            { id: "tree2", label: "tree 根目录清单 v2", color: "#8b5cf6" },
-            { id: "tree1", label: "tree 根目录清单 v1", color: "#8b5cf6" },
-            { id: "blobA2", label: "blob a.txt（新内容）", color: "#1677ff" },
-            { id: "blobB", label: "blob b.txt（复用）", color: "#3fb950" },
-            { id: "blobA1", label: "blob a.txt（旧内容）", color: "#9ca3af" },
+            { id: "commit2", label: "commit（第 2 次提交）", color: PALETTE.orange },
+            { id: "commit1", label: "commit（第 1 次提交）", color: PALETTE.orange },
+            { id: "tree2", label: "tree 根目录清单 v2", color: PALETTE.purple },
+            { id: "tree1", label: "tree 根目录清单 v1", color: PALETTE.purple },
+            { id: "blobA2", label: "blob a.txt（新内容）", color: PALETTE.blue },
+            { id: "blobB", label: "blob b.txt（复用）", color: PALETTE.green },
+            { id: "blobA1", label: "blob a.txt（旧内容）", color: PALETTE.gray },
           ],
           edges: [
             { source: "commit2", target: "tree2", label: "tree" },
@@ -241,7 +242,7 @@ commit                                 ← 没有对象本体，直接就是 com
         可验证来源，这是 tag 对象区别于分支文件的全部意义。
       </Callout>
 
-      <MemoryCard keyword="哈希即地址，快照即版本" color="#8b5cf6">
+      <MemoryCard keyword="哈希即地址，快照即版本" color={PALETTE.purple}>
         <p>
           内容决定哈希，哈希决定地址：内容变 → 必然新对象；内容同 →
           必然复用。每次提交是一棵完整的指针树（快照），没变的文件引用旧对象（物理增量）。版本管理的一切操作——存、取、分支、同步——都建立在这条之上。
@@ -256,10 +257,10 @@ commit                                 ← 没有对象本体，直接就是 com
       <Timeline
         label="commit 写入流程 / commit pipeline"
         steps={[
-          { label: "存新 blob", sub: "改动文件算哈希、zlib 压缩入库", color: "#1677ff" },
-          { label: "生成新 tree", sub: "没变的条目直接复用旧 tree", color: "#8b5cf6" },
-          { label: "写新 commit", sub: "指向新 tree + 上一个 commit", color: "#f59e0b" },
-          { label: "改写分支", sub: "分支文件指向新 commit（41 字节）", color: "#3fb950" },
+          { label: "存新 blob", sub: "改动文件算哈希、zlib 压缩入库", color: PALETTE.blue },
+          { label: "生成新 tree", sub: "没变的条目直接复用旧 tree", color: PALETTE.purple },
+          { label: "写新 commit", sub: "指向新 tree + 上一个 commit", color: PALETTE.orange },
+          { label: "改写分支", sub: "分支文件指向新 commit（41 字节）", color: PALETTE.green },
         ]}
       />
       <Paragraph>

@@ -9,6 +9,7 @@ import {
   SpecQuote,
 } from "@/components/viz";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -61,8 +62,8 @@ export default function Note() {
       </Paragraph>
       <CompareTable
         label="同内核 vs 外人 / one kernel, two forms vs outsider"
-        left={{ title: "类型内核（tsc / tsserver）", color: "#8b5cf6" }}
-        right={{ title: "剥类型转译器（esbuild / Oxc / swc）", color: "#1677ff" }}
+        left={{ title: "类型内核（tsc / tsserver）", color: PALETTE.purple }}
+        right={{ title: "剥类型转译器（esbuild / Oxc / swc）", color: PALETTE.blue }}
         rows={[
           {
             aspect: "输入视角",
@@ -122,13 +123,13 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "src", label: "src/**/*.{ts,tsx} 源文件", color: "#9ca3af" },
-            { id: "server", label: "tsserver 语言服务（常驻内存）", color: "#8b5cf6" },
-            { id: "tsc", label: "tsc -b 类型审计（跑批）", color: "#f59e0b" },
-            { id: "trans", label: "剥类型转译器（esbuild → Oxc）", color: "#1677ff" },
-            { id: "ide", label: "红线 / 补全 / 跳转，零文件产出", color: "#8b5cf6" },
-            { id: "err", label: "错误清单 + tsbuildinfo，挡住构建", color: "#f85149" },
-            { id: "js", label: "浏览器执行的纯 JS", color: "#3fb950" },
+            { id: "src", label: "src/**/*.{ts,tsx} 源文件", color: PALETTE.gray },
+            { id: "server", label: "tsserver 语言服务（常驻内存）", color: PALETTE.purple },
+            { id: "tsc", label: "tsc -b 类型审计（跑批）", color: PALETTE.orange },
+            { id: "trans", label: "剥类型转译器（esbuild → Oxc）", color: PALETTE.blue },
+            { id: "ide", label: "红线 / 补全 / 跳转，零文件产出", color: PALETTE.purple },
+            { id: "err", label: "错误清单 + tsbuildinfo，挡住构建", color: PALETTE.red },
+            { id: "js", label: "浏览器执行的纯 JS", color: PALETTE.green },
           ],
           edges: [
             { source: "src", target: "server" },
@@ -278,10 +279,10 @@ pnpm build   # 转译语义变化才可能反映到字节`,
       <MemoryCard keyword="运行时没有 TS">
         产物里也没有。类型是纯编译期存在，检查与转译可以彻底分离。
       </MemoryCard>
-      <MemoryCard keyword="esbuild 管字节，tsc 管真理" color="#8b5cf6">
+      <MemoryCard keyword="esbuild 管字节，tsc 管真理" color={PALETTE.purple}>
         要「快产出」找剥类型转译器，要「对不对」找类型检查器——两个问题别问同一个工具。
       </MemoryCard>
-      <MemoryCard keyword="红线不参与构建" color="#f85149">
+      <MemoryCard keyword="红线不参与构建" color={PALETTE.red}>
         编辑器报错来自 tsserver 的内存编译，构建门禁只能来自 build script 里的
         tsc——两个判断源互不知情。
       </MemoryCard>

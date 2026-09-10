@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock } from "@/components/demo";
 import { DoDont, MemoryCard, VizBlock } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -114,7 +115,7 @@ WHERE customer_id = 42 AND note LIKE '%退款%';`}
         进不了区间，只能在扫过的每一行上再过滤——同一个查询，索引顺序不同，扫描量差出数量级。
       </Paragraph>
 
-      <MemoryCard keyword="等值在前，范围收尾" color="#3fb950">
+      <MemoryCard keyword="等值在前，范围收尾" color={PALETTE.green}>
         联合索引列顺序三问：谁能等值锁定前缀？哪列选择性最高？范围与排序列是否已垫底？
         满足这三问的顺序，才配得上「一次建索引」的写入开销。
       </MemoryCard>
@@ -229,7 +230,7 @@ WHERE title LIKE 'MySQL%';  -- 前缀匹配，可走 range
 
 function BPlusTreeDiagram() {
   return (
-    <VizBlock label="二级索引回表 / secondary-index-lookup" color="#f59e0b">
+    <VizBlock label="二级索引回表 / secondary-index-lookup" color={PALETTE.orange}>
       <div className="flex flex-col items-center gap-4">
         <div className="flex gap-2">
           {["[a,c,e]", "[g,k,m]", "[p,s,u]"].map((k) => (

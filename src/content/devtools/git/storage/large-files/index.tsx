@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { BarChart, Callout, DoDont, Prerequisite, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -65,8 +66,8 @@ export default function Note() {
         label="100MB 文件改 50 次的代价 / cost intuition"
         title="同一大文件两种管理方式的克隆体积（数量级直觉，非精确值）"
         items={[
-          { label: "直接进 Git（50 个版本）", value: 5000, color: "#f85149", suffix: " MB" },
-          { label: "Git LFS（按需拉取当前版）", value: 100, color: "#3fb950", suffix: " MB" },
+          { label: "直接进 Git（50 个版本）", value: 5000, color: PALETTE.red, suffix: " MB" },
+          { label: "Git LFS（按需拉取当前版）", value: 100, color: PALETTE.green, suffix: " MB" },
         ]}
       />
 
@@ -99,10 +100,10 @@ size 12582912`}</ShellBlock>
         data={{
           direction: "TB",
           nodes: [
-            { id: "commit", label: "仓库里：只有指针文件（SHA-256 + 大小）", color: "#1677ff" },
-            { id: "lfsstore", label: "LFS 内容服务器：存真实大文件", color: "#f59e0b" },
-            { id: "localgit", label: "你的 .git/objects：不膨胀", color: "#3fb950" },
-            { id: "worktree", label: "checkout 时按需流式拉取 → 工作区", color: "#8b5cf6" },
+            { id: "commit", label: "仓库里：只有指针文件（SHA-256 + 大小）", color: PALETTE.blue },
+            { id: "lfsstore", label: "LFS 内容服务器：存真实大文件", color: PALETTE.orange },
+            { id: "localgit", label: "你的 .git/objects：不膨胀", color: PALETTE.green },
+            { id: "worktree", label: "checkout 时按需流式拉取 → 工作区", color: PALETTE.purple },
           ],
           edges: [
             {

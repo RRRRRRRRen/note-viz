@@ -9,6 +9,7 @@ import {
 } from "@/components/viz";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock } from "@/components/demo";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -93,8 +94,8 @@ ms@2.1.3/
       </Paragraph>
       <CompareTable
         label="npm 扁平 vs pnpm 隔离 / node_modules"
-        left={{ title: "npm（扁平化）", color: "#f59e0b" }}
-        right={{ title: "pnpm（符号链接）", color: "#3fb950" }}
+        left={{ title: "npm（扁平化）", color: PALETTE.orange }}
+        right={{ title: "pnpm（符号链接）", color: PALETTE.green }}
         rows={[
           {
             aspect: "磁盘占用",
@@ -153,7 +154,7 @@ storeDir: /Users/ren/Library/pnpm/store/v10`}
           {
             range: "pnpm 10+（2025）",
             text: "默认不执行依赖的安装脚本，改为 onlyBuiltDependencies 白名单显式放行；同时设置项逐步向 pnpm-workspace.yaml 迁移",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
         ]}
         note="升级 pnpm 大版本时留意：行为默认值的变化也会造成「同样的代码，装完行为不同」。"
@@ -188,7 +189,7 @@ npm install
         全局内容寻址 store 按哈希存文件，项目的 node_modules 是硬链接 +
         符号链接组装的视图——省磁盘、装得快，与 Git 对象库同构。
       </MemoryCard>
-      <MemoryCard keyword="幽灵依赖不是道德问题，是文件系统问题" color="#3fb950">
+      <MemoryCard keyword="幽灵依赖不是道德问题，是文件系统问题" color={PALETTE.green}>
         npm 扁平化让未声明的包「恰好可见」；pnpm 顶层只放直接依赖，没声明的包物理上找不到。迁移 pnpm
         前先显式声明所有直接 import。
       </MemoryCard>

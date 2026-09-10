@@ -10,6 +10,7 @@ import {
   SpecQuote,
   Table,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -101,32 +102,32 @@ import { x } from "./utils/a";
           {
             title: '读入 import { x } from "@/utils/a"',
             desc: "裸说明符，先查 paths 映射。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             title: "paths 命中 @/* → ./src/*",
             desc: "别名替换，说明符变成 src/utils/a（相对 tsconfig 目录）。",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             title: "尝试扩展名 .ts → .tsx → .d.ts",
             desc: "bundler 档允许无扩展名导入——逐个试到命中为止。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             title: "命中 a.ts，模块图 +1",
             desc: "该文件进入 program；若命中的是 .js 则找同名 .d.ts 拿类型。",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
           {
             title: "递归解析它的 import",
             desc: "整个模块图就是这样滚雪球长出来的。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             title: "结论",
             desc: "「检查需要全程序知识」的根源：每一步都只有走完才知道下一步是什么。",
-            color: "#f85149",
+            color: PALETTE.red,
           },
         ]}
       />
@@ -140,8 +141,8 @@ import { x } from "./utils/a";
       </Paragraph>
       <CompareTable
         label="双份事实 / two sources of truth"
-        left={{ title: "tsconfig paths", color: "#8b5cf6" }}
-        right={{ title: "vite resolve.alias", color: "#1677ff" }}
+        left={{ title: "tsconfig paths", color: PALETTE.purple }}
+        right={{ title: "vite resolve.alias", color: PALETTE.blue }}
         rows={[
           {
             aspect: "谁在读",
@@ -252,7 +253,7 @@ export default { plugins: [tsconfigPaths()] };`,
       <MemoryCard keyword="解析对齐运行时">
         moduleResolution 的选择原则只有一条：跟真正加载你代码的运行时用同一套算法。
       </MemoryCard>
-      <MemoryCard keyword="bundler = 融合算法" color="#8b5cf6">
+      <MemoryCard keyword="bundler = 融合算法" color={PALETTE.purple}>
         CJS 的无扩展名 + ESM 的 import 条件优先——官方定义的标准交集，不是某家打包器的私有方言。
       </MemoryCard>
 

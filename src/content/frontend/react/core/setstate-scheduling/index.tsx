@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock, FlowChart } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, OutputTimeline, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -94,12 +95,12 @@ getFinalState(0, [n => n + 1, n => n + 1, n => n + 1]); // 3  —— 三次操�
         data={{
           direction: "LR",
           nodes: [
-            { id: "call", label: "setState(update)", color: "#f59e0b" },
-            { id: "queue", label: "update 入队", color: "#f59e0b" },
-            { id: "mark", label: "标记 Fiber 待更新", color: "#8b5cf6" },
-            { id: "sched", label: "调度器合并请求", color: "#8b5cf6" },
-            { id: "render", label: "render 阶段重放队列", color: "#1677ff" },
-            { id: "commit", label: "commit 更新 DOM", color: "#3fb950" },
+            { id: "call", label: "setState(update)", color: PALETTE.orange },
+            { id: "queue", label: "update 入队", color: PALETTE.orange },
+            { id: "mark", label: "标记 Fiber 待更新", color: PALETTE.purple },
+            { id: "sched", label: "调度器合并请求", color: PALETTE.purple },
+            { id: "render", label: "render 阶段重放队列", color: PALETTE.blue },
+            { id: "commit", label: "commit 更新 DOM", color: PALETTE.green },
           ],
           edges: [
             { source: "call", target: "queue" },
@@ -129,7 +130,7 @@ getFinalState(0, [n => n + 1, n => n + 1, n => n + 1]); // 3  —— 三次操�
         label="批处理演进 / batching"
         left={{
           title: "React 17 及以前",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "只在 React 事件处理函数内自动批处理",
             "setTimeout / Promise.then / 原生事件里逐次渲染",
@@ -139,7 +140,7 @@ getFinalState(0, [n => n + 1, n => n + 1, n => n + 1]); // 3  —— 三次操�
         }}
         right={{
           title: "React 18+",
-          color: "#3b82f6",
+          color: PALETTE.blueSoft,
           points: [
             "createRoot 后全场景自动批处理",
             "setTimeout / Promise / 原生事件内同样合并",

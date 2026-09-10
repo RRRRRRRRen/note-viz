@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Exercise, ShellBlock } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, SpecQuote, Timeline } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -30,11 +31,11 @@ export default function Note() {
       <Timeline
         label="离线搬运五步 / offline transfer"
         steps={[
-          { label: "① save 导出", sub: "有网机器：镜像 → tar 文件", color: "#1677ff" },
-          { label: "② 搬运", sub: "scp / U 盘 / 内部 FTP", color: "#f59e0b" },
-          { label: "③ load 导入", sub: "目标机：tar → 本地镜像", color: "#3fb950" },
-          { label: "④ 验证", sub: "docker images 核对名字与 tag", color: "#9ca3af" },
-          { label: "⑤ 使用", sub: "run 起容器，或 tag 后 push 进内网私服", color: "#8b5cf6" },
+          { label: "① save 导出", sub: "有网机器：镜像 → tar 文件", color: PALETTE.blue },
+          { label: "② 搬运", sub: "scp / U 盘 / 内部 FTP", color: PALETTE.orange },
+          { label: "③ load 导入", sub: "目标机：tar → 本地镜像", color: PALETTE.green },
+          { label: "④ 验证", sub: "docker images 核对名字与 tag", color: PALETTE.gray },
+          { label: "⑤ 使用", sub: "run 起容器，或 tag 后 push 进内网私服", color: PALETTE.purple },
         ]}
       />
 
@@ -110,8 +111,8 @@ Loaded image: nginx:stable-alpine`}</ShellBlock>
 
       <CompareTable
         label="save/load vs export/import / classic exam"
-        left={{ title: "save / load（镜像族）", color: "#3fb950" }}
-        right={{ title: "export / import（容器族）", color: "#f59e0b" }}
+        left={{ title: "save / load（镜像族）", color: PALETTE.green }}
+        right={{ title: "export / import（容器族）", color: PALETTE.orange }}
         rows={[
           { aspect: "作用对象", left: "镜像 image", right: "容器 container（运行中或已停止均可）" },
           { aspect: "分层结构", left: "完整保留", right: "拍平为单层文件系统快照" },
@@ -134,7 +135,7 @@ Loaded image: nginx:stable-alpine`}</ShellBlock>
         ]}
       />
 
-      <MemoryCard keyword="搬镜像用 save/load，export 只用于容器现场" color="#3fb950">
+      <MemoryCard keyword="搬镜像用 save/load，export 只用于容器现场" color={PALETTE.green}>
         <p>
           save 按名字导出才带 tag；tar 里是完整分层 + 元数据，load 与 pull 等价。export
           导出的是容器的打平快照（不含 volume 内容），import

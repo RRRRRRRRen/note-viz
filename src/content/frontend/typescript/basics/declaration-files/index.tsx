@@ -10,6 +10,7 @@ import {
   Table,
   VersionNote,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -73,12 +74,12 @@ export default function Note() {
           {
             range: "TS 6.x-",
             text: "lib.d.ts 系列以 lib/*.d.ts 文件随 npm 包分发，可以直接打开翻阅",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             range: "TS 7（原生）",
             text: "lib 内嵌进 Go 原生二进制：包里不再有 lib/*.d.ts 文件（typescript@7 的 lib/ 目录只剩 tsc 启动器）",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
         note="变的只是分发的物理形态：这些「TS 自带的类型」内容没变，从可翻阅的文件变成了二进制内嵌资源"
@@ -121,8 +122,8 @@ export default function Note() {
       </Paragraph>
       <CompareTable
         label="两种类型来源 / declared vs inferred"
-        left={{ title: "声明制（默认）", color: "#8b5cf6" }}
-        right={{ title: "推导制（allowJs）", color: "#3fb950" }}
+        left={{ title: "声明制（默认）", color: PALETTE.purple }}
+        right={{ title: "推导制（allowJs）", color: PALETTE.green }}
         rows={[
           {
             aspect: "类型从哪来",
@@ -235,7 +236,7 @@ export {}; // 让本文件成为模块，declare global 才合法`}
       <MemoryCard keyword=".d.ts 是合同不是实现">
         只描述「有什么」，零运行时代码——OpenAPI 之于 REST，proto 之于 RPC，声明之于 JS。
       </MemoryCard>
-      <MemoryCard keyword="信任，不验证" color="#f59e0b">
+      <MemoryCard keyword="信任，不验证" color={PALETTE.orange}>
         文件级名字相邻配对，内容级从不核对——「类型全绿但运行时炸」的根因都在这条性质里。
       </MemoryCard>
 

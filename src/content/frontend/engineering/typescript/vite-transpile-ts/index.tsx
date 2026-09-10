@@ -10,6 +10,7 @@ import {
   Table,
   VersionNote,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -69,12 +70,12 @@ export default function Note() {
           {
             range: "Vite 4-7",
             text: "esbuild 负责逐文件 TS/JSX 转译，并承担依赖预构建与压缩",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             range: "Vite 8+",
             text: "官方文档：转译由 Oxc Transformer（Rust）承担——更快，岗位描述不变",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
         ]}
       />
@@ -90,27 +91,27 @@ export default function Note() {
           {
             title: "浏览器请求 /src/main.tsx",
             desc: "dev server 无打包、按需 serve——每个文件一个请求。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             title: "命中 TS，交给转译器",
             desc: "单文件视角：此刻它不知道、也不关心项目里还有谁。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             title: "剥类型，产出纯 JS",
             desc: "类型标注当注释抠掉；enum 展开、JSX 转换——原生并行的毫秒级操作。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             title: "返回浏览器执行",
             desc: "Vite 文档口径：HMR 级别的更新在 50 毫秒内反映到浏览器。",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
           {
             title: "类型检查员缺席",
             desc: "tsc -b 不在 dev 管线里，tsserver 只服务编辑器——红线与拦截都不来自这条链。",
-            color: "#f85149",
+            color: PALETTE.red,
           },
         ]}
       />
@@ -134,12 +135,12 @@ export default function Note() {
           {
             range: "Vite 4-7",
             text: "esbuild 一人分饰三角：transform 逐文件转译、optimizeDeps 依赖预构建、minify 产物压缩",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             range: "Vite 8+",
             text: "依赖里已无 esbuild——bundle / minify / transform 全部由 rolldown（内含 oxc）承担，esbuild 仅剩可选 peer 位置",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
         ]}
       />
@@ -170,8 +171,8 @@ export default function Note() {
       </Paragraph>
       <CompareTable
         label="一体式 vs 分离式 / sync vs async"
-        left={{ title: "一体式：ts-loader 默认", color: "#f85149" }}
-        right={{ title: "分离式：loader + fork-ts-checker", color: "#3fb950" }}
+        left={{ title: "一体式：ts-loader 默认", color: PALETTE.red }}
+        right={{ title: "分离式：loader + fork-ts-checker", color: PALETTE.green }}
         rows={[
           {
             aspect: "类比",
@@ -283,7 +284,7 @@ new ForkTsCheckerWebpackPlugin() // 独立子进程异步审计`,
       <MemoryCard keyword="转译不需要懂类型">
         剥类型 = 抠注释。检查才需要全程序模块图——把最贵的部分隔离在 dev 管线之外，是速度的来源。
       </MemoryCard>
-      <MemoryCard keyword="先审计后打包" color="#8b5cf6">
+      <MemoryCard keyword="先审计后打包" color={PALETTE.purple}>
         tsc -b 拦截并缓存，转译器信任上游只管快——「未经审计的字节」不应该出现在你的 build script
         里。
       </MemoryCard>

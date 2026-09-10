@@ -8,6 +8,7 @@ import {
   OutputTimeline,
   Prerequisite,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -65,7 +66,7 @@ export default function Note() {
         就不会再选错组织形式——这也是本篇最重要的一个判断。
       </Paragraph>
 
-      <MemoryCard keyword="状态份数 = 工厂调用次数" color="#1677ff">
+      <MemoryCard keyword="状态份数 = 工厂调用次数" color={PALETTE.blue}>
         <code>createCounter()</code> 调用两次 = 两份 count；<code>{"(function(){…})()"}</code>{" "}
         只调用一次 = 单例。选模式前先答「需要几份状态」，形式跟着答案走。
       </MemoryCard>

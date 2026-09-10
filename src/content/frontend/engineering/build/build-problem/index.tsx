@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
 import { CrossRef, MemoryCard, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -59,11 +60,11 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "init", label: "初始化：合并配置 → 实例化 Compiler", color: "#1677ff" },
-            { id: "entry", label: "从 entry 出发，调用 loader 转换模块", color: "#f59e0b" },
-            { id: "dep", label: "解析 import/require → 递归建依赖图", color: "#f59e0b" },
-            { id: "chunk", label: "封装 chunk（entry + 代码分割规则）", color: "#8b5cf6" },
-            { id: "out", label: "渲染输出：压缩、指纹、写 dist", color: "#3fb950" },
+            { id: "init", label: "初始化：合并配置 → 实例化 Compiler", color: PALETTE.blue },
+            { id: "entry", label: "从 entry 出发，调用 loader 转换模块", color: PALETTE.orange },
+            { id: "dep", label: "解析 import/require → 递归建依赖图", color: PALETTE.orange },
+            { id: "chunk", label: "封装 chunk（entry + 代码分割规则）", color: PALETTE.purple },
+            { id: "out", label: "渲染输出：压缩、指纹、写 dist", color: PALETTE.green },
           ],
           edges: [
             { source: "init", target: "entry" },
@@ -103,7 +104,7 @@ export default function Note() {
         esbuild 预构建依赖（把 CJS 依赖合并成单 ESM
         文件）和按请求即时编译源码，启动时间与项目规模解耦；生产仍打包（Rollup）。代价与边界在下方追问链里展开。
       </Paragraph>
-      <MemoryCard keyword="提速三板斧" color="#1677ff">
+      <MemoryCard keyword="提速三板斧" color={PALETTE.blue}>
         <strong>缩小范围</strong>（include/exclude、精简 resolve）→ <strong>持久化缓存</strong>
         （webpack 5 filesystem cache）→ <strong>并行/换引擎</strong>
         （thread-loader、esbuild）。定位慢在哪一步用 <code>--profile</code>

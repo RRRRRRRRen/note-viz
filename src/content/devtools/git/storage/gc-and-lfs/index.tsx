@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, DoDont, MemoryCard, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -90,16 +91,16 @@ packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）
         data={{
           direction: "TB",
           nodes: [
-            { id: "entry1", label: "所有引用：分支 / 标签 / 远程书签", color: "#8b5cf6" },
+            { id: "entry1", label: "所有引用：分支 / 标签 / 远程书签", color: PALETTE.purple },
             {
               id: "entry2",
               label: "所有未过期 reflog 条目（可达 90 天 / 不可达 30 天）",
-              color: "#1677ff",
+              color: PALETTE.blue,
             },
-            { id: "entry3", label: "当前 index（暂存区）", color: "#3fb950" },
-            { id: "scan", label: "gc：从三个入口遍历", color: "#f59e0b" },
-            { id: "alive", label: "可达 → 留下（可打包，不删除）", color: "#3fb950" },
-            { id: "dead", label: "不可达 → 修剪：物理删除", color: "#f85149" },
+            { id: "entry3", label: "当前 index（暂存区）", color: PALETTE.green },
+            { id: "scan", label: "gc：从三个入口遍历", color: PALETTE.orange },
+            { id: "alive", label: "可达 → 留下（可打包，不删除）", color: PALETTE.green },
+            { id: "dead", label: "不可达 → 修剪：物理删除", color: PALETTE.red },
           ],
           edges: [
             { source: "entry1", target: "scan", dashed: true },
@@ -118,7 +119,7 @@ packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）
         里很难真正丢数据」的精确含义。
       </Paragraph>
 
-      <MemoryCard keyword="逻辑删除 ≠ 物理删除" color="#1677ff">
+      <MemoryCard keyword="逻辑删除 ≠ 物理删除" color={PALETTE.blue}>
         <p>
           branch -d、reset、rebase 抛弃的提交，只是从引用链上摘下来；只要 reflog
           未过期，随时能救回来。真正的删除 = reflog 过期 + gc
@@ -182,7 +183,7 @@ $ git push --force
         label="超大仓库的解法 / monorepo"
         left={{
           title: "sparse-checkout：少检出",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "工作区只物化你需要的子目录",
             "对象库仍然完整（历史都在）",
@@ -193,7 +194,7 @@ $ git push --force
         }}
         right={{
           title: "治本：别让仓库变大",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "大文件出库（LFS / 对象存储，见大文件专篇）",
             "构建产物绝不入库（.gitignore 前置）",

@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, DoDont, MemoryCard, Timeline, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -38,7 +39,7 @@ c94b1f5ad9151b404368aec5f7cc6dee6223cc09    ← 分支的全部内容：一行�
         它的哈希指向更新的提交而已。分支不是容器，是<strong>会移动的书签</strong>。
       </Paragraph>
 
-      <MemoryCard keyword="分支 = 会移动的指针" color="#8b5cf6">
+      <MemoryCard keyword="分支 = 会移动的指针" color={PALETTE.purple}>
         <p>
           分支的物理实体是 <code>.git/refs/heads/</code> 下的一个文件，内容为一行 commit
           哈希。提交时 Git
@@ -58,11 +59,11 @@ c94b1f5ad9151b404368aec5f7cc6dee6223cc09    ← 分支的全部内容：一行�
       <Timeline
         label="commit 时指针的联动 / pointer dance"
         steps={[
-          { label: "读 HEAD", sub: "ref: refs/heads/main", color: "#1677ff" },
-          { label: "读 main 文件", sub: "拿到当前提交哈希", color: "#1677ff" },
-          { label: "写新 commit", sub: "parent = 刚拿到的哈希", color: "#f59e0b" },
-          { label: "改写 main", sub: "指向新 commit，分支前进", color: "#3fb950" },
-          { label: "追加 reflog", sub: "HEAD@{1} → HEAD@{0}", color: "#8b5cf6" },
+          { label: "读 HEAD", sub: "ref: refs/heads/main", color: PALETTE.blue },
+          { label: "读 main 文件", sub: "拿到当前提交哈希", color: PALETTE.blue },
+          { label: "写新 commit", sub: "parent = 刚拿到的哈希", color: PALETTE.orange },
+          { label: "改写 main", sub: "指向新 commit，分支前进", color: PALETTE.green },
+          { label: "追加 reflog", sub: "HEAD@{1} → HEAD@{0}", color: PALETTE.purple },
         ]}
       />
       <Paragraph>
@@ -178,15 +179,15 @@ unreachable blob 16f9ec00...
         data={{
           direction: "TB",
           nodes: [
-            { id: "gc", label: "git gc 修剪的“存活名单”", color: "#f59e0b" },
-            { id: "refs", label: "所有引用（分支 / 标签 / 远程书签）", color: "#8b5cf6" },
+            { id: "gc", label: "git gc 修剪的“存活名单”", color: PALETTE.orange },
+            { id: "refs", label: "所有引用（分支 / 标签 / 远程书签）", color: PALETTE.purple },
             {
               id: "reflog",
               label: "所有未过期 reflog 条目（可达 90 天 / 不可达 30 天）",
-              color: "#1677ff",
+              color: PALETTE.blue,
             },
-            { id: "index", label: "当前 index（暂存区）", color: "#3fb950" },
-            { id: "dead", label: "三个入口都走不到 → 才会物理删除", color: "#f85149" },
+            { id: "index", label: "当前 index（暂存区）", color: PALETTE.green },
+            { id: "dead", label: "三个入口都走不到 → 才会物理删除", color: PALETTE.red },
           ],
           edges: [
             { source: "refs", target: "gc", dashed: true },
@@ -206,7 +207,7 @@ HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于回�
         label="三种寻址 / ~ ^ @"
         left={{
           title: "~ 与 ^（结构坐标）",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "在提交图上按形状移动",
             "HEAD~3 = 沿第一 parent 上溯 3 代",
@@ -216,7 +217,7 @@ HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于回�
         }}
         right={{
           title: "@{n}（时间坐标）",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "在 reflog 上按时间回退",
             "HEAD@{1} = 上一次移动前的位置",
@@ -225,7 +226,7 @@ HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于回�
           ],
         }}
       />
-      <MemoryCard keyword="reset --hard 之后先看 reflog" color="#3fb950">
+      <MemoryCard keyword="reset --hard 之后先看 reflog" color={PALETTE.green}>
         <p>
           任何「提交不见了」的事故，恢复口诀：<code>git reflog</code> 找到事故前的哈希 →{" "}
           <code>git branch rescue &lt;哈希&gt;</code>（或直接 reset 回去）→ 检查无误再清理。 reflog

@@ -9,6 +9,7 @@ import {
   Timeline,
 } from "@/components/viz";
 import { ShellBlock } from "@/components/demo";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -66,11 +67,11 @@ export default function Note() {
           {
             label: "开分支",
             sub: "git switch -c feature/x（基于最新 main）",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
-          { label: "小步提交", sub: "一个逻辑一个 commit，写清 type", color: "#1677ff" },
-          { label: "推送开 PR", sub: "git push -u origin feature/x", color: "#f59e0b" },
-          { label: "合并清理", sub: "合并后删本地与远程分支", color: "#3fb950" },
+          { label: "小步提交", sub: "一个逻辑一个 commit，写清 type", color: PALETTE.blue },
+          { label: "推送开 PR", sub: "git push -u origin feature/x", color: PALETTE.orange },
+          { label: "合并清理", sub: "合并后删本地与远程分支", color: PALETTE.green },
         ]}
       />
       <Paragraph>
@@ -151,7 +152,7 @@ $ git push origin --delete feat/toc-jump       # 清理远程分支`}</ShellBloc
         ——「顺手修了三个无关 bug」的 PR
         是评审和回滚的灾难，应该拆成三个分支。规范的单位从来不是提交，而是「可独立评审、可独立回滚」的改动单元。
       </Paragraph>
-      <MemoryCard keyword="规范保护的是六个月后的排查" color="#1677ff">
+      <MemoryCard keyword="规范保护的是六个月后的排查" color={PALETTE.blue}>
         <p>
           功能分支保护「main 可发布可回滚」，type 路标保护「log
           可扫描可自动化」。两条规范的共同收益期都是事后——写提交信息多花的十秒，会在下一次

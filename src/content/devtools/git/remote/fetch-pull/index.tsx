@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, DoDont, MemoryCard, Timeline, Callout, CrossRef } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -42,7 +43,7 @@ $ git config --get remote.origin.fetch
         照样能告诉你「上次同步时落后了几个」，原因就在这。
       </Paragraph>
 
-      <MemoryCard keyword="你拥有的一切都在本地" color="#8b5cf6">
+      <MemoryCard keyword="你拥有的一切都在本地" color={PALETTE.purple}>
         <p>
           commit、tree、blob、分支、远程书签、reflog
           全部在你机器上。远程仓库只是另一台机器上的同构仓库，两边只通过「传对象 +
@@ -78,10 +79,10 @@ $ git push -u origin fix/remote-main`,
       <Timeline
         label="fetch 协议 / fetch protocol"
         steps={[
-          { label: "① 协商", sub: "互相报出引用位置，算出缺失对象集合", color: "#1677ff" },
-          { label: "② 传输", sub: "远端把缺失对象打包流式传回", color: "#1677ff" },
-          { label: "③ 落库", sub: "逐个校验哈希后写入对象库", color: "#f59e0b" },
-          { label: "④ 改书签", sub: "更新 refs/remotes/origin/*", color: "#3fb950" },
+          { label: "① 协商", sub: "互相报出引用位置，算出缺失对象集合", color: PALETTE.blue },
+          { label: "② 传输", sub: "远端把缺失对象打包流式传回", color: PALETTE.blue },
+          { label: "③ 落库", sub: "逐个校验哈希后写入对象库", color: PALETTE.orange },
+          { label: "④ 改书签", sub: "更新 refs/remotes/origin/*", color: PALETTE.green },
         ]}
       />
       <Paragraph>
@@ -134,7 +135,7 @@ $ git log --oneline main..origin/main
         label="fetch 与 pull 分工 / fetch vs pull"
         left={{
           title: "fetch：只更新事实",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "下载缺失对象，校验哈希后入库",
             "改写 refs/remotes/origin/* 书签",
@@ -145,7 +146,7 @@ $ git log --oneline main..origin/main
         }}
         right={{
           title: "pull：fetch + merge",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "第一步同 fetch",
             "第二步把 origin/main 合并进当前分支",
@@ -168,11 +169,11 @@ $ git log --oneline main..origin/main
         data={{
           direction: "LR",
           nodes: [
-            { id: "base", label: "共同祖先", color: "#9ca3af" },
-            { id: "remote", label: "远端 main（别人的提交）", color: "#f59e0b" },
-            { id: "local", label: "本地 main（你的提交）", color: "#1677ff" },
-            { id: "ok", label: "先 pull 合并 → 恢复快进关系", color: "#3fb950" },
-            { id: "force", label: "force push：声明「故意丢弃远端提交」", color: "#f85149" },
+            { id: "base", label: "共同祖先", color: PALETTE.gray },
+            { id: "remote", label: "远端 main（别人的提交）", color: PALETTE.orange },
+            { id: "local", label: "本地 main（你的提交）", color: PALETTE.blue },
+            { id: "ok", label: "先 pull 合并 → 恢复快进关系", color: PALETTE.green },
+            { id: "force", label: "force push：声明「故意丢弃远端提交」", color: PALETTE.red },
           ],
           edges: [
             { source: "base", target: "remote", label: "远端前进" },
@@ -243,10 +244,10 @@ upstream	https://github.com/original/repo.git (push)`}</ShellBlock>
         data={{
           direction: "TB",
           nodes: [
-            { id: "upstream", label: "upstream 源仓库（只 fetch）", color: "#f59e0b" },
-            { id: "local", label: "本地仓库（fetch + merge 同步上游）", color: "#1677ff" },
-            { id: "origin", label: "origin 你的 fork（fetch + push）", color: "#3fb950" },
-            { id: "pr", label: "Pull Request：fork → 源仓库", color: "#8b5cf6" },
+            { id: "upstream", label: "upstream 源仓库（只 fetch）", color: PALETTE.orange },
+            { id: "local", label: "本地仓库（fetch + merge 同步上游）", color: PALETTE.blue },
+            { id: "origin", label: "origin 你的 fork（fetch + push）", color: PALETTE.green },
+            { id: "pr", label: "Pull Request：fork → 源仓库", color: PALETTE.purple },
           ],
           edges: [
             { source: "upstream", target: "local", label: "fetch：拉取上游更新", dashed: true },

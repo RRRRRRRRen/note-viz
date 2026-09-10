@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Exercise, FlowChart, ShellBlock } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -95,12 +96,12 @@ request: "GET /admin-api/user HTTP/1.1", upstream: "http://10.96.3.7:21080/admin
         data={{
           direction: "TB",
           nodes: [
-            { id: "start", label: "页面 502", color: "#f85149" },
-            { id: "probe", label: "exec 进 nginx 容器探后端", color: "#1677ff" },
-            { id: "ok", label: "curl 后端:端口 通", color: "#3fb950" },
-            { id: "fail", label: "Connection refused / 不通", color: "#f59e0b" },
-            { id: "app", label: "查后端应用日志与自身健康", color: "#1677ff" },
-            { id: "alive", label: "查后端容器状态与名字解析", color: "#f59e0b" },
+            { id: "start", label: "页面 502", color: PALETTE.red },
+            { id: "probe", label: "exec 进 nginx 容器探后端", color: PALETTE.blue },
+            { id: "ok", label: "curl 后端:端口 通", color: PALETTE.green },
+            { id: "fail", label: "Connection refused / 不通", color: PALETTE.orange },
+            { id: "app", label: "查后端应用日志与自身健康", color: PALETTE.blue },
+            { id: "alive", label: "查后端容器状态与名字解析", color: PALETTE.orange },
           ],
           edges: [
             { source: "start", target: "probe", label: "docker exec" },
@@ -164,7 +165,7 @@ location / {
 $ docker exec cnsig-ems-ui ls /home/cnsig/cnsig-ems-ui
 index.html  assets/`}</ShellBlock>
 
-      <MemoryCard keyword="三层排查：容器层 → 网络层 → 配置层" color="#1677ff">
+      <MemoryCard keyword="三层排查：容器层 → 网络层 → 配置层" color={PALETTE.blue}>
         <p>
           <strong>容器层</strong>：<code>ps -a</code> 看生死与退出码，<code>logs</code>{" "}
           听口供（秒退原因几乎全在日志第一屏）。<strong>网络层</strong>：<code>exec</code> 进 nginx

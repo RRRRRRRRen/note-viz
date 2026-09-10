@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -43,9 +44,9 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "laptop", label: "笔记本（家庭网络）", color: "#1677ff" },
-            { id: "jump", label: "跳板机（唯一有公网 IP）", color: "#f59e0b" },
-            { id: "target", label: "目标机 10.0.0.5（内网）", color: "#3fb950" },
+            { id: "laptop", label: "笔记本（家庭网络）", color: PALETTE.blue },
+            { id: "jump", label: "跳板机（唯一有公网 IP）", color: PALETTE.orange },
+            { id: "target", label: "目标机 10.0.0.5（内网）", color: PALETTE.green },
           ],
           edges: [
             { source: "laptop", target: "jump", label: "第一段：公网可达" },
@@ -93,7 +94,7 @@ Host target
 
 # 多级跳板逗号分隔：ssh -J jump1,jump2 target
 # 旧写法同源：ProxyCommand ssh -W %h:%p jump`}</ShellBlock>
-      <MemoryCard keyword="两种信任模型：流量路过 ≠ 流量可见" color="#1677ff">
+      <MemoryCard keyword="两种信任模型：流量路过 ≠ 流量可见" color={PALETTE.blue}>
         <p>
           两跳手动：跳板机是<strong>流量的终点和起点</strong>
           ，能看到一切（对审计产品是特性，对个人是隐患）。ProxyJump：跳板机只是
@@ -197,7 +198,7 @@ Host trusted-only
         label="跳板机的能力边界 / jump limits"
         left={{
           title: "跳板机能给的",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "网络可达：内网机器的透明通路",
             "入口收敛：公网只暴露一台机器",
@@ -207,7 +208,7 @@ Host trusted-only
         }}
         right={{
           title: "跳板机给不了的",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "内容审计：看不到会话里敲了什么",
             "权限到人：无法按人/机器/时段细控",

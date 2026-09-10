@@ -9,6 +9,7 @@ import {
   SpecQuote,
 } from "@/components/viz";
 import AutoFitDemo from "./AutoFitDemo";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -84,7 +85,7 @@ export default function Note() {
         label="对比 / auto-fill vs auto-fit"
         left={{
           title: "auto-fill",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "空轨道：保留占位，轨道照常计宽",
             "项目宽度：稳定，不随项目数变化",
@@ -94,7 +95,7 @@ export default function Note() {
         }}
         right={{
           title: "auto-fit",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "空轨道：塌缩为 0，两侧 gap 折叠",
             "项目宽度：拉伸铺满剩余空间",
@@ -158,7 +159,7 @@ export default function Note() {
           note: "auto-fill 不塌缩轨道，显式 line 号定位始终落在真实列上",
         }}
       />
-      <MemoryCard keyword="auto-repeat 口诀" color="#8b5cf6">
+      <MemoryCard keyword="auto-repeat 口诀" color={PALETTE.purple}>
         列数计算相同，差别只在空轨道：<strong>auto-fill 保留占位</strong>（宽度稳定），
         <strong>auto-fit 折叠空轨道</strong>（现有项目铺满）。项目填满时等价；需要显式 line
         号定位就锁死 auto-fill。

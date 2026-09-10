@@ -9,6 +9,7 @@ import {
   VersionNote,
 } from "@/components/viz";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -85,8 +86,8 @@ export default function Note() {
       </Paragraph>
       <CompareTable
         label="两条路线 / path vs shim"
-        left={{ title: "改 PATH 顺序（nvm / fnm）", color: "#1677ff" }}
-        right={{ title: "shim 假身（asdf / Volta）", color: "#8b5cf6" }}
+        left={{ title: "改 PATH 顺序（nvm / fnm）", color: PALETTE.blue }}
+        right={{ title: "shim 假身（asdf / Volta）", color: PALETTE.purple }}
         rows={[
           {
             aspect: "生效方式",
@@ -116,17 +117,17 @@ export default function Note() {
       <Timeline
         label="版本管理器编年史 / 2010–2025"
         steps={[
-          { label: "2010", sub: "nvm 诞生，三件套范式确立", color: "#1677ff" },
-          { label: "2014", sub: "asdf：shim + 插件，泛化到多语言", color: "#1677ff" },
-          { label: "2019", sub: "fnm：Rust 重写，Windows 一等公民", color: "#1677ff" },
-          { label: "2020", sub: "Volta 1.0：声明进 package.json", color: "#8b5cf6" },
-          { label: "2021", sub: "Corepack 随 Node 16.9 内置（实验）", color: "#8b5cf6" },
-          { label: "2023", sub: "rtx 立项（mise 前身）", color: "#f59e0b" },
-          { label: "2024", sub: "rtx 更名 mise：版本+环境+任务三合一", color: "#f59e0b" },
+          { label: "2010", sub: "nvm 诞生，三件套范式确立", color: PALETTE.blue },
+          { label: "2014", sub: "asdf：shim + 插件，泛化到多语言", color: PALETTE.blue },
+          { label: "2019", sub: "fnm：Rust 重写，Windows 一等公民", color: PALETTE.blue },
+          { label: "2020", sub: "Volta 1.0：声明进 package.json", color: PALETTE.purple },
+          { label: "2021", sub: "Corepack 随 Node 16.9 内置（实验）", color: PALETTE.purple },
+          { label: "2023", sub: "rtx 立项（mise 前身）", color: PALETTE.orange },
+          { label: "2024", sub: "rtx 更名 mise：版本+环境+任务三合一", color: PALETTE.orange },
           {
             label: "2025",
             sub: "Volta 官宣停更；Corepack 宣布从 Node 25 起移除",
-            color: "#f85149",
+            color: PALETTE.red,
           },
         ]}
       />
@@ -172,17 +173,17 @@ export default function Note() {
           {
             range: "Volta",
             text: "官方 README 明示 unmaintained，并推荐迁移到 mise",
-            color: "#f85149",
+            color: PALETTE.red,
           },
           {
             range: "Corepack",
             text: "Node 官方已宣布 25 起不再捆绑（存量 LTS 仍带）；「按 packageManager 字段自动切包管理器」的思想由各工具自行实现",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             range: "mise / fnm",
             text: "当前活跃主线（mise 33k+ stars、日历版高频发布）；两者声明文件互通——mise 认 .nvmrc，切换成本极低",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
       />
@@ -195,7 +196,7 @@ export default function Note() {
         版本切换只有两条技术路线：nvm/fnm 在 cd 时重排 PATH 查找顺序；asdf/Volta 在 PATH
         最前端放假身、执行时按当前目录声明转发。mise 两种都支持。
       </MemoryCard>
-      <MemoryCard keyword="声明是资产，工具是消耗品" color="#3fb950">
+      <MemoryCard keyword="声明是资产，工具是消耗品" color={PALETTE.green}>
         .nvmrc、packageManager
         字段这些声明文件被整个生态认领、格式十年稳定；实现它们的工具却迭代不息。选型时优先固化声明，工具坏了随时换。
       </MemoryCard>

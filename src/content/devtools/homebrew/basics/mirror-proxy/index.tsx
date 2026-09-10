@@ -9,6 +9,7 @@ import {
   Table,
 } from "@/components/viz";
 import { ShellBlock } from "@/components/demo";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -124,7 +125,7 @@ https_proxy: http://127.0.0.1:7897`}
         label="选型对照 / mirror vs proxy"
         left={{
           title: "镜像",
-          color: "#8b5cf6",
+          color: PALETTE.purple,
           points: [
             "原理：国内服务器定时同步，换个下载点",
             "配置：HOMEBREW_API_DOMAIN / BOTTLE_DOMAIN 等变量",
@@ -135,7 +136,7 @@ https_proxy: http://127.0.0.1:7897`}
         }}
         right={{
           title: "代理",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "原理：本机客户端转发流量，内容仍来自官方源",
             "配置：http_proxy / https_proxy / all_proxy 标准变量",
@@ -146,7 +147,7 @@ https_proxy: http://127.0.0.1:7897`}
         }}
       />
 
-      <MemoryCard keyword="镜像管自家，代理管厂商源" color="#1677ff">
+      <MemoryCard keyword="镜像管自家，代理管厂商源" color={PALETTE.blue}>
         brew 自家内容（元数据 JSON、bottle）镜像全覆盖；cask 应用包在厂商服务器上，镜像无能为力。
         双保险 = 镜像管自家 + 代理管散落源；只选一个时，<strong>官方源 + 稳定代理</strong>{" "}
         最省心——配置只剩两行标准变量，且永远没有同步延迟。

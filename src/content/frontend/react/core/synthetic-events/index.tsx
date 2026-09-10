@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { SequenceDiagram } from "@/components/viz";
 import { CrossRef, DoDont, VersionNote } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -63,7 +64,7 @@ export default function Note() {
             from: 3,
             to: 1,
             label: "setState：进入批处理队列",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             note: "事件处理结束后由调度器合并渲染",
           },
         ]}
@@ -85,17 +86,17 @@ export default function Note() {
           {
             range: "React 16-",
             text: "委托到 document；事件池复用合成事件对象，异步回调里读 e 要先 e.persist()",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             range: "React 17",
             text: "委托点移到 root 容器（多版本共存/微前端友好）；移除事件池，e 可随时读取",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             range: "React 18+",
             text: "事件带优先级进入调度器：离散事件（click/keydown）同步处理，连续事件（scroll/mousemove/wheel）可被打断",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
         note="三段演进是同一件事：让事件从「DOM 的通知」升级为「调度体系的一等公民」"

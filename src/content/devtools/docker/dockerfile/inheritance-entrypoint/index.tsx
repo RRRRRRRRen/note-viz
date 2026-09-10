@@ -2,6 +2,7 @@ import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components
 import { SequenceDiagram } from "@/components/viz/SequenceDiagram";
 import { Exercise, ShellBlock } from "@/components/demo";
 import { CrossRef, DoDont, LayerStack, MemoryCard, SpecQuote, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -53,14 +54,14 @@ COPY 20-envsubst-on-templates.sh /docker-entrypoint.d/
           {
             name: "你的清单（COPY conf + dist）",
             desc: "只贡献 2 个文件层，元数据一条没写 → 全盘继承",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
           {
             name: "nginx:1.30.4-alpine-slim 之上加装 nginx 的层",
             desc: "安装 nginx；ENTRYPOINT / CMD / EXPOSE 80 / STOPSIGNAL 在这一层声明",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
-          { name: "alpine 底座", desc: "约 8MB 的精简 Linux 根文件系统", color: "#9ca3af" },
+          { name: "alpine 底座", desc: "约 8MB 的精简 Linux 根文件系统", color: PALETTE.gray },
         ]}
         direction="top-down"
       />
@@ -130,9 +131,9 @@ COPY 20-envsubst-on-templates.sh /docker-entrypoint.d/
         actors={["Docker 引擎", "docker-entrypoint.sh", "entrypoint.d/*.sh", "nginx"]}
         messages={[
           { from: 0, to: 1, label: "启动容器：执行 ENTRYPOINT（PID 1）" },
-          { from: 1, to: 2, label: "按文件名顺序执行初始化脚本", color: "#f59e0b" },
+          { from: 1, to: 2, label: "按文件名顺序执行初始化脚本", color: PALETTE.orange },
           { from: 2, to: 1, label: "10-ipv6 / 20-envsubst / 30-worker 完成", dashed: true },
-          { from: 1, to: 3, label: "exec nginx -g daemon off;（进程替换）", color: "#3fb950" },
+          { from: 1, to: 3, label: "exec nginx -g daemon off;（进程替换）", color: PALETTE.green },
           { from: 3, to: 0, label: "前台运行，监听 80 端口", dashed: true },
         ]}
       />
@@ -154,7 +155,7 @@ COPY 20-envsubst-on-templates.sh /docker-entrypoint.d/
         1（nginx）收到 → 现有请求处理完 → 进程退出 → 容器停止，全程无强杀。
       </Paragraph>
 
-      <MemoryCard keyword="完整启动命令 = ENTRYPOINT + CMD，元数据同键覆盖" color="#8b5cf6">
+      <MemoryCard keyword="完整启动命令 = ENTRYPOINT + CMD，元数据同键覆盖" color={PALETTE.purple}>
         <p>
           FROM 传家当：文件系统 + 全部元数据，覆盖规则 = <code>{"{ ...parent, ...mine }"}</code>{" "}
           浅合并。启动 = ENTRYPOINT（主程序）+ CMD（默认参数）拼接；

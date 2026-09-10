@@ -9,6 +9,7 @@ import {
 } from "@/components/viz";
 import { PlayGround, StepThrough } from "@/components/demo";
 import EventLoopDiagram from "./EventLoopDiagram";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -160,7 +161,7 @@ console.log(2);
         steps={[
           {
             title: "同步代码执行中",
-            color: "#f59e0b",
+            color: PALETTE.orange,
             desc: "调用栈从 main 脚本一路执行到最后一条同步语句；.then 回调与两个 setTimeout 此时只是入队，谁都不执行。",
             render: (
               <Queues
@@ -172,7 +173,7 @@ console.log(2);
           },
           {
             title: "栈清空 → 清微任务（递归）",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             desc: "栈空即推进信号，微任务检查点触发。关键在中间那列：回调执行中产生的新微任务立刻入队——清空是递归的。",
             render: (
               <Queues
@@ -184,7 +185,7 @@ console.log(2);
           },
           {
             title: "微任务队列真正清空",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             desc: "「队列空」才是取宏任务的前提——本轮产生的所有微任务（包括执行中新生成的）全部处理完，宏任务仍原地等待。",
             render: (
               <Queues
@@ -196,7 +197,7 @@ console.log(2);
           },
           {
             title: "每轮只取一个宏任务",
-            color: "#3b82f6",
+            color: PALETTE.blueSoft,
             desc: "取出第一个定时器上栈；它执行完后还要再走一遍「清微任务 → 渲染检查」，第二个定时器才轮得到——两个 setTimeout 分属两轮。",
             render: <Queues stack={["宏任务 A"]} micro={[]} macro={["setTimeout → B"]} />,
           },
@@ -248,8 +249,8 @@ console.log(2);
         就是全文最重要的不对称：一个全清，一个取一。
       </Paragraph>
       <CompareTable
-        left={{ title: "微任务 Microtask", color: "#8b5cf6" }}
-        right={{ title: "宏任务 Macrotask", color: "#3b82f6" }}
+        left={{ title: "微任务 Microtask", color: PALETTE.purple }}
+        right={{ title: "宏任务 Macrotask", color: PALETTE.blueSoft }}
         rows={[
           {
             aspect: "来源",
@@ -291,9 +292,9 @@ console.log(2);
       <BarChart
         title="相对开销量级（越大越应避免出现在高频路径）"
         items={[
-          { label: "读内存变量", value: 1, color: "#3fb950" },
-          { label: "微任务调度", value: 3, color: "#8b5cf6" },
-          { label: "setTimeout 下限", value: 40, color: "#3b82f6" },
+          { label: "读内存变量", value: 1, color: PALETTE.green },
+          { label: "微任务调度", value: 3, color: PALETTE.purple },
+          { label: "setTimeout 下限", value: 40, color: PALETTE.blueSoft },
           { label: "强制重排 reflow", value: 300, color: "#d29922" },
         ]}
       />
@@ -439,9 +440,9 @@ Promise.resolve().then(() => console.log("second"));
 /** 推演用三容器快照：调用栈 / 微任务队列 / 宏任务队列（输出的逐条解读由 OutputTimeline 负责） */
 function Queues(props: { stack: string[]; micro: string[]; macro: string[] }) {
   const cols = [
-    { title: "调用栈", items: props.stack, color: "#f59e0b" },
-    { title: "微任务队列", items: props.micro, color: "#8b5cf6" },
-    { title: "宏任务队列", items: props.macro, color: "#3b82f6" },
+    { title: "调用栈", items: props.stack, color: PALETTE.orange },
+    { title: "微任务队列", items: props.micro, color: PALETTE.purple },
+    { title: "宏任务队列", items: props.macro, color: PALETTE.blueSoft },
   ];
   return (
     <div className="grid grid-cols-3 gap-2">

@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { StepThrough } from "@/components/demo";
 import { Callout, CrossRef, DoDont, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -58,7 +59,7 @@ export default function Note() {
         steps={[
           {
             title: "mount：三次调用，按序建链",
-            color: "#1677ff",
+            color: PALETTE.blue,
             desc: "调用序 a → b → c，Fiber 的 memoizedState 链建成 [节点1: a, 节点2: b, 节点3: c]。此时调用序与节点序一一对应。",
             render: (
               <div className="font-mono text-xs leading-6">
@@ -70,7 +71,7 @@ export default function Note() {
           },
           {
             title: "update：cond = false，b 被跳过",
-            color: "#f59e0b",
+            color: PALETTE.orange,
             desc: "本轮只执行两次 useState 调用（a 和 c）。React 不知道「谁没来」，只知道「这次只调了两次」。",
             render: (
               <div className="font-mono text-xs leading-6">
@@ -81,7 +82,7 @@ export default function Note() {
           },
           {
             title: "对号入座：c 拿到了 b 的状态",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
             desc: "setC 更新写的也是节点2——b 与 c 的身份彻底互换：界面上「c 的值」其实是 b 的旧值，改 c 动的是 b 的存储。全程无任何报错。",
             render: (
               <div className="font-mono text-xs leading-6">
@@ -92,7 +93,7 @@ export default function Note() {
           },
           {
             title: "更糟的一步：数量对不上直接崩",
-            color: "#f85149",
+            color: PALETTE.red,
             desc: "若 cond 分支里是提前 return，本轮只调 1 个 Hook——数量少于 mount 时，React 无链可读，直接抛错 Rendered fewer hooks than expected，整棵子树渲染失败。",
             render: (
               <div className="font-mono text-xs leading-6">

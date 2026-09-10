@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -37,7 +38,7 @@ export default function Note() {
         label="客户端与服务端 / ssh vs sshd"
         left={{
           title: "ssh（客户端）",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "发起连接的一方，输入命令的那个人用",
             "装在你自己的笔记本 / 工作机上",
@@ -48,7 +49,7 @@ export default function Note() {
         }}
         right={{
           title: "sshd（服务端）",
-          color: "#f59e0b",
+          color: PALETTE.orange,
           points: [
             "接受连接的一方，被远程操作的机器运行",
             "只装在服务器上",
@@ -75,13 +76,13 @@ export default function Note() {
       <Timeline
         label="SSH 连接七步 / connection setup"
         steps={[
-          { label: "TCP 握手", sub: "三次握手建管道", color: "#f59e0b" },
-          { label: "版本协商", sub: "交换 SSH-2.0 字符串", color: "#f59e0b" },
-          { label: "算法协商", sub: "各自报清单取交集", color: "#f59e0b" },
-          { label: "密钥交换", sub: "DH 协商出会话密钥", color: "#8b5cf6" },
-          { label: "服务器认证", sub: "host key 验签防中间人", color: "#8b5cf6" },
-          { label: "用户认证", sub: "密码或密钥签名", color: "#1677ff" },
-          { label: "加密会话", sub: "后续流量全部对称加密", color: "#3fb950" },
+          { label: "TCP 握手", sub: "三次握手建管道", color: PALETTE.orange },
+          { label: "版本协商", sub: "交换 SSH-2.0 字符串", color: PALETTE.orange },
+          { label: "算法协商", sub: "各自报清单取交集", color: PALETTE.orange },
+          { label: "密钥交换", sub: "DH 协商出会话密钥", color: PALETTE.purple },
+          { label: "服务器认证", sub: "host key 验签防中间人", color: PALETTE.purple },
+          { label: "用户认证", sub: "密码或密钥签名", color: PALETTE.blue },
+          { label: "加密会话", sub: "后续流量全部对称加密", color: PALETTE.green },
         ]}
       />
       <Paragraph>
@@ -117,10 +118,10 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "dh", label: "DH 密钥交换：公开信道协商秘密", color: "#8b5cf6" },
-            { id: "host", label: "host key 签名：证明我是真服务器", color: "#f59e0b" },
-            { id: "user", label: "用户认证：证明我是我", color: "#1677ff" },
-            { id: "session", label: "对称加密会话：AES/ChaCha20", color: "#3fb950" },
+            { id: "dh", label: "DH 密钥交换：公开信道协商秘密", color: PALETTE.purple },
+            { id: "host", label: "host key 签名：证明我是真服务器", color: PALETTE.orange },
+            { id: "user", label: "用户认证：证明我是我", color: PALETTE.blue },
+            { id: "session", label: "对称加密会话：AES/ChaCha20", color: PALETTE.green },
           ],
           edges: [
             { source: "dh", target: "host", label: "交换结果由服务器签名" },
@@ -149,15 +150,15 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "pair", label: "本机生成密钥对：私钥 + 公钥", color: "#1677ff" },
+            { id: "pair", label: "本机生成密钥对：私钥 + 公钥", color: PALETTE.blue },
             {
               id: "upload",
               label: "公钥追加到服务器 ~/.ssh/authorized_keys",
-              color: "#8b5cf6",
+              color: PALETTE.purple,
             },
-            { id: "challenge", label: "登录时：服务器发随机挑战串", color: "#f59e0b" },
-            { id: "sign", label: "本机私钥签名挑战（私钥不出门）", color: "#1677ff" },
-            { id: "verify", label: "服务器用公钥验签 → 放行", color: "#3fb950" },
+            { id: "challenge", label: "登录时：服务器发随机挑战串", color: PALETTE.orange },
+            { id: "sign", label: "本机私钥签名挑战（私钥不出门）", color: PALETTE.blue },
+            { id: "verify", label: "服务器用公钥验签 → 放行", color: PALETTE.green },
           ],
           edges: [
             { source: "pair", target: "upload", label: "一次性配置" },
@@ -187,7 +188,7 @@ ssh-keygen -t ed25519 -C "you@laptop"
 
 # ② 把公钥装到服务器（本质是把公钥追加进服务器的 authorized_keys）
 ssh-copy-id user@host`}</ShellBlock>
-      <MemoryCard keyword="私钥不出门，公钥随便贴" color="#8b5cf6">
+      <MemoryCard keyword="私钥不出门，公钥随便贴" color={PALETTE.purple}>
         <p>
           密钥对认证的全部安全模型一句话：公钥是锁、私钥是钥匙——锁可以公开挂在网上，钥匙只在你机器里。
           判断文件：「.pub」结尾的是公钥可外传；不带后缀的是私钥，泄露 =
@@ -216,7 +217,7 @@ ssh-copy-id user@host`}</ShellBlock>
         label="两种保活与恢复策略 / keepalive vs tmux"
         left={{
           title: "ServerAliveInterval：防连接假死",
-          color: "#1677ff",
+          color: PALETTE.blue,
           points: [
             "客户端定期发心跳包，防 NAT/路由器超时回收映射",
             "很多「莫名断线」其实是 NAT 超时，不是网络故障",
@@ -226,7 +227,7 @@ ssh-copy-id user@host`}</ShellBlock>
         }}
         right={{
           title: "tmux：断线后环境还在",
-          color: "#3fb950",
+          color: PALETTE.green,
           points: [
             "任务跑在服务器的 tmux 会话里，不依赖 SSH 连接",
             "SSH 断了，任务照跑、vim 照开",

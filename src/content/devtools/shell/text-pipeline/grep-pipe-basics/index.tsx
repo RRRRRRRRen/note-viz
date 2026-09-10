@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Conclusion, Heading, Kbd, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Exercise, ShellBlock, StepThrough } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -134,7 +135,7 @@ $ grep -E '"name"|"version"' package.json
           {
             title: "第 1 段 · 生产者：git log --oneline",
             desc: "把提交历史压成一行一条的文本流。它只管产数据，不做任何筛选——54 条提交全部涌向右边。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
             render: (
               <Snap>{`$ git log --oneline                          （共 54 行）
 848401c content: 全站 32 篇笔记迁移块流体系…
@@ -148,7 +149,7 @@ $ grep -E '"name"|"version"' package.json
           {
             title: '第 2 段 · 过滤器：grep -i "feat"',
             desc: "逐行检查上游送来的每一行，只放行含 feat 的行（-i 忽略大小写）。54 行进去，24 行出来。",
-            color: "#1677ff",
+            color: PALETTE.blue,
             render: (
               <Snap>{`$ git log --oneline | grep -i "feat"         （剩 24 行）
 3865037 feat: 笔记组件块流化…
@@ -160,7 +161,7 @@ cee4f6f feat: 大纲点击跳转后目标标题渐变高亮…
           {
             title: "第 3 段 · 限量阀：head -5",
             desc: "不管内容是什么，只放前 5 行出去，其余全扔。最后一段的输出就是你在屏幕上看到的。",
-            color: "#3fb950",
+            color: PALETTE.green,
             render: (
               <Snap>{`$ git log --oneline | grep -i "feat" | head -5
 3865037 feat: 笔记组件块流化——Heading/Paragraph/List 结构块…
@@ -317,7 +318,7 @@ $ tail -n 3 package.json
         N」。
       </Paragraph>
 
-      <MemoryCard keyword="有文件读文件，没文件读 stdin" color="#1677ff">
+      <MemoryCard keyword="有文件读文件，没文件读 stdin" color={PALETTE.blue}>
         <p>
           过滤器家族（grep/cat/head/tail/sort/wc/sed）的取材公约：命令行给了文件参数就读文件——
           <strong>此时管道数据被静默忽略</strong>；一个文件参数都没给才读标准输入。配套两条：管道

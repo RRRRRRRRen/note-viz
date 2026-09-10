@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, OutputTimeline, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -126,8 +127,8 @@ console.log(noBlockVar); // 'I escape the block'`}
 
       <CompareTable
         label="对比 / var vs let"
-        left={{ title: "var", color: "#8b5cf6" }}
-        right={{ title: "let / const", color: "#1677ff" }}
+        left={{ title: "var", color: PALETTE.purple }}
+        right={{ title: "let / const", color: PALETTE.blue }}
         rows={[
           {
             aspect: "作用域层级",

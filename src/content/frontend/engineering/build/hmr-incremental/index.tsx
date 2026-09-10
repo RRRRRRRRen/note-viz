@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { StateFlow, Timeline } from "@/components/viz";
 import { CrossRef, Prerequisite } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -57,11 +58,11 @@ export default function Note() {
       <Timeline
         label="HMR 更新流程 / hmr flow"
         steps={[
-          { label: "文件变化", sub: "watch 触发增量编译", color: "#f59e0b" },
-          { label: "生成补丁", sub: "新 hash + manifest/update", color: "#8b5cf6" },
-          { label: "WebSocket 通知", sub: "runtime check 拉取补丁", color: "#1677ff" },
-          { label: "apply：失效与处置", sub: "dispose 清旧模块", color: "#f59e0b" },
-          { label: "accept 边界执行", sub: "局部替换，状态保留", color: "#3fb950" },
+          { label: "文件变化", sub: "watch 触发增量编译", color: PALETTE.orange },
+          { label: "生成补丁", sub: "新 hash + manifest/update", color: PALETTE.purple },
+          { label: "WebSocket 通知", sub: "runtime check 拉取补丁", color: PALETTE.blue },
+          { label: "apply：失效与处置", sub: "dispose 清旧模块", color: PALETTE.orange },
+          { label: "accept 边界执行", sub: "局部替换，状态保留", color: PALETTE.green },
         ]}
       />
 
@@ -77,18 +78,18 @@ export default function Note() {
         label="补丁的命运 / update routing"
         direction="LR"
         states={[
-          { id: "arrive", label: "补丁到达", kind: "start", color: "#f59e0b" },
-          { id: "check", label: "runtime check", color: "#1677ff", desc: "拉 manifest 与补丁" },
-          { id: "apply", label: "accept 边界热替换", kind: "terminal", color: "#3fb950" },
-          { id: "bubble", label: "无边界，向上冒泡", color: "#9ca3af" },
-          { id: "reload", label: "整页刷新（兜底）", kind: "terminal", color: "#f85149" },
+          { id: "arrive", label: "补丁到达", kind: "start", color: PALETTE.orange },
+          { id: "check", label: "runtime check", color: PALETTE.blue, desc: "拉 manifest 与补丁" },
+          { id: "apply", label: "accept 边界热替换", kind: "terminal", color: PALETTE.green },
+          { id: "bubble", label: "无边界，向上冒泡", color: PALETTE.gray },
+          { id: "reload", label: "整页刷新（兜底）", kind: "terminal", color: PALETTE.red },
         ]}
         transitions={[
           { from: "arrive", to: "check", label: "WS 通知 hash 变化" },
           { from: "check", to: "apply", label: "模块或祖先有 accept" },
-          { from: "check", to: "bubble", label: "无人认领", color: "#9ca3af" },
+          { from: "check", to: "bubble", label: "无人认领", color: PALETTE.gray },
           { from: "bubble", to: "apply", label: "祖先声明 accept" },
-          { from: "bubble", to: "reload", label: "冒泡至入口", color: "#f85149" },
+          { from: "bubble", to: "reload", label: "冒泡至入口", color: PALETTE.red },
         ]}
       />
 

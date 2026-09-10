@@ -1,5 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -88,7 +89,7 @@ export default function Note() {
         ：大厂常见 Harbor 专管镜像（运行时分发 + 安全纵深），Nexus 或 Artifactory
         管其余格式（企业治理）——分开部署，各自站在最优区间。
       </Paragraph>
-      <MemoryCard keyword="先数制品，再看安全" color="#1677ff">
+      <MemoryCard keyword="先数制品，再看安全" color={PALETTE.blue}>
         <p>
           选型只问两件事：①要管几种制品？决定「专项工具还是全家桶」；②安全要多深？决定「开源 OSS
           够不够、要不要 Harbor 或商业版」。两问的答案直接落在工具格子里——不看出身，不看名气。

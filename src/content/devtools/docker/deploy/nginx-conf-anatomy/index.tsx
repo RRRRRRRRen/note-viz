@@ -8,6 +8,7 @@ import {
   SequenceDiagram,
   SpecQuote,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -75,52 +76,52 @@ http {
           {
             line: 1,
             text: "worker 进程数。容器里配 1：静态托管 + 反代单进程足够；设 auto 让 nginx 按 CPU 数自定也可以。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             line: 8,
             text: "引入 mime 类型表——js/css 的 Content-Type 全靠它。官方镜像自带这份文件（你的清单只覆盖了主配置，没动它）。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             line: 12,
             text: "请求体上限 300MB：文件上传接口的守门员。超过即返回 413 Request Entity Too Large——「大文件传不上去」先查这行。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             line: 15,
             text: "容器内监听 80。用户访问的端口是 docker run -p / K8s Service 映射出来的，跟这个数字是两回事。",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             line: 18,
             text: "URL → 磁盘的映射基准：请求 /assets/a.js 到这里找 /home/cnsig/cnsig-ems-ui/assets/a.js。必须与 Dockerfile 的 COPY 目标一致（暗约定）。",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             line: 19,
             text: "SPA 生命线：按顺序找 $uri 文件 → $uri/ 目录 → 都没有就内部重定向到 /index.html，前端路由接手。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             line: 23,
             text: "前缀匹配：所有以 /admin-api/ 开头的请求离开静态托管，进入反向代理。",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             line: 27,
             text: "以 HTTP/1.1 与后端通信——WebSocket 升级头（下两行）要求 1.1，nginx 默认用 1.0 会握手失败。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             line: 30,
             text: "转发目的地。末尾带 /admin-api/（带 URI）：location 匹配到的前缀原样保留，后端收到的路径与浏览器发出的一致。",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           {
             line: 33,
             text: "服务端错误（含 502：后端挂了）统一渲染 nginx 默认的 50x.html。看到这张页面的含义是「nginx 活着，但它身后死了」。",
-            color: "#f85149",
+            color: PALETTE.red,
           },
         ]}
       />
@@ -152,17 +153,17 @@ http {
           {
             title: "GET /assets/index-3fa2.js",
             desc: "$uri 命中真实文件 → 直接返回 js 内容（Content-Type 由 mime.types 决定）。静态资源走的是第一优先级。",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
           {
             title: "GET /login（history 路由刷新）",
             desc: "磁盘上没有 login 文件也没有 login 目录 → 兜底生效，内部重定向 /index.html → 返回 HTML → 前端路由接管，渲染登录页。地址栏不变。",
-            color: "#f59e0b",
+            color: PALETTE.orange,
           },
           {
             title: "GET /images/missing.png（资源真丢了）",
             desc: "同样落进兜底 → 返回的是 index.html 的内容、状态 200。注意：真正缺失的静态资源也会拿到 HTML——这就是「图片请求返回了网页」这类怪象的来源。",
-            color: "#f85149",
+            color: PALETTE.red,
           },
         ]}
       />
@@ -215,7 +216,7 @@ location /admin-api/ {
             from: 1,
             to: 2,
             label: "GET /admin-api/user（附 Host / X-Forwarded-For）",
-            color: "#8b5cf6",
+            color: PALETTE.purple,
           },
           { from: 2, to: 1, label: "200 JSON", dashed: true },
           { from: 1, to: 0, label: "200 JSON（原样回传）", dashed: true },
@@ -237,7 +238,7 @@ location /admin-api/ {
 
       <MemoryCard
         keyword="location / 管静态，/admin-api/ 管转发，try_files 兜底 SPA"
-        color="#8b5cf6"
+        color={PALETTE.purple}
       >
         <p>
           root 是 URL→磁盘的拼接基准（必须与 COPY 目标一致）；

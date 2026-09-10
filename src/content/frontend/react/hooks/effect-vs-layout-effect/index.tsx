@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock } from "@/components/demo";
 import { CrossRef, DoDont, Prerequisite, Timeline, VersionNote } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -49,11 +50,11 @@ export default function Note() {
       <Timeline
         label="一次 commit 与一帧 / effects timing"
         steps={[
-          { label: "render 完成", sub: "副作用已标记在 Fiber 上", color: "#1677ff" },
-          { label: "commit：DOM 变更", sub: "同步 · 一次写入", color: "#8b5cf6" },
-          { label: "useLayoutEffect", sub: "同步执行 · 阻塞绘制", color: "#f59e0b" },
-          { label: "浏览器 paint", sub: "用户第一次看到新界面", color: "#3fb950" },
-          { label: "useEffect", sub: "passive · paint 之后异步", color: "#9ca3af" },
+          { label: "render 完成", sub: "副作用已标记在 Fiber 上", color: PALETTE.blue },
+          { label: "commit：DOM 变更", sub: "同步 · 一次写入", color: PALETTE.purple },
+          { label: "useLayoutEffect", sub: "同步执行 · 阻塞绘制", color: PALETTE.orange },
+          { label: "浏览器 paint", sub: "用户第一次看到新界面", color: PALETTE.green },
+          { label: "useEffect", sub: "passive · paint 之后异步", color: PALETTE.gray },
         ]}
       />
 
@@ -113,12 +114,12 @@ export default function Note() {
           {
             range: "React 16-18",
             text: "服务端渲染遇到 useLayoutEffect 打印警告（does nothing on the server）",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             range: "React 19+",
             text: "警告移除：服务端把 useLayoutEffect stub 为 no-op；不执行的事实不变",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
         note="移除的是噪音，不是语义：无论哪个版本，服务端都不会执行任何 effect"

@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
 import { Callout, CompareTable, CrossRef, DoDont, MemoryCard } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -46,16 +47,16 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "ci", label: "构建机：docker build", color: "#1677ff" },
+            { id: "ci", label: "构建机：docker build", color: PALETTE.blue },
             {
               id: "reg",
               label: "Registry：镜像唯一的家（tag / digest / 推送记录）",
-              color: "#3fb950",
+              color: PALETTE.green,
             },
-            { id: "dep", label: "部署机：pull → run", color: "#1677ff" },
-            { id: "save", label: "docker save → tar 包", color: "#f59e0b" },
-            { id: "scp", label: "scp / U 盘人工拷贝", color: "#f59e0b" },
-            { id: "load", label: "目标机 docker load", color: "#f59e0b" },
+            { id: "dep", label: "部署机：pull → run", color: PALETTE.blue },
+            { id: "save", label: "docker save → tar 包", color: PALETTE.orange },
+            { id: "scp", label: "scp / U 盘人工拷贝", color: PALETTE.orange },
+            { id: "load", label: "目标机 docker load", color: PALETTE.orange },
           ],
           edges: [
             { source: "ci", target: "reg", label: "push（日常通道）" },
@@ -74,8 +75,8 @@ export default function Note() {
       </Paragraph>
       <CompareTable
         label="镜像两种流转通道 / save-load vs registry"
-        left={{ title: "save / load 人工搬运", color: "#f59e0b" }}
-        right={{ title: "仓库 push / pull", color: "#3fb950" }}
+        left={{ title: "save / load 人工搬运", color: PALETTE.orange }}
+        right={{ title: "仓库 push / pull", color: PALETTE.green }}
         rows={[
           {
             aspect: "版本管理",
@@ -103,7 +104,7 @@ export default function Note() {
         push、镜像来源校验（digest、签名）要以仓库为前提。所以企业部署脚本里「构建完 push
         到内网私有仓库」那个动作不是仪式，是整条通道的枢纽——单机可以直灌，多机必经仓库。
       </Paragraph>
-      <MemoryCard keyword="save 搬文件，仓库管制品" color="#3fb950">
+      <MemoryCard keyword="save 搬文件，仓库管制品" color={PALETTE.green}>
         <p>
           判断用哪条通道只需一个问题：这是一次性救急，还是可重复的部署流程？救急 →
           save/load（零依赖最快）；流程 →

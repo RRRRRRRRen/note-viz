@@ -9,6 +9,7 @@ import {
   Timeline,
   VersionNote,
 } from "@/components/viz";
+import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
@@ -51,17 +52,17 @@ export default function Note() {
           {
             range: "React 15-",
             text: "Stack Reconciler：递归对比 + 更新一气呵成，中途无法暂停",
-            color: "#9ca3af",
+            color: PALETTE.gray,
           },
           {
             range: "React 16",
             text: "Fiber 架构重写协调器：链表化节点 + 可分片遍历（架构就绪，默认仍同步渲染）",
-            color: "#1677ff",
+            color: PALETTE.blue,
           },
           {
             range: "React 18",
             text: "并发特性开放：useTransition / useDeferredValue（lane 的 API 出口）、自动批处理",
-            color: "#3fb950",
+            color: PALETTE.green,
           },
         ]}
         note="「架构就绪」到「特性可用」隔了两个大版本：可中断是能力，让谁中断、中断了怎么办是 18 才给齐的答案"
@@ -103,11 +104,11 @@ export default function Note() {
       <Timeline
         label="一次更新的生命周期 / update flow"
         steps={[
-          { label: "触发更新", sub: "update 入队", color: "#f59e0b" },
-          { label: "调度", sub: "按 lane 优先级排队", color: "#8b5cf6" },
-          { label: "render 阶段", sub: "可中断 · 算 diff", color: "#1677ff" },
-          { label: "commit 阶段", sub: "同步 · 改真实 DOM", color: "#3fb950" },
-          { label: "effects", sub: "layout / passive 副作用", color: "#f59e0b" },
+          { label: "触发更新", sub: "update 入队", color: PALETTE.orange },
+          { label: "调度", sub: "按 lane 优先级排队", color: PALETTE.purple },
+          { label: "render 阶段", sub: "可中断 · 算 diff", color: PALETTE.blue },
+          { label: "commit 阶段", sub: "同步 · 改真实 DOM", color: PALETTE.green },
+          { label: "effects", sub: "layout / passive 副作用", color: PALETTE.orange },
         ]}
       />
 
@@ -126,10 +127,10 @@ export default function Note() {
         data={{
           direction: "TB",
           nodes: [
-            { id: "current", label: "current 树（屏幕正在显示）", color: "#1677ff" },
-            { id: "wip", label: "workInProgress 树（内存中构建）", color: "#8b5cf6" },
-            { id: "commit", label: "commit：一次性替换 current", color: "#3fb950" },
-            { id: "dom", label: "真实 DOM 更新 + effects", color: "#f59e0b" },
+            { id: "current", label: "current 树（屏幕正在显示）", color: PALETTE.blue },
+            { id: "wip", label: "workInProgress 树（内存中构建）", color: PALETTE.purple },
+            { id: "commit", label: "commit：一次性替换 current", color: PALETTE.green },
+            { id: "dom", label: "真实 DOM 更新 + effects", color: PALETTE.orange },
           ],
           edges: [
             { source: "current", target: "wip", label: "alternate 指针对照复用" },
@@ -152,22 +153,22 @@ export default function Note() {
         label="render 阶段的状态迁移 / interruptible render"
         direction="LR"
         states={[
-          { id: "trigger", label: "触发更新", kind: "start", color: "#f59e0b" },
+          { id: "trigger", label: "触发更新", kind: "start", color: PALETTE.orange },
           {
             id: "rendering",
             label: "render 进行中",
-            color: "#1677ff",
+            color: PALETTE.blue,
             desc: "纯计算 · 不碰 DOM",
           },
-          { id: "yield", label: "让出（时间片用尽）", color: "#9ca3af" },
-          { id: "discard", label: "作废重来", color: "#f85149", desc: "高优先级插入" },
-          { id: "commit", label: "commit", kind: "terminal", color: "#3fb950" },
+          { id: "yield", label: "让出（时间片用尽）", color: PALETTE.gray },
+          { id: "discard", label: "作废重来", color: PALETTE.red, desc: "高优先级插入" },
+          { id: "commit", label: "commit", kind: "terminal", color: PALETTE.green },
         ]}
         transitions={[
           { from: "trigger", to: "rendering", label: "调度取任务" },
           { from: "rendering", to: "yield", label: "shouldYield" },
           { from: "yield", to: "rendering", label: "新宏任务续跑", dashed: true },
-          { from: "rendering", to: "discard", label: "更高优先级", color: "#f85149" },
+          { from: "rendering", to: "discard", label: "更高优先级", color: PALETTE.red },
           { from: "discard", to: "rendering", label: "基于新 state 重算", dashed: true },
           { from: "rendering", to: "commit", label: "render 完成 → 同步点" },
         ]}
@@ -184,7 +185,7 @@ export default function Note() {
         驱动，所以「稳定引用」才成为一等公民；但记忆化不是免费的——每次都有比较成本，先 Profiler
         定位重渲染热点，再对热点动手。
       </Paragraph>
-      <MemoryCard keyword="优化三板斧与使用时机" color="#3fb950">
+      <MemoryCard keyword="优化三板斧与使用时机" color={PALETTE.green}>
         <strong>memo</strong>（组件级跳过渲染）+ <strong>useMemo/useCallback</strong>
         （稳定引用，喂给 memo 和依赖数组）+ <strong>正确 key</strong>
         （精准 diff）。先 Profiler 测量再动手；大列表上虚拟化，别只靠 memo 硬扛。
