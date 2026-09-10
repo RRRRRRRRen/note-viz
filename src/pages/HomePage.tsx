@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
-import { ChevronRight, FileText } from "lucide-react";
 import { domainTrees, latestNotes } from "@/lib/registry";
 import { taxonomyIcon } from "@/lib/icons";
-import { DifficultyDots, difficultyLevel } from "@/components/difficulty";
+import { NoteRow } from "@/components/NoteRow";
 
 export default function HomePage() {
   return (
@@ -72,24 +71,7 @@ export default function HomePage() {
         </div>
         <div className="flex flex-col gap-2.5">
           {latestNotes(10).map((n) => (
-            <Link
-              key={n.path}
-              to={n.path}
-              className="group grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 rounded-[10px] border border-border bg-surface px-4 py-3.5 transition-all hover:translate-x-1 hover:border-accent hover:bg-surface-2"
-            >
-              <div className="min-w-0">
-                <h3 className="flex items-center gap-2 text-sm leading-snug">
-                  <FileText size={14} className="shrink-0 text-accent" />
-                  {n.meta.title}
-                </h3>
-                <p className="mt-1 truncate text-xs text-muted">{n.meta.description}</p>
-              </div>
-              <DifficultyDots level={difficultyLevel(n.meta.difficulty)} />
-              <span className="flex items-center gap-1 text-[10px] text-muted meta-mono">
-                {n.meta.updated}
-                <ChevronRight size={12} />
-              </span>
-            </Link>
+            <NoteRow key={n.path} note={n} />
           ))}
         </div>
       </section>

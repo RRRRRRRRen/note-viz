@@ -5,13 +5,13 @@
 
 ## 结论概览
 
-| 级别 | 发现 | 规模 |
-| ---- | ---- | ---- |
-| 🔴 必须处理 | 真实公网 IP `112.26.45.227` | 30 处 / 4 篇 docker 笔记 |
-| 🔴 必须处理 | 公司项目实名 `cnsig`（cnsig-ems-ui / cnsig-ems-boot / /home/cnsig） | 145 处 / docker 系列多篇 |
-| 🟡 建议处理 | 内网拓扑：k8s Pod/Service IP（10.244.0.11、10.96.3.7）、内网主机（10.20.0.5、10.0.0.5）、后端端口 21080 | 约 10 处 |
-| 🟡 建议处理 | 个人身份：git 笔记中的真实提交示例（renguoqiang \<dittorenard@outlook.com\>）、pnpm 笔记中的 `/Users/ren/` 本机路径 | 约 3 处 |
-| ✅ 无风险 | nexus.corp.com / registry.corp / bastion.corp.com（.corp.com 为示例风格域名）、user@host / git@github.com 教学占位、无任何密码/密钥/token 泄漏 | — |
+| 级别        | 发现                                                                                                                                           | 规模                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| 🔴 必须处理 | 真实公网 IP `112.26.45.227`                                                                                                                    | 30 处 / 4 篇 docker 笔记 |
+| 🔴 必须处理 | 公司项目实名 `cnsig`（cnsig-ems-ui / cnsig-ems-boot / /home/cnsig）                                                                            | 145 处 / docker 系列多篇 |
+| 🟡 建议处理 | 内网拓扑：k8s Pod/Service IP（10.244.0.11、10.96.3.7）、内网主机（10.20.0.5、10.0.0.5）、后端端口 21080                                        | 约 10 处                 |
+| 🟡 建议处理 | 个人身份：git 笔记中的真实提交示例（renguoqiang \<dittorenard@outlook.com\>）、pnpm 笔记中的 `/Users/ren/` 本机路径                            | 约 3 处                  |
+| ✅ 无风险   | nexus.corp.com / registry.corp / bastion.corp.com（.corp.com 为示例风格域名）、user@host / git@github.com 教学占位、无任何密码/密钥/token 泄漏 | —                        |
 
 ## 明细清单
 
