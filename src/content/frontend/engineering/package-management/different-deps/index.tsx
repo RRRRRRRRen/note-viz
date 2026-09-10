@@ -1,4 +1,12 @@
-import { Callout, CrossRef, DoDont, LayerStack, MemoryCard, SpecQuote } from "@/components/viz";
+import {
+  Callout,
+  CrossRef,
+  DoDont,
+  LayerStack,
+  MemoryCard,
+  Prerequisite,
+  SpecQuote,
+} from "@/components/viz";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { PALETTE } from "@/components/palette";
 
@@ -13,6 +21,17 @@ export default function Note() {
         。任何一台机器在这三处与别人不同，装出来的依赖树就可能不同。解法不是换工具，而是把自由度逐层钉死：
         Node 版本 → 包管理器 → 依赖树（lockfile）→ 安装方式（frozen）→ 整机环境。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "lockfile 是如何保证依赖树一致的？",
+            to: "/note/frontend/engineering/package-management/lockfile-consistency",
+          },
+        ]}
+      >
+        机器间依赖漂移正是 lockfile 要防的事：先看一致性机制，再看没有它时怎么漂。
+      </Prerequisite>
 
       <Heading level={2} title="「装依赖」的时候到底发生了什么" />
       <Paragraph>
@@ -174,6 +193,18 @@ engine-strict=true
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `# 同事机器正常、CI 报错，于是手动补包
+$ npm i dayjs # 绕过 pnpm lockfile 的临时安装`,
+          note: "绕过锁文件的安装 = 装出版本漂移，下一台机器继续报错",
+        }}
+        do={{
+          code: `$ pnpm add dayjs # 增量安装也走 lockfile 唯一入口`,
+          note: "所有依赖变更过锁文件，机器间才一致",
+        }}
+      />
+
       <QAChain
         items={[
           {

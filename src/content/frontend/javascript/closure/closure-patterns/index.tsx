@@ -13,6 +13,14 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        闭包的工程价值收敛在一个母题：<strong>封装状态</strong>——把变量藏进函数作用域，
+        只暴露操作入口。私有变量、计数器、模块模式是同一手法的三种规模；判断状态份数的口诀是 「
+        <strong>工厂被调用几次 = 几份状态</strong>
+        」：工厂函数多次调用产生多份独立环境（每实例隔离）， IIFE
+        只调用一次（单例共享）。闭包捕获的是变量绑定本身，所以返回的函数读写的是同一个活着的变量。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -23,14 +31,6 @@ export default function Note() {
       >
         本篇不解释闭包的形成机制（[[Environment]] 与环境记录的存活），只谈工程化用法——先把地基打牢。
       </Prerequisite>
-
-      <Conclusion>
-        闭包的工程价值收敛在一个母题：<strong>封装状态</strong>——把变量藏进函数作用域，
-        只暴露操作入口。私有变量、计数器、模块模式是同一手法的三种规模；判断状态份数的口诀是 「
-        <strong>工厂被调用几次 = 几份状态</strong>
-        」：工厂函数多次调用产生多份独立环境（每实例隔离）， IIFE
-        只调用一次（单例共享）。闭包捕获的是变量绑定本身，所以返回的函数读写的是同一个活着的变量。
-      </Conclusion>
 
       <Heading level={2} title="你已经天天在用：事件回调里的闭包" />
       <Paragraph>

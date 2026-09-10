@@ -195,6 +195,19 @@ npm install
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `// 没声明的包也能 import（幽灵依赖）
+import dayjs from "dayjs"; // 来自某个传递依赖，它升级那天就消失`,
+          note: "hoist 把依赖拍平，越界使用无声通过",
+        }}
+        do={{
+          code: `import dayjs from "dayjs"; // package.json 里声明过
+// pnpm 的 node_modules 只含声明过的包，其余链接到全局 store`,
+          note: "显式依赖 + 符号链接结构，越界 import 直接报错",
+        }}
+      />
+
       <QAChain
         items={[
           {

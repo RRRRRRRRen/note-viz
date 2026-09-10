@@ -183,6 +183,21 @@ export default function Note() {
         ]}
       />
 
+      <DoDont
+        dont={{
+          code: `// vite.config.ts 手写别名
+resolve: { alias: { "@": "./src" } }
+// tsconfig paths 另写一份——两份事实必然漂移`,
+          note: "同一约定维护两处，迟早对不上",
+        }}
+        do={{
+          code: `resolve: {
+  tsconfigPaths: true, // Vite 8 原生读 tsconfig paths
+}`,
+          note: "单一来源：别名只在 tsconfig 声明（本项目现状）",
+        }}
+      />
+
       <QAChain
         intro="五问围绕第一定律展开：从读者矩阵到具体字段的归宿，再到跨版本的行为差异。"
         items={[

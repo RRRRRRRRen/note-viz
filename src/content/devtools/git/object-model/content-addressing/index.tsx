@@ -1,6 +1,14 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
-import { Callout, CompareTable, DoDont, MemoryCard, Timeline, CrossRef } from "@/components/viz";
+import {
+  Callout,
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+  Timeline,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -15,6 +23,17 @@ export default function Note() {
         blob（内容）、tree（目录）、commit（历史）、tag（锚定版本的批注）四种对象，Git
         的一切行为都能从模型推出来，不再需要死记。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "git 的三个区是怎么分工的？",
+            to: "/note/devtools/git/basics/daily-commands",
+          },
+        ]}
+      >
+        add 把内容写进对象库：三区模型里的「对象库」正是本篇的主角。
+      </Prerequisite>
 
       <Heading level={2} title="技术对照：HTTP 缓存的 ETag 与 CDN 内容寻址" />
       <Paragraph>

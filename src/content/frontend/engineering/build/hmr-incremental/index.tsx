@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { StateFlow, Timeline } from "@/components/viz";
+import { DoDont, StateFlow, Timeline } from "@/components/viz";
 import { CrossRef, Prerequisite } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
@@ -111,6 +111,19 @@ export default function Note() {
       </Paragraph>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `// 改了一行样式，直接整页刷新
+location.reload(); // 表单输入、滚动位置、组件状态全丢`,
+          note: "全量刷新是 HMR 要消灭的体验",
+        }}
+        do={{
+          code: `/* vite: [hmr-update] src/style.css */
+/* 只替换这一份样式表，DOM 与组件状态原样保留 */`,
+          note: "模块边界内的热替换，状态不丢",
+        }}
+      />
+
       <QAChain
         items={[
           {

@@ -1,6 +1,13 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
-import { CompareTable, DoDont, MemoryCard, Timeline, CrossRef } from "@/components/viz";
+import {
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+  Timeline,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -16,6 +23,17 @@ export default function Note() {
         <code>.git/HEAD</code> 和 <code>refs/</code> 目录，所有指针类命令（checkout / reset /
         rebase）都从「需要背的咒语」变成「看图说话」。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "git 为什么不存 diff：内容寻址怎么做的？",
+            to: "/note/devtools/git/object-model/content-addressing",
+          },
+        ]}
+      >
+        分支只是指向提交的引用：引用指向的正是内容寻址仓库里的提交对象。
+      </Prerequisite>
 
       <Heading level={2} title="分支：一个 41 字节的文件" />
       <Paragraph>

@@ -180,6 +180,20 @@ npm ci          # 或 pnpm install --frozen-lockfile
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `// 只有 package.json 的范围声明，没有锁文件
+"react": "^19.0.0"`,
+          note: "每台机器各自解析到不同 patch 版本，「我这里好的」开始了",
+        }}
+        do={{
+          code: `# pnpm-lock.yaml：范围被物化成唯一答案
+react@19.2.8:
+  resolution: {integrity: sha512-...}`,
+          note: "精确版本 + 完整性哈希，安装结果可复现",
+        }}
+      />
+
       <QAChain
         items={[
           {

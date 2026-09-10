@@ -13,6 +13,14 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        执行上下文是<strong>代码执行前的环境准备</strong>：绑定 this、登记所有声明、建立作用域链。
+        全局上下文只有一个；函数每次调用都新建一个压入调用栈，执行完弹出。「变量提升」不是代码被移动，
+        而是创建阶段先扫描登记的副产品——<code>var</code> 提升且初始化为 <code>undefined</code>，
+        函数声明整体提升，<code>let/const</code> 提升但不初始化（TDZ）。上下文弹出后，
+        堆上的环境记录是否回收只看<strong>还有没有闭包引用</strong>。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -23,14 +31,6 @@ export default function Note() {
       >
         本篇讨论「一段代码被执行时环境怎么准备」，与「回调排进哪个队列」互补——调用栈是事件循环图里的那条主轨道。
       </Prerequisite>
-
-      <Conclusion>
-        执行上下文是<strong>代码执行前的环境准备</strong>：绑定 this、登记所有声明、建立作用域链。
-        全局上下文只有一个；函数每次调用都新建一个压入调用栈，执行完弹出。「变量提升」不是代码被移动，
-        而是创建阶段先扫描登记的副产品——<code>var</code> 提升且初始化为 <code>undefined</code>，
-        函数声明整体提升，<code>let/const</code> 提升但不初始化（TDZ）。上下文弹出后，
-        堆上的环境记录是否回收只看<strong>还有没有闭包引用</strong>。
-      </Conclusion>
 
       <Heading level={2} title="技术对照：调试器里的 Call Stack 面板" />
       <Paragraph>

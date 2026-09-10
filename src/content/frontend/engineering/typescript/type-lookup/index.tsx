@@ -127,6 +127,21 @@ export default function Note() {
         }}
       />
 
+      <DoDont
+        dont={{
+          code: `// 依赖没带类型，随手通配
+declare module "legacy-lib";`,
+          note: "整个模块变 any，类型检查在此处静默失明",
+        }}
+        do={{
+          code: `// types/legacy-lib.d.ts：按真实 API 补声明
+declare module "legacy-lib" {
+  export function init(opts: { port: number }): void;
+}`,
+          note: "手写声明也走类型系统，错误能被拦下",
+        }}
+      />
+
       <QAChain
         intro="五问沿两条管道推进：先确认分工，再钻版本联动与生态判断。"
         items={[

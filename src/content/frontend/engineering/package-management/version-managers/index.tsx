@@ -2,6 +2,7 @@ import {
   Callout,
   CompareTable,
   CrossRef,
+  DoDont,
   MemoryCard,
   Prerequisite,
   SpecQuote,
@@ -202,6 +203,19 @@ export default function Note() {
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `$ nvm use 18   # 项目 A
+$ cd ../project-b && pnpm build # 忘了切：用 18 构建了 B`,
+          note: "全局切换靠人脑记忆，跨项目必错",
+        }}
+        do={{
+          code: `$ cd project-a
+$ mise exec -- node -v # v18.20.0，按目录自动`,
+          note: "按项目目录自动切换，不依赖记忆",
+        }}
+      />
+
       <QAChain
         items={[
           {

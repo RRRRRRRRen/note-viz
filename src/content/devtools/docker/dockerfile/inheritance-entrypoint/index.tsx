@@ -1,7 +1,15 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { SequenceDiagram } from "@/components/viz/SequenceDiagram";
 import { Exercise, ShellBlock } from "@/components/demo";
-import { CrossRef, DoDont, LayerStack, MemoryCard, SpecQuote, Table } from "@/components/viz";
+import {
+  CrossRef,
+  DoDont,
+  LayerStack,
+  MemoryCard,
+  Prerequisite,
+  SpecQuote,
+  Table,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -18,6 +26,17 @@ export default function Note() {
         下的初始化脚本、 再把控制权交给
         nginx——这就是"清单里没写启动命令，容器却自动跑起来"的完整答案。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "5 行的 Dockerfile 是怎么变成镜像的？",
+            to: "/note/devtools/docker/dockerfile/build-anatomy",
+          },
+        ]}
+      >
+        FROM 继承的是一串层加两个配置项：分层模型清楚了，默认行为的保留与覆盖才有落点。
+      </Prerequisite>
 
       <Heading level={2} title="继承的不是文件系统，是全套家当" />
       <Paragraph>

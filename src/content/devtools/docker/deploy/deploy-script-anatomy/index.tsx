@@ -1,6 +1,14 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { CodeAnnotate, Exercise, ShellBlock } from "@/components/demo";
-import { Callout, CrossRef, DoDont, MemoryCard, OutputTimeline, Table } from "@/components/viz";
+import { Checklist, CodeAnnotate, Exercise, ShellBlock } from "@/components/demo";
+import {
+  Callout,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  OutputTimeline,
+  Prerequisite,
+  Table,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 /** deploy.sh 逻辑骨架（单引号数组拼接，避免模板字符串与 shell 变量语法冲突） */
@@ -62,6 +70,21 @@ export default function Note() {
         下找同名目录；最后在材料目录里 build 出镜像、push 上私服。脚本是调用命令的人机接口，
         <strong>装配的智能在 Dockerfile，分发的智能在仓库</strong>。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "一次前端部署是怎么从 dist 走到线上的？",
+            to: "/note/devtools/docker/basics/deploy-pipeline",
+          },
+          {
+            title: "5 行的 Dockerfile 是怎么变成镜像的？",
+            to: "/note/devtools/docker/dockerfile/build-anatomy",
+          },
+        ]}
+      >
+        deploy.sh 把部署通道的每一步串成命令：先懂通道全景与镜像构建，再看脚本就是在对清单。
+      </Prerequisite>
 
       <Heading level={2} title="逐段精读：从 130 行到一张骨架" />
       <Paragraph>
@@ -404,6 +427,16 @@ done
         ——run 的端口映射、四件套命令（ps/logs/exec/inspect）与三条故障路径。脚本里的
         grep、管道、退出码的完整体系在 Shell 系列里有独立一篇。
       </Paragraph>
+      <Checklist
+        title="deploy.sh 逐段过手"
+        items={[
+          { text: "getopts 段：-n/-v 参数各演练一遍", note: "缺参数时的 usage 提示要真的触发" },
+          { text: "验证 set -euo pipefail 的行为", note: "任一步失败立刻停，不带病继续" },
+          { text: "构建段失败时不会推送旧镜像", note: "顺序依赖靠 && 链或 set -e 保证" },
+          { text: "回滚入口演练：上上个版本号能用", note: "没演练过的回滚等于没有回滚" },
+        ]}
+      />
+
       <CrossRef
         notes={[
           {

@@ -191,6 +191,20 @@ $ pnpm install           # 五分钟后，问题没了
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `$ rm -rf node_modules
+$ npm install # 项目明明是 pnpm：多出一份 package-lock.json`,
+          note: "删了重装没问题，问题是顺手换了工具——两份锁文件并存，机器开始漂移",
+        }}
+        do={{
+          code: `$ rm -rf node_modules
+$ pnpm install # 按 packageManager 声明走
+$ pnpm store prune # 清理走 store 命令，别手删目录`,
+          note: "缓存的事交给包管理器自己的命令",
+        }}
+      />
+
       <QAChain
         items={[
           {

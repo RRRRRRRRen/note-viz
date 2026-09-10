@@ -5,6 +5,13 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        一条决策轴：<strong>先数制品种类，再定安全深度</strong>
+        。只有 npm 用 Verdaccio；只要镜像存储，个人用 registry:2、团队用 Harbor；两种以上生态用
+        Nexus 一台全包；K8s 重度、要扫描签名准入时补 Harbor；企业级合规与多站点复制才轮到
+        Artifactory。没有万能赢家，只有「最小满足」。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -15,13 +22,6 @@ export default function Note() {
       >
         选型前先知道私有仓库是什么、三种仓库角色怎么分工——本篇只回答「挑哪个」。
       </Prerequisite>
-
-      <Conclusion>
-        一条决策轴：<strong>先数制品种类，再定安全深度</strong>
-        。只有 npm 用 Verdaccio；只要镜像存储，个人用 registry:2、团队用 Harbor；两种以上生态用
-        Nexus 一台全包；K8s 重度、要扫描签名准入时补 Harbor；企业级合规与多站点复制才轮到
-        Artifactory。没有万能赢家，只有「最小满足」。
-      </Conclusion>
 
       <Heading level={2} title="五个工具各自站在哪" />
       <Paragraph>

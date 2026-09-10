@@ -231,6 +231,20 @@ index.html  → no-cache`,
       </Paragraph>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `<head>
+  <script>useFooter();</script> <!-- body 还没解析，undefined -->
+</head>`,
+          note: "不感知解析流水线：脚本在 DOM 未就绪时执行",
+        }}
+        do={{
+          code: `<script defer src="app.js"></script>
+<!-- defer：HTML 解析完才执行，且保持声明顺序 -->`,
+          note: "懂了「解析→执行」的时序，加载策略才有依据",
+        }}
+      />
+
       <QAChain
         items={[
           {

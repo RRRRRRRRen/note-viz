@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { SequenceDiagram } from "@/components/viz";
+import { Prerequisite, SequenceDiagram } from "@/components/viz";
 import { CrossRef, DoDont, VersionNote } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
@@ -14,6 +14,17 @@ export default function Note() {
         捕获/冒泡顺序，找到该响应的组件处理器再调用。换来三样东西：跨浏览器行为统一、成千上万处理器只有
         1 个真实监听器、事件可以<strong>分优先级</strong>进入调度器。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "事件循环是怎么调度的：从调用栈到微任务",
+            to: "/note/frontend/javascript/event-loop/event-loop-basics",
+          },
+        ]}
+      >
+        合成事件的派发时机挂在事件循环上：原生事件怎么进队列，决定了 React 什么时候看到它。
+      </Prerequisite>
 
       <Heading level={2} title="委托：onClick 到底挂在哪" />
       <Paragraph>
@@ -143,6 +154,17 @@ export default function Note() {
       />
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `el.addEventListener("click", fn); // 绕过 React 直挂原生`,
+          note: "绕过合成事件层：委托、池化、统一语义全部失效",
+        }}
+        do={{
+          code: `<button onClick={fn}>保存</button> // 走合成事件，统一委托到根节点`,
+          note: "框架内用框架的事件系统",
+        }}
+      />
+
       <QAChain
         items={[
           {

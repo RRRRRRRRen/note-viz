@@ -1,6 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
-import { CompareTable, DoDont, MemoryCard, CrossRef } from "@/components/viz";
+import { CompareTable, CrossRef, DoDont, MemoryCard, Prerequisite } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -14,6 +14,17 @@ export default function Note() {
         压缩是字节级的、与文本/二进制无关，它是存储优化，不改变「每版一个完整对象」的逻辑模型。checkout
         慢的根源从来不是解压，而是文件系统的逐文件操作——超大仓库的全部优化思路都是「少碰文件系统」。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "git 为什么不存 diff：内容寻址怎么做的？",
+            to: "/note/devtools/git/object-model/content-addressing",
+          },
+        ]}
+      >
+        垃圾回收回收的是「不可达对象」：可达性由引用关系决定，先懂对象模型。
+      </Prerequisite>
 
       <Heading level={2} title="松散对象：日常形态，快就快在从不整理" />
       <Paragraph>

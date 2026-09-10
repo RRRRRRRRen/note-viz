@@ -1,6 +1,6 @@
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
-import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote } from "@/components/viz";
+import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, SpecQuote } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -15,6 +15,18 @@ export default function Note() {
         <strong>proxy</strong> 缓存外网公共源、<strong>hosted</strong>{" "}
         存放自家制品（发布的唯一目的地）、<strong>group</strong> 把前两者拼成对外的统一 URL。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "镜像怎么从构建机到部署机？",
+            to: "/note/devtools/docker/registry/image-transport",
+          },
+        ]}
+      >
+        Nexus 解决的是传输通道里的「可信中转」：先看懂 push/pull
+        直连模式，才知道自建仓库卡在哪一环。
+      </Prerequisite>
 
       <Heading level={2} title="为什么需要私有仓库" />
       <Paragraph>

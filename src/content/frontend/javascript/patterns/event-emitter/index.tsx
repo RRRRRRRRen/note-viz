@@ -1,6 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeBlock } from "@/components/demo";
-import { CrossRef, DoDont } from "@/components/viz";
+import { CrossRef, DoDont, Prerequisite } from "@/components/viz";
 
 export default function Note() {
   return (
@@ -13,6 +13,17 @@ export default function Note() {
         也能命中）；emit 是同步循环——某个回调抛错会中断后续订阅者；组件卸载忘 off
         就是闭包滞留式的内存泄漏。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "this 到底指向谁？",
+            to: "/note/frontend/javascript/scope/this-binding",
+          },
+        ]}
+      >
+        手写事件总线的 on/emit 全靠 this 绑定回调上下文：this 规则是实现的第一个坑。
+      </Prerequisite>
 
       <Heading level={2} title="数据结构选型：Map + Set 而不是对象 + 数组" />
       <Paragraph>

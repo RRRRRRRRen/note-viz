@@ -167,6 +167,19 @@ export default function Note() {
         }}
       />
 
+      <DoDont
+        dont={{
+          code: `// 把格式规则写进 lint
+"rules": { "indent": ["error", 2], "quotes": ["error", "double"] }`,
+          note: "格式规则进 lint，与格式化工具争抢同一批字符，规则永远打架",
+        }}
+        do={{
+          code: `// lint 管代码质量，格式全部交给 oxfmt
+"rules": { "eqeqeq": "error" } // 格式规则一个不留`,
+          note: "职责单一：两类工具互不越界",
+        }}
+      />
+
       <QAChain
         intro="五问从「是不是冲突」问到「怎么落到配置」：分型能力比背结论重要。"
         items={[

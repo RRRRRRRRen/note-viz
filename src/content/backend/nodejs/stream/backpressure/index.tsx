@@ -7,6 +7,15 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        <code>write() === false</code> 不是错误——数据已经照常进入内部缓冲，它只是一句提醒：
+        <strong>缓冲已达 highWaterMark，消费跟不上了</strong>
+        。无视它程序不会崩，但缓冲会随生产无限膨胀， 直到 OOM。正确反应是三步：
+        <strong>暂停生产 → 监听 drain（缓冲被消费清空时触发）→ 恢复写入</strong>。
+        这套循环手写容易漏，<code>pipe</code>/<code>pipeline</code> 已把它自动化——所以生产代码永远用{" "}
+        <code>pipeline</code>：背压传导、错误传播、资源清理三件事一起接管。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -18,15 +27,6 @@ export default function Note() {
         流的读写全是异步回调：理解事件循环如何调度宏任务，才能理解 drain
         为什么在「之后某个时刻」触发。
       </Prerequisite>
-
-      <Conclusion>
-        <code>write() === false</code> 不是错误——数据已经照常进入内部缓冲，它只是一句提醒：
-        <strong>缓冲已达 highWaterMark，消费跟不上了</strong>
-        。无视它程序不会崩，但缓冲会随生产无限膨胀， 直到 OOM。正确反应是三步：
-        <strong>暂停生产 → 监听 drain（缓冲被消费清空时触发）→ 恢复写入</strong>。
-        这套循环手写容易漏，<code>pipe</code>/<code>pipeline</code> 已把它自动化——所以生产代码永远用{" "}
-        <code>pipeline</code>：背压传导、错误传播、资源清理三件事一起接管。
-      </Conclusion>
 
       <Heading level={2} title="两种模式：流动与暂停" />
       <Paragraph>

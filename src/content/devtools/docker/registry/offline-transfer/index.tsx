@@ -1,6 +1,14 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { Exercise, ShellBlock } from "@/components/demo";
-import { CompareTable, CrossRef, DoDont, MemoryCard, SpecQuote, Timeline } from "@/components/viz";
+import { Checklist, Exercise, ShellBlock } from "@/components/demo";
+import {
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+  SpecQuote,
+  Timeline,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -16,6 +24,17 @@ export default function Note() {
         配置，用途是备份容器现场而非搬运镜像。与仓库的关系不是替代而是配合：私服里的第一批基础镜像，
         正是有人这样人工灌进去的。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "镜像怎么从构建机到部署机？",
+            to: "/note/devtools/docker/registry/image-transport",
+          },
+        ]}
+      >
+        save/load 是传输方式的一个分支：先有通道全景，再理解断网场景为什么只能走文件搬运。
+      </Prerequisite>
 
       <Heading level={2} title="什么时候轮到离线搬运" />
       <Paragraph>
@@ -308,6 +327,23 @@ Loaded image: app:1.0.0`}</ShellBlock>
         <strong>那份让页面和接口都通的 nginx.conf</strong>——静态托管、history
         路由回退、反向代理与同域消 CORS 的逐行拆解。之后是部署脚本与容器排障。
       </Paragraph>
+      <Checklist
+        title="离线搬运全链路演练"
+        items={[
+          {
+            text: "docker save <img> | gzip > img.tar.gz 并记录体积",
+            note: "gzip 通常再砍一半，对照磁盘与网络预算",
+          },
+          { text: "传输到目标机并校验完整性", note: "rsync -P 可断点续传；shasum 两端比对" },
+          {
+            text: "gunzip -c | docker load 后 docker images 确认",
+            note: "load 输出的镜像名要与预期一致",
+          },
+          { text: "目标机 docker run --rm <img> <cmd> 冒烟", note: "能跑起一个命令，搬运才算完成" },
+          { text: "清理中转 tar 包", note: "最常忘的一步，磁盘就是这么悄悄满的" },
+        ]}
+      />
+
       <CrossRef
         notes={[
           {

@@ -6,6 +6,14 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        JS 没有「类复制式」继承，只有<strong>对象到对象的链接</strong>。读属性时自身没有，就沿{" "}
+        <code>[[Prototype]]</code> 内部槽一路向上，直到 <code>null</code> 为止；写入则永远落在自身
+        （遮蔽或新建，原型不动）。方法和原型放一份、所有实例共享——既省内存，也让「给已存在的实例补方法」成为可能。
+        class 只是这套机制之上的语法糖。<code>constructor</code> 是惯例不是不变量：整体替换{" "}
+        <code>prototype</code> 后必须手动补上。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -16,14 +24,6 @@ export default function Note() {
       >
         变量查找沿作用域链、属性查找沿原型链——两条「逐级向上」的链是本篇的分析框架。
       </Prerequisite>
-
-      <Conclusion>
-        JS 没有「类复制式」继承，只有<strong>对象到对象的链接</strong>。读属性时自身没有，就沿{" "}
-        <code>[[Prototype]]</code> 内部槽一路向上，直到 <code>null</code> 为止；写入则永远落在自身
-        （遮蔽或新建，原型不动）。方法和原型放一份、所有实例共享——既省内存，也让「给已存在的实例补方法」成为可能。
-        class 只是这套机制之上的语法糖。<code>constructor</code> 是惯例不是不变量：整体替换{" "}
-        <code>prototype</code> 后必须手动补上。
-      </Conclusion>
 
       <Heading level={2} title="双槽辨析：[[Prototype]]、prototype 与 __proto__" />
       <Paragraph>

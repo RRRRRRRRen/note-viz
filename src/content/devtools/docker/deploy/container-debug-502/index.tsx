@@ -1,6 +1,14 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { Exercise, FlowChart, ShellBlock } from "@/components/demo";
-import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote, Table } from "@/components/viz";
+import { Checklist, Exercise, FlowChart, ShellBlock } from "@/components/demo";
+import {
+  Callout,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+  SpecQuote,
+  Table,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -17,6 +25,21 @@ export default function Note() {
         是否真的被覆盖）。
         一句纪律压轴：在容器里改动验证出来的"正常"都是假阳性，配置必须进镜像才算数。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "nginx.conf 是怎么让页面和接口都通的？",
+            to: "/note/devtools/docker/deploy/nginx-conf-anatomy",
+          },
+          {
+            title: "一次前端部署是怎么从 dist 走到线上的？",
+            to: "/note/devtools/docker/basics/deploy-pipeline",
+          },
+        ]}
+      >
+        排查 502 前先知道请求过了哪些环节——nginx 的 location 分流与整条部署通道，决定你该查哪一段。
+      </Prerequisite>
 
       <Heading level={2} title="前置：请求是怎么到达容器的（-p 端口映射）" />
       <Paragraph>排查访问问题前，先建立端口模型。容器默认并不对宿主机以外暴露任何端口：</Paragraph>
@@ -346,6 +369,17 @@ $ docker run --rm --network container:cnsig-ems-ui \\
         CI/CD（git push 触发构建、流水线接管本系列的所有 docker 命令、K8s
         滚动更新）——那需要一个真实流水线素材做骨架，值得等素材齐了独立成篇。
       </Paragraph>
+      <Checklist
+        title="502 排查链路自查"
+        items={[
+          { text: "docker ps：容器 Up 且端口映射如预期", note: "Exited/Restarting 直接转看 logs" },
+          { text: "docker logs：上游应用自身有没有报错", note: "502 多数是上游挂了，先看上游日志" },
+          { text: "容器内 curl 127.0.0.1:<应用端口>", note: "通则问题在 nginx 段，不通在应用段" },
+          { text: "宿主机 curl 容器 IP:PORT", note: "验证 docker 网段可达性" },
+          { text: "curl -I 分清 502 与 504", note: "502=上游不可达，504=上游超时，排查方向不同" },
+        ]}
+      />
+
       <CrossRef
         notes={[
           {

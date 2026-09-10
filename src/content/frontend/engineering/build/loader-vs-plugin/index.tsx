@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { CompareTable, CrossRef, Prerequisite } from "@/components/viz";
+import { CompareTable, CrossRef, DoDont, Prerequisite } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -105,6 +105,21 @@ export default function Note() {
       </Paragraph>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `// 想给所有模块注入环境变量，写成了 loader
+use: [{ test: /\\.js$/, loader: "env-inject-loader" }]`,
+          note: "loader 是单文件转换器，管不了「编译之外」的横切流程",
+        }}
+        do={{
+          code: `// 编译之外的事挂插件钩子
+new webpack.DefinePlugin({
+  "process.env.API": JSON.stringify(api),
+})`,
+          note: "plugin 挂在构建生命周期上，全局生效一次",
+        }}
+      />
+
       <QAChain
         items={[
           {

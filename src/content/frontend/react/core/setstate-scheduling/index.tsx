@@ -201,6 +201,19 @@ const h = ref.current?.clientHeight;`,
       />
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `setCount(count + 1);
+console.log(count); // 旧值：批处理还没落地`,
+          note: "把 setState 当成立刻改值——它是「请求一次调度」",
+        }}
+        do={{
+          code: `setCount((c) => c + 1); // 函数式更新读到最新值
+useEffect(() => { console.log(count); }, [count]); // 落地后再读`,
+          note: "在调度模型里读值的正确姿势",
+        }}
+      />
+
       <QAChain
         items={[
           {

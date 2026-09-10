@@ -1,6 +1,14 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Exercise, ShellBlock, StepThrough } from "@/components/demo";
-import { CompareTable, CrossRef, DoDont, MemoryCard, SpecQuote, Timeline } from "@/components/viz";
+import {
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+  SpecQuote,
+  Timeline,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -16,6 +24,17 @@ export default function Note() {
         的标准做法）。装配阶段则靠<strong>层缓存</strong>提速：
         少变的指令放前面、常变的放后面，改一行只重做该行及其后。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "5 行的 Dockerfile 是怎么变成镜像的？",
+            to: "/note/devtools/docker/dockerfile/build-anatomy",
+          },
+        ]}
+      >
+        上下文上传与层缓存都发生在构建过程中：先懂指令如何分层，才懂缓存为什么按层命中。
+      </Prerequisite>
 
       <Heading level={2} title="上下文：build 的第一步是搬运，不是装配" />
       <Paragraph>

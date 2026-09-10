@@ -8,12 +8,22 @@ import {
   Prerequisite,
   Table,
 } from "@/components/viz";
-import { ShellBlock } from "@/components/demo";
+import { Checklist, ShellBlock } from "@/components/demo";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        两条路线原理不同：<strong>镜像</strong>是换下载点——把 brew 的几个下载地址改指国内同步服务器
+        （环境变量 <code>HOMEBREW_API_DOMAIN</code>、<code>HOMEBREW_BOTTLE_DOMAIN</code>{" "}
+        等），带宽满速但有同步延迟；<strong>代理</strong>是换条路——设标准的 <code>http_proxy</code>/
+        <code>https_proxy</code>/<code>all_proxy</code> 变量，流量仍来自官方源，零漂移。brew{" "}
+        <strong>没有 HOMEBREW_PROXY 这个变量</strong>。最省心的组合是官方源 + 一个稳定代理；
+        追求满速用「镜像管 brew 自家内容 + 代理管 cask 厂商源」的双保险，且 API 与 bottle
+        两个域名变量必须<strong>成对改、同源改</strong>。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -24,16 +34,6 @@ export default function Note() {
       >
         先知道 brew 的目录模型与 bottle（预编译二进制）是什么，镜像与代理的配置才有落点。
       </Prerequisite>
-
-      <Conclusion>
-        两条路线原理不同：<strong>镜像</strong>是换下载点——把 brew 的几个下载地址改指国内同步服务器
-        （环境变量 <code>HOMEBREW_API_DOMAIN</code>、<code>HOMEBREW_BOTTLE_DOMAIN</code>{" "}
-        等），带宽满速但有同步延迟；<strong>代理</strong>是换条路——设标准的 <code>http_proxy</code>/
-        <code>https_proxy</code>/<code>all_proxy</code> 变量，流量仍来自官方源，零漂移。brew{" "}
-        <strong>没有 HOMEBREW_PROXY 这个变量</strong>。最省心的组合是官方源 + 一个稳定代理；
-        追求满速用「镜像管 brew 自家内容 + 代理管 cask 厂商源」的双保险，且 API 与 bottle
-        两个域名变量必须<strong>成对改、同源改</strong>。
-      </Conclusion>
 
       <Heading level={2} title="先弄清 brew 到底在下载什么" />
       <Paragraph>
@@ -267,6 +267,20 @@ export https_proxy=http://127.0.0.1:7897
         同一个问题在别的制品生态里反复出现——Docker 镜像的构建机到部署机、企业内自建制品仓库，都是
         「官方源太慢，中间加一层」的不同形态。
       </Paragraph>
+      <Checklist
+        title="brew 提速配置自查"
+        items={[
+          { text: "HOMEBREW_API_DOMAIN 指到镜像", note: "API 元数据是每次 install 的第一跳" },
+          { text: "HOMEBREW_BOTTLE_DOMAIN 指到镜像", note: "瓶装二进制才是下载大头" },
+          {
+            text: "代理场景：HOMEBREW_NO_AUTO_UPDATE=1 关自动更新",
+            note: "每条命令前偷偷 auto-update 是卡顿的常见来源",
+          },
+          { text: "brew config 检查变量是否生效", note: "配置写了不等于生效" },
+          { text: "time brew fetch 一个小包做前后测速对比", note: "数据说话，不凭体感" },
+        ]}
+      />
+
       <CrossRef
         notes={[
           {

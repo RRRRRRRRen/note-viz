@@ -1,6 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
-import { CrossRef, MemoryCard, Prerequisite } from "@/components/viz";
+import { CrossRef, DoDont, MemoryCard, Prerequisite } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -112,6 +112,21 @@ export default function Note() {
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `<!-- index.html：手工维护依赖顺序 -->
+<script src="jquery.js"></script>
+<script src="app.js"></script> <!-- 依赖 cart.js，顺序错了就 undefined -->`,
+          note: "几十个标签手工排序、依赖关系靠脑记——这正是构建工具要解决的原始问题",
+        }}
+        do={{
+          code: `// app.js
+import $ from "jquery"; // 依赖显式声明
+import { initCart } from "./cart.js"; // 工具按依赖图自动排序去重`,
+          note: "声明式依赖：顺序、去重、循环检测全部交给工具",
+        }}
+      />
+
       <QAChain
         items={[
           {

@@ -14,6 +14,17 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        提交历史是团队的<strong>公共基础设施</strong>，两条规范让它可读、可查、可自动化：
+        <strong>功能分支工作流</strong>管「改动从哪进主干」——main
+        永远保持可用，每个功能在独立分支上演进，经 PR 评审后合并；
+        <strong>Conventional Commits</strong> 管「每个提交怎么自我介绍」——{" "}
+        <code>&lt;type&gt;: &lt;描述&gt;</code> 格式让 git log 可扫描（<code>--grep="^fix"</code>{" "}
+        直接筛出所有修复），也让 CHANGELOG
+        与语义化版本可以自动生成。规范的收益不在写的那一刻，而在六个月后有人
+        <code>git log</code> 排查问题的那一刻。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -28,17 +39,6 @@ export default function Note() {
       >
         工作流的每一步都是日常命令的组合；「合并后敢删分支」依赖分支只是指针、删除有可达性检查兜底这两个事实。
       </Prerequisite>
-
-      <Conclusion>
-        提交历史是团队的<strong>公共基础设施</strong>，两条规范让它可读、可查、可自动化：
-        <strong>功能分支工作流</strong>管「改动从哪进主干」——main
-        永远保持可用，每个功能在独立分支上演进，经 PR 评审后合并；
-        <strong>Conventional Commits</strong> 管「每个提交怎么自我介绍」——{" "}
-        <code>&lt;type&gt;: &lt;描述&gt;</code> 格式让 git log 可扫描（<code>--grep="^fix"</code>{" "}
-        直接筛出所有修复），也让 CHANGELOG
-        与语义化版本可以自动生成。规范的收益不在写的那一刻，而在六个月后有人
-        <code>git log</code> 排查问题的那一刻。
-      </Conclusion>
 
       <Heading level={2} title="为什么不能直接提交 main" />
       <Paragraph>

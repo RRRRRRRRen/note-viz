@@ -6,6 +6,16 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        大文件撑爆仓库是内容寻址模型的必然死角：<strong>diff 依赖行语义，二进制没有</strong>；
+        <strong>delta 压缩靠公共字节段，已压缩格式每版字节全变</strong>；于是{" "}
+        <strong>每个版本都是一个完整 blob</strong>，再乘上「别人没有就必须传」的同步原则——100 MB
+        的文件改 50 次，每个克隆者都要为 5 GB 历史买单。出路是把大文件请出对象库：
+        <strong>Git LFS</strong> 在仓库里只留三行指针文本、真身放内容服务器；数据集场景用{" "}
+        <strong>DVC</strong>；clone 侧用 <code>--filter</code>{" "}
+        部分克隆。已经入库的只有一条路：filter-repo 改写历史 + 全团队重克隆。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -21,16 +31,6 @@ export default function Note() {
         本篇的成本推导建立在「对象按内容寻址 + packfile delta 压缩 +
         同步按哈希集合求差」三层机制上。
       </Prerequisite>
-
-      <Conclusion>
-        大文件撑爆仓库是内容寻址模型的必然死角：<strong>diff 依赖行语义，二进制没有</strong>；
-        <strong>delta 压缩靠公共字节段，已压缩格式每版字节全变</strong>；于是{" "}
-        <strong>每个版本都是一个完整 blob</strong>，再乘上「别人没有就必须传」的同步原则——100 MB
-        的文件改 50 次，每个克隆者都要为 5 GB 历史买单。出路是把大文件请出对象库：
-        <strong>Git LFS</strong> 在仓库里只留三行指针文本、真身放内容服务器；数据集场景用{" "}
-        <strong>DVC</strong>；clone 侧用 <code>--filter</code>{" "}
-        部分克隆。已经入库的只有一条路：filter-repo 改写历史 + 全团队重克隆。
-      </Conclusion>
 
       <Heading level={2} title="二进制在 Git 里的两半：diff 没救，存储看格式" />
       <Paragraph>

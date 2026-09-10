@@ -6,6 +6,15 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        作用域是<strong>变量的有效访问范围</strong>，JS 采用词法作用域——作用域在
+        <strong>函数定义时</strong>就确定了，跟在哪里调用无关。
+        查变量时沿作用域链由内向外逐级查找，命中即停，直到全局，找不到才抛{" "}
+        <code>ReferenceError</code>
+        。三个推论：内层能看外层、反之不行；同名内层变量遮蔽（shadow）外层；
+        <code>var</code> 只有函数/全局作用域，<code>let/const</code> 才有块级作用域。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -17,15 +26,6 @@ export default function Note() {
         本篇的「作用域链」就是上一篇环境记录里的 <code>outer</code>{" "}
         引用串成的链——先有登记，才有查找。
       </Prerequisite>
-
-      <Conclusion>
-        作用域是<strong>变量的有效访问范围</strong>，JS 采用词法作用域——作用域在
-        <strong>函数定义时</strong>就确定了，跟在哪里调用无关。
-        查变量时沿作用域链由内向外逐级查找，命中即停，直到全局，找不到才抛{" "}
-        <code>ReferenceError</code>
-        。三个推论：内层能看外层、反之不行；同名内层变量遮蔽（shadow）外层；
-        <code>var</code> 只有函数/全局作用域，<code>let/const</code> 才有块级作用域。
-      </Conclusion>
 
       <Heading level={2} title="技术对照：DNS 逐级解析" />
       <Paragraph>

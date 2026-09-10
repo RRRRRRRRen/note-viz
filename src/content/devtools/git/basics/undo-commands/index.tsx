@@ -9,12 +9,22 @@ import {
   Table,
   Timeline,
 } from "@/components/viz";
-import { ShellBlock } from "@/components/demo";
+import { Checklist, ShellBlock } from "@/components/demo";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        撤销命令的选择只有一个入口问句：<strong>改动现在到哪个区了</strong>。
+        <strong>restore</strong> 管文件级——<code>restore &lt;文件&gt;</code> 用 index 覆盖工作区、
+        <code>restore --staged</code> 把草稿撤回工作区；<strong>reset</strong>{" "}
+        管提交级——把分支指针回拨到目标提交，<code>--soft/--mixed/--hard</code> 三档决定 index
+        和工作区跟不跟着对齐；<strong>revert</strong>{" "}
+        管共享历史——追加一个反向提交抵消目标，不改写任何已有提交，是已 push
+        分支的唯一安全解。工作区里从未 add 过的内容不在对象库，任何命令都救不回来。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -29,16 +39,6 @@ export default function Note() {
       >
         撤销的全部路由都建立在三区模型上；reset 的安全性问题要到「分支只是指针文件」那一层才看得透。
       </Prerequisite>
-
-      <Conclusion>
-        撤销命令的选择只有一个入口问句：<strong>改动现在到哪个区了</strong>。
-        <strong>restore</strong> 管文件级——<code>restore &lt;文件&gt;</code> 用 index 覆盖工作区、
-        <code>restore --staged</code> 把草稿撤回工作区；<strong>reset</strong>{" "}
-        管提交级——把分支指针回拨到目标提交，<code>--soft/--mixed/--hard</code> 三档决定 index
-        和工作区跟不跟着对齐；<strong>revert</strong>{" "}
-        管共享历史——追加一个反向提交抵消目标，不改写任何已有提交，是已 push
-        分支的唯一安全解。工作区里从未 add 过的内容不在对象库，任何命令都救不回来。
-      </Conclusion>
 
       <Heading level={2} title="先定位，再选命令" />
       <Paragraph>
@@ -320,6 +320,26 @@ $ git stash pop              # 确认不需要再丢弃`,
             bonus:
               "git stash branch <新分支> 能把指定 stash 直接变成新分支上的改动——当临时周转发现东西值得长做时，这就是 stash 到工作线的转正通道。",
             depth: 3,
+          },
+        ]}
+      />
+
+      <Checklist
+        title="三种撤销各就各位"
+        items={[
+          { text: "工作区改动误删：git restore <file> 找回", note: "只动工作区，不碰暂存区" },
+          {
+            text: "已 add 的改动撤回：git restore --staged <file>",
+            note: "回到未暂存状态，文件内容不变",
+          },
+          {
+            text: "本地提交回退：git reset --soft HEAD~1",
+            note: "soft 保留改动在暂存区；确认不要内容时才用 mixed/hard",
+          },
+          { text: "公共分支回退：git revert <commit>", note: "生成反向提交，历史只增不删" },
+          {
+            text: "reset --hard 之前：先 git rev-parse HEAD 抄下提交号",
+            note: "丢了还能靠 reflog 找回，但前提是先有号",
           },
         ]}
       />

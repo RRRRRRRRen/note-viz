@@ -13,17 +13,6 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
-      <Prerequisite
-        notes={[
-          {
-            title: "git 为什么不存 diff：内容寻址怎么做的？",
-            to: "/note/devtools/git/object-model/content-addressing",
-          },
-        ]}
-      >
-        本篇反复提到「对象库」与「tree 草稿」——先知道 commit 是一棵快照树，三区模型才有落点。
-      </Prerequisite>
-
       <Conclusion>
         日常命令的本质是<strong>三区之间搬运内容</strong>：<strong>工作区</strong>
         （你在编辑的文件）→ <strong>index 暂存区</strong>（下次提交的草稿，<code>git add</code>{" "}
@@ -34,6 +23,17 @@ export default function Note() {
         <strong>commit 提交的是 index 里的草稿，不是工作区现状</strong>——没 add 的改动不进提交，不是
         Git 忘了，是语义如此。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "git 为什么不存 diff：内容寻址怎么做的？",
+            to: "/note/devtools/git/object-model/content-addressing",
+          },
+        ]}
+      >
+        本篇反复提到「对象库」与「tree 草稿」——先知道 commit 是一棵快照树，三区模型才有落点。
+      </Prerequisite>
 
       <Heading level={2} title="技术对照：一套三环境的发布流程" />
       <Paragraph>

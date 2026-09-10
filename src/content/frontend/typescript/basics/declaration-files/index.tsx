@@ -193,6 +193,19 @@ export {}; // 让本文件成为模块，declare global 才合法`}
         }}
       />
 
+      <DoDont
+        dont={{
+          code: `// ambient.d.ts
+declare module "*";`,
+          note: "万能通配把整棵模块树变 any，检查形同虚设",
+        }}
+        do={{
+          code: `// types/legacy-lib.d.ts：只为真实缺失的包补声明
+declare module "legacy-lib" { /* 按真实 API */ }`,
+          note: "声明文件按需精确，有缺口才补",
+        }}
+      />
+
       <QAChain
         intro="五问从语法地位挖到信任模型：声明文件的每个设计决定都能从「合同」这个隐喻推出来。"
         items={[

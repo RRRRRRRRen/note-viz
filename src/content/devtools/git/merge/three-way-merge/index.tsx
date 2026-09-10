@@ -1,6 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
-import { CompareTable, DoDont, MemoryCard, Table, CrossRef } from "@/components/viz";
+import { CompareTable, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -14,6 +14,17 @@ export default function Note() {
         。冲突的粒度是「区域」而不是「文件」：同一文件双方改了不同区域会自动合并，改了同一区域且内容不同才冲突。没有分叉时合并退化为快进（fast-forward）——连提交都不新建，只移动分支指针。冲突不是错误，是
         Git 把「无法替你做的决策」显式摆到桌面上。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "git 的三个区是怎么分工的？",
+            to: "/note/devtools/git/basics/daily-commands",
+          },
+        ]}
+      >
+        三方合并的结果落回工作区与暂存区：三区模型是理解冲突落点的前置。
+      </Prerequisite>
 
       <Heading level={2} title="技术对照：协作文档的三方合并" />
       <Paragraph>

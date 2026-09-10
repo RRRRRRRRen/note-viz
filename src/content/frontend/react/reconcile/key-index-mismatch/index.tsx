@@ -161,6 +161,17 @@ export default function Note() {
       />
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `{todos.map((t, i) => <Todo key={i} todo={t} />)}`,
+          note: "index 做 key：删除首项后所有 key 错位，状态跟错实体",
+        }}
+        do={{
+          code: `{todos.map((t) => <Todo key={t.id} todo={t} />)}`,
+          note: "稳定的业务 id 才是实体身份",
+        }}
+      />
+
       <QAChain
         items={[
           {

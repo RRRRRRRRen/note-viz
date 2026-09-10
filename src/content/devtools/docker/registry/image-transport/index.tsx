@@ -1,6 +1,13 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo";
-import { Callout, CompareTable, CrossRef, DoDont, MemoryCard } from "@/components/viz";
+import {
+  Callout,
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -16,6 +23,17 @@ export default function Note() {
         为中心，把镜像当「制品」管理，是 CI/CD 的标准环节。多机部署里 registry
         中转站省不掉：只要不止一台机器要 pull、或流程要自动化，人工搬运就到顶了。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "Docker 的镜像、容器、仓库是什么关系？",
+            to: "/note/devtools/docker/registry/image-container-registry",
+          },
+        ]}
+      >
+        传输搬运的就是镜像这个分层包：三个概念的关系是所有搬运方式的地图。
+      </Prerequisite>
 
       <Heading level={2} title="通道一：save/load——零依赖的文件搬运" />
       <Paragraph>
@@ -137,6 +155,19 @@ $ docker pull .../cnsig-ems-ui@sha256:9f2a1c...`,
       </Callout>
 
       <Heading level={2} title="追问链" />
+      <DoDont
+        dont={{
+          code: `$ docker commit debug-container my-app:1.0
+$ docker push my-app:1.0`,
+          note: "commit 容器做镜像：调试残留进镜像、不可复现、层历史一团黑",
+        }}
+        do={{
+          code: `$ docker build -t my-app:1.0 .
+$ docker push my-app:1.0`,
+          note: "Dockerfile 是声明式配方，任何机器都能构建出同一结果",
+        }}
+      />
+
       <QAChain
         items={[
           {

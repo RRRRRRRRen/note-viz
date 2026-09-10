@@ -1,6 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { CodeAnnotate, Exercise, ShellBlock } from "@/components/demo";
-import { Timeline } from "@/components/viz";
+import { Prerequisite, Timeline } from "@/components/viz";
 import { DoDont, MemoryCard, SpecQuote, CrossRef } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
@@ -17,6 +17,17 @@ export default function Note() {
         <strong>COPY 的目标目录必须与 nginx.conf 的 root 完全一致</strong>，否则容器正常启动、页面
         404。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "Docker 的镜像、容器、仓库是什么关系？",
+            to: "/note/devtools/docker/registry/image-container-registry",
+          },
+        ]}
+      >
+        镜像是 Dockerfile 的产出物：先有三个概念的关系，再看构建指令怎么一层层堆出来。
+      </Prerequisite>
 
       <Heading level={2} title="五行清单逐行读" />
       <Paragraph>

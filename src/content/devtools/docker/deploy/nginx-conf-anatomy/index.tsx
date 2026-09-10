@@ -5,6 +5,7 @@ import {
   CrossRef,
   DoDont,
   MemoryCard,
+  Prerequisite,
   SequenceDiagram,
   SpecQuote,
 } from "@/components/viz";
@@ -24,6 +25,18 @@ export default function Note() {
         的末尾斜杠决定转发时保不保留路径前缀，差一个字符就 404。页面与接口同域之后，
         <strong>浏览器眼里不存在跨域</strong>，配置里那段 CORS 响应头实际是无人消费的冗余代码。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "一次前端部署是怎么从 dist 走到线上的？",
+            to: "/note/devtools/docker/basics/deploy-pipeline",
+          },
+        ]}
+      >
+        nginx.conf 是部署通道的最后一环：知道 dist 怎么到服务器，才知道 root 与 proxy_pass
+        在接什么。
+      </Prerequisite>
 
       <Heading level={2} title="全貌：骨架、两个 location、一份逐行批注" />
       <Paragraph>

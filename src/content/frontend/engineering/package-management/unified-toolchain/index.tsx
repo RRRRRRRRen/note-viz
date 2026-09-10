@@ -180,6 +180,22 @@ mise use node@22.11 pnpm@10    # Node、pnpm 都归 mise
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `# 机器 A
+$ nvm use 22
+# 机器 B（忘了切）
+$ node -v # v20，构建脚本用了 22 的 API 直接报错`,
+          note: "版本靠每台机器自觉，永远对不齐",
+        }}
+        do={{
+          code: `// package.json
+"engines": { "node": ">=22" },
+"packageManager": "pnpm@10.34.5"`,
+          note: "声明即约定：mise/corepack 按声明自动落位，三平台一致",
+        }}
+      />
+
       <QAChain
         items={[
           {

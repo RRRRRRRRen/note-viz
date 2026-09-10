@@ -1,6 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { FlowChart, ShellBlock } from "@/components/demo";
-import { CompareTable, DoDont, MemoryCard, CrossRef } from "@/components/viz";
+import { Checklist, FlowChart, ShellBlock } from "@/components/demo";
+import { CompareTable, CrossRef, DoDont, MemoryCard, Prerequisite } from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -12,6 +12,17 @@ export default function Note() {
         Ed25519 密钥对 → 公钥上传平台 → <code>~/.ssh/config</code> 写好主机别名与端口 →{" "}
         <code>git remote set-url</code> 切换协议。之后每次 push/pull 都不再需要任何身份输入。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "SSH 是怎么保证远程登录安全的？",
+            to: "/note/devtools/ssh/fundamentals/remote-access",
+          },
+        ]}
+      >
+        免密推送用的是 SSH 公钥认证：握手与密钥对的机制是那几条配置命令的地基。
+      </Prerequisite>
 
       <Heading level={2} title="密钥对认证：不传秘密的身份证明" />
       <Paragraph>
@@ -295,6 +306,20 @@ Enter file in which to save the key (~/.ssh/id_ed25519):
               "GitHub 的 Secret scanning 自 2023 年 11 月起把 OpenSSH 私钥列为 non-provider pattern：需在仓库/组织侧显式开启、且只产生告警——SSH key 没有吊销端点，「检测到即自动吊销」仅对提供 revoke API 的合作方 token 成立。所以别依赖平台兜底，自己的密钥自己盯。",
             depth: 4,
           },
+        ]}
+      />
+
+      <Checklist
+        title="免密推送配置自查"
+        items={[
+          {
+            text: "ssh-keygen -t ed25519 生成密钥对",
+            note: "ed25519 是现代默认；用 rsa 要显式指定位数",
+          },
+          { text: "公钥追加到目标机器 ~/.ssh/authorized_keys", note: "是追加（>>）不是覆盖（>）" },
+          { text: "~/.ssh 目录 700、authorized_keys 600", note: "权限过松时 sshd 直接拒收公钥" },
+          { text: "git 推送前先用裸 ssh 验证链路", note: "ssh -T 能通，git@ 的推送才有基础" },
+          { text: "首次连接核对主机指纹后再 yes", note: "防中间人：指纹要对得上服务端提供的值" },
         ]}
       />
 

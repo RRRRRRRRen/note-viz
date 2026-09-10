@@ -2,6 +2,7 @@ import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components
 import {
   Callout,
   CrossRef,
+  DoDont,
   MemoryCard,
   Prerequisite,
   Timeline,
@@ -137,6 +138,21 @@ export default function Note() {
         锁死才稳；② 以为废弃就能立刻删用法——6.0 的缓冲阀就是给存量代码留的时间窗；③ 拿二手 changelog
         当真——「baseUrl 被移除」这类传闻要以自己仓库 <code>tsc -b --dry</code> 实测为准。
       </Callout>
+
+      <DoDont
+        dont={{
+          code: `# 从 5.2 直接跳 6.0
+$ npm i -D typescript@latest
+# 跑构建：47 个类型错误一次性砸下来`,
+          note: "大版本跨度升级，breaking changes 全部堆积在升级当天",
+        }}
+        do={{
+          code: `# 升级前先清完中间版本的废弃警告
+$ tsc --noEmit  # deprecation 提示逐条清理
+$ npm i -D typescript@latest  # 再上大版本，构建仍绿`,
+          note: "废弃警告本身就是迁移清单——缓冲期内分批消化，而不是被一次大版本集体冲垮",
+        }}
+      />
 
       <QAChain
         intro="五问沿时代线递进：从最大的单一变更，到转折点，再到拆除机制与产品形态。"

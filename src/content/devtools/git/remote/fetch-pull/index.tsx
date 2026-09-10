@@ -1,6 +1,14 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart, ShellBlock } from "@/components/demo";
-import { CompareTable, DoDont, MemoryCard, Timeline, Callout, CrossRef } from "@/components/viz";
+import {
+  Callout,
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+  Timeline,
+} from "@/components/viz";
 import { PALETTE } from "@/components/palette";
 
 export default function Note() {
@@ -15,6 +23,17 @@ export default function Note() {
         <strong>pull</strong> = fetch + merge，冲突只可能发生在第二步。<code>git status</code> 显示
         behind/ahead 时没有任何网络请求——比的只是两个本地文件。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "reset --hard 丢弃的提交去哪了？",
+            to: "/note/devtools/git/refs/branch-head",
+          },
+        ]}
+      >
+        origin/main 与本地 main 是两根独立的引用：先懂分支即引用，远程跟踪分支才有意义。
+      </Prerequisite>
 
       <Heading level={2} title="origin/main 的真身：远程书签的本地缓存" />
       <Paragraph>

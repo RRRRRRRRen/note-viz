@@ -123,6 +123,22 @@ import "./polyfill";
       </Paragraph>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `// utils.cjs
+module.exports = { a, b }; // 运行时才知道取谁
+const { a } = require("./utils.cjs");`,
+          note: "CommonJS 导出是运行时对象，打包器不敢删任何东西",
+        }}
+        do={{
+          code: `// utils.mjs
+export const a = 1;
+export const b = 2; // 静态可分析
+import { a } from "./utils.mjs"; // b 被摇掉`,
+          note: "ESM 的导入导出编译期可判定，tree-shaking 才有得摇",
+        }}
+      />
+
       <QAChain
         items={[
           {

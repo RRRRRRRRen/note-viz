@@ -192,6 +192,19 @@ $ git add pnpm-lock.yaml   # 顺手 commit
       </MemoryCard>
 
       <Heading level={2} title="经典追问链" />
+      <DoDont
+        dont={{
+          code: `$ git add .
+$ git commit -m "wip" # lockfile 几百行变更混进功能提交`,
+          note: "看不出谁动了依赖；回滚功能时连依赖一起回",
+        }}
+        do={{
+          code: `$ git add pnpm-lock.yaml
+$ git commit -m "chore: 升级 react 至 19.2.8"`,
+          note: "依赖变更独立提交，diff 全是可解释的物化视图变化",
+        }}
+      />
+
       <QAChain
         items={[
           {

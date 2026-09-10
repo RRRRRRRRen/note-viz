@@ -15,6 +15,14 @@ import { PALETTE } from "@/components/palette";
 export default function Note() {
   return (
     <NoteShell>
+      <Conclusion>
+        闭包 = <strong>函数 + 它定义时所处词法环境的引用</strong>。函数创建的那一刻，
+        <code>[[Environment]]</code> 内部槽就绑定了定义处的环境记录；之后无论被传到哪里调用，
+        它读写变量的链永远从那里出发。函数在定义作用域之外被调用（或环境比调用更长寿）时，
+        这个组合就是你看到的「闭包」。捕获的是<strong>变量绑定（引用）</strong>不是值的拷贝；
+        只要函数可达，环境记录就不可回收——这是闭包能「记住」状态的原因，也是泄漏的根源。
+      </Conclusion>
+
       <Prerequisite
         notes={[
           {
@@ -25,14 +33,6 @@ export default function Note() {
       >
         闭包是作用域链的延续：本篇假设你已知道「函数的环境记录通过 outer 指向定义处环境」。
       </Prerequisite>
-
-      <Conclusion>
-        闭包 = <strong>函数 + 它定义时所处词法环境的引用</strong>。函数创建的那一刻，
-        <code>[[Environment]]</code> 内部槽就绑定了定义处的环境记录；之后无论被传到哪里调用，
-        它读写变量的链永远从那里出发。函数在定义作用域之外被调用（或环境比调用更长寿）时，
-        这个组合就是你看到的「闭包」。捕获的是<strong>变量绑定（引用）</strong>不是值的拷贝；
-        只要函数可达，环境记录就不可回收——这是闭包能「记住」状态的原因，也是泄漏的根源。
-      </Conclusion>
 
       <Heading level={2} title="闭包从哪来：词法作用域的必然产物" />
       <Paragraph>
