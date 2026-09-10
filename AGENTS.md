@@ -38,8 +38,6 @@ pnpm preview    # 预览 dist（AI 禁止启动）
 | 接 MCP       | 以 `.agents/mcp/servers.json` 为准，按契约同步到本工具               |
 | 工程约定     | `docs/engineering.md`                                                |
 
-桥接层（如 `.opencode/skills/` 下的 symlink）是生成物：改内容只改 `.agents/`，桥接坏了重建，绝不反向编辑。
-
 ## 写笔记（重要）
 
 本仓库同时是用户的学习讨论空间：用户会以本仓库为根目录开启 AI agent 讨论技术知识。**讨论/学习过程中禁止主动创建笔记页面或触发 `noteviz-note-writing` skill**——只有用户明确要求"整理笔记"或"开始写笔记"时才进入写作流程。

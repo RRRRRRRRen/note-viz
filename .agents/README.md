@@ -50,15 +50,14 @@
 
 ## 桥接矩阵
 
-| 工具        | 入口                                               | skills                                              | mcp                                  |
-| ----------- | -------------------------------------------------- | --------------------------------------------------- | ------------------------------------ |
-| ZCode       | AGENTS.md 原生                                     | 指令路由（AGENTS.md 路由表）                        | 用户级配置，以 servers.json 为准同步 |
-| OpenCode    | AGENTS.md 原生                                     | `.opencode/skills/<name>` → 相对 symlink 指回本目录 | opencode 配置引用 servers.json 内容  |
-| Claude Code | AGENTS.md（新版原生；旧版 CLAUDE.md 一行 include） | 指令路由                                            | `.mcp.json` 从 servers.json 同步     |
-| Cursor      | AGENTS.md（0.49+ 原生）                            | .cursor/rules 放一行路由指令                        | settings 同步                        |
+| 工具        | 入口                                               | skills                       | mcp                                  |
+| ----------- | -------------------------------------------------- | ---------------------------- | ------------------------------------ |
+| ZCode       | AGENTS.md 原生                                     | 指令路由（AGENTS.md 路由表） | 用户级配置，以 servers.json 为准同步 |
+| OpenCode    | AGENTS.md 原生                                     | 指令路由（同上）             | opencode 配置引用 servers.json 内容  |
+| Claude Code | AGENTS.md（新版原生；旧版 CLAUDE.md 一行 include） | 指令路由                     | `.mcp.json` 从 servers.json 同步     |
+| Cursor      | AGENTS.md（0.49+ 原生）                            | .cursor/rules 放一行路由指令 | settings 同步                        |
 
-**铁律**：桥接层永远是生成物——改内容只改 `.agents/`，桥接坏了重建，**绝不反向编辑**。
-注意：git symlink 在 Windows 检出会碎（本项目个人 macOS，可接受；Windows 协作时改用指令路由）。
+**铁律**：任何工具侧的配置副本都是生成物——改内容只改 `.agents/`，绝不反向编辑。
 
 ## 生命周期与净化约定
 
