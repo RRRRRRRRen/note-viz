@@ -1,8 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard, Timeline } from "@/components/viz";
-import FlexShrinkSimulator from "./FlexShrinkSimulator";
+import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline } from "@/components/viz";
 
 export default function Note() {
   return (
@@ -75,12 +74,15 @@ export default function Note() {
       />
       <Paragraph>
         关键在第四步：<strong>收缩不是等比压缩</strong>。每项承担的收缩量 = 溢出量 × (shrink ×
-        basis) ÷ 权重和——shrink 是缩放意愿，basis 是加权基数。shrink
-        全相同时退化为按内容占比收缩；shrink 不同时，大 basis 且高 shrink
-        的项会被压得远比等比更狠。拖一拖下面的模拟器，这个公式立刻长在手上：
+        basis) ÷ 权重和——shrink 是缩放意愿，basis 是加权基数。这道公式的完整推导、逐项账本与 min/max
+        夹逼-冻结迭代，见文末延伸阅读的收缩专题篇。
       </Paragraph>
-
-      <FlexShrinkSimulator />
+      <Paragraph>
+        收缩失灵还有一道更隐蔽的闸门：flex 子项默认 <code>min-width: auto</code> 的
+        <strong>自动最小尺寸</strong>——子项拒绝收缩到自身 min-content
+        以下（图片这类替换元素则是固有尺寸）， 长内容直接把容器撑爆、shrink 看似失效。协议细节与{" "}
+        <code>min-w-0</code> 解法链同样收进收缩专题篇，本篇不再展开。
+      </Paragraph>
       <Paragraph>
         顺带把最容易混的两个缩写掰开：<code>flex: 1</code> 是 <code>1 1 0%</code>
         ——基准归零、纯按 grow 比例分，内容宽度完全不影响结果；<code>flex: auto</code> 是{" "}
@@ -104,46 +106,6 @@ export default function Note() {
         }}
       />
 
-      <Heading level={2} title="Flex 第一坑：min-width:auto" />
-      <Paragraph>
-        经典事故：子项里放了一段长文本（长单词、URL、宽表格），容器被撑爆，
-        <code>flex-shrink</code> 好像失效了。根因是 flex 子项有一条<strong>自动最小尺寸</strong>
-        协议：默认 <code>min-width: auto</code>，子项
-        <strong>拒绝收缩到自身 min-content 以下</strong>
-        （最长不可断单元的宽度）。这是规范有意为之的保护——防止内容被压得完全不可读——代价是收缩算法在碰到这条隐形下限时提前冻结。
-      </Paragraph>
-      <Paragraph>
-        解法链：给子项 <code>min-w-0</code> 把隐形下限钉到
-        0，收缩算法就能正常工作；需要溢出保护时再加 <code>overflow: hidden</code> 或{" "}
-        <code>overflow: auto</code>；要省略号就配 <code>truncate</code>
-        。图片是重灾区：替换元素的自动最小尺寸来自<strong>固有尺寸</strong>
-        ——一张 3000px 的原图，隐形下限就是 3000px，必须 <code>min-w-0</code>（解除下限）和{" "}
-        <code>max-w-full</code>（压住上限）<strong>双管齐下</strong>，只给 max-w-full
-        没用——它限的是上限，下限还是 auto。
-      </Paragraph>
-
-      <DoDont
-        label="长文本溢出 / min-width"
-        dont={{
-          code: `<div class="flex">
-  <span class="flex-1">
-    a-very-long-unbreakable-url-slug
-  </span>
-</div>
-/* 撑爆容器，shrink 无力回天 */`,
-          note: "自动最小尺寸 = min-content：长单词把下限抬到内容宽度，收缩提前冻结",
-        }}
-        do={{
-          code: `<div class="flex">
-  <span class="flex-1 min-w-0 truncate">
-    a-very-long-unbreakable-url-slug
-  </span>
-</div>
-/* min-w-0 解除下限，truncate 出省略号 */`,
-          note: "min-w-0 是 flex 子项处理长内容的第一反应，几乎总是需要的",
-        }}
-      />
-
       <Heading level={2} title="Grid 深拆：轨道、fr 与命名区域" />
       <Paragraph>
         <code>grid-template-columns</code> 定义<strong>显式轨道</strong>
@@ -154,23 +116,15 @@ export default function Note() {
         <code>200px 1fr 1fr</code> 是「先扣 200px，余下对半」，而不是三等分。
       </Paragraph>
       <Paragraph>
-        fr 最大的红利是和 <code>repeat</code>、<code>minmax</code> 组合出
-        <strong>零媒体查询</strong>的响应式卡片：每列最小
-        240px、多余空间均分，列数随容器宽度自动增减——没有断点，没有 JS。另一个杀手锏是{" "}
+        fr 最大的红利是与 <code>repeat</code>、<code>minmax</code> 组合出
+        <strong>零媒体查询</strong>的响应式网格——auto-fill 与 auto-fit
+        的精确差异（空轨道保留还是塌缩）单独成篇实测讲解，见文末延伸阅读。另一个杀手锏是{" "}
         <code>grid-template-areas</code>
         ：用带名字的字符串直接画出页面骨架，圣杯布局一行搞定，Flex 要嵌套三层才能做到。
       </Paragraph>
 
       <CodeBlock
-        lang="typescript"
-        code={`/* 零断点响应式卡片：每列最小 240px，自动填满 */
-.card-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-/* 经典圣杯布局：网格区域即图纸 */
+        code={`/* 经典圣杯布局：网格区域即图纸 */
 .page {
   display: grid;
   grid-template:
@@ -180,18 +134,6 @@ export default function Note() {
     / 220px 1fr;
 }`}
       />
-      <Paragraph>
-        <code>auto-fill</code> 和 <code>auto-fit</code>{" "}
-        只差一个词，行为差异却很具体：两者按最小列宽算出的
-        <strong>列数完全相同</strong>，差别在<strong>空轨道</strong>——auto-fill
-        保留空轨道占位（项目宽度保持稳定，适合列表一致性）；auto-fit 把空轨道折叠成
-        0，让已有项目拉伸铺满整行（适合「少而大」的展示场景）。项目刚好塞满所有列时，二者完全等价。
-      </Paragraph>
-
-      <MemoryCard keyword="auto-fill vs auto-fit" color="#8b5cf6">
-        列数计算相同；差别只在空轨道：<strong>auto-fill 保留占位</strong>
-        （宽度稳定），<strong>auto-fit 折叠空轨道</strong>（现有项目铺满）。项目填满时等价。
-      </MemoryCard>
 
       <Heading level={2} title="Grid 的同款坑：1fr 也会溢出" />
       <Paragraph>
@@ -254,10 +196,10 @@ export default function Note() {
           title: "Flex：两轴两族",
           color: "#8b5cf6",
           points: [
-            "justify-* 管主轴，align-* 管交叉轴",
+            "justify-* 沿主轴、align-* 沿交叉轴",
             "-content 分配轴上的剩余/溢出空间（多行时 align-content 才生效）",
-            "-items / -self 管交叉轴上的项目对齐",
-            "flex-direction 换向时轴随之换，属性名不变",
+            "align-items / align-self 管交叉轴上的项目对齐",
+            "主轴/交叉轴随 flex-direction 变化（column 时主轴即块方向），属性名不变",
           ],
         }}
         right={{
@@ -267,8 +209,29 @@ export default function Note() {
             "-content：轨道组 vs 容器（分布整组轨道）",
             "-items：项目在格子内的默认对齐",
             "-self：单个项目覆盖",
-            "justify 系沿列轴、align 系沿行轴，行列各一套",
+            "justify-* 沿行内轴（行内方向）、align-* 沿块轴（块方向），固定不变，行列各一套",
           ],
+        }}
+      />
+
+      <DoDont
+        label="对齐层次 / alignment layers"
+        dont={{
+          code: `.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 160px);
+  justify-content: center; /* 想让项目在格子里居中 */
+}
+/* 动的是整组轨道，项目纹丝不动 */`,
+          note: "justify-content 面向轨道组与容器之间的空间，管不着项目在格子内的位置",
+        }}
+        do={{
+          code: `.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 160px);
+  justify-items: center; /* 每个项目在自己格子内居中 */
+}`,
+          note: "-items / -self 才管格子内的项目对齐；-content 永远面向轨道组",
         }}
       />
 
@@ -307,7 +270,6 @@ export default function Note() {
       </Paragraph>
 
       <CodeBlock
-        lang="typescript"
         code={`/* 导航栏：一维流，右侧菜单 auto margin 顶到最右 */
 .nav {
   display: flex;
@@ -344,30 +306,22 @@ export default function Note() {
               "完整的尺寸决定链：min/max 始终最外层夹逼；内层是 basis（auto 时依次回落到 width/height、再回落到 content）。",
           },
           {
-            q: "容器 600px，三个子项 basis 200/300/300、shrink 分别 1/2/1，各自最终多宽？",
+            q: "flex:1 和 flex:auto 都是 grow/shrink 全开，差在哪？等宽卡片该用哪个？",
             intent:
-              "直接考加权收缩公式。背过「shrink 按比例缩」的人多半答成等比缩放——这题专门把两种答案分开。",
+              "考三件套缩写的精确展开——背过「flex:1 等分」的人，多半说不出 auto 分支的基准语义。",
             depth: 3,
-            a: "溢出 200px。权重 = shrink × basis = 200/600/200，权重和 1000。各收缩 = 200 × 权重占比 = 40/120/40，最终宽度 160/180/260。注意对比：如果是等比缩放（×0.75）应得 150/225/225——中间项 shrink 高被压得更狠（180 vs 225），第三个 basis 相同却少缩 35px。shrink 全相同时加权才退化为按 basis 等比。",
+            a: "flex:1 展开是 1 1 0%——基准归零，空间纯按 grow 比例分，内容宽度完全不参与结果；flex:auto 是 1 1 auto——先按各自内容的基准分，剩余空间再均分。等宽卡片、工具条要「无视内容差异」用 flex:1；想让内容长短保留进宽度的自适应项用 flex:auto。",
             bonus:
-              "真实引擎还会做夹逼迭代：某项触到 min/max 后被冻结，剩余溢出在未冻结项之间按权重重分——上面的手算是单轮理想值。",
+              "flex:1 的项 basis 为 0，收缩权重 shrink × basis 也是 0——它从不参与收缩分摊，容器超载时被挤压的是它的邻居。",
           },
           {
-            q: "auto-fill 和 auto-fit 渲染差异到底是什么？",
-            intent: "高频混淆点，考你是否真懂「空轨道折叠」的时机，而不是背「一个占位一个填充」。",
-            depth: 3,
-            a: "两者按最小列宽算出的列数完全相同，差异只出现在「项目数少于列数」时：auto-fill 保留空轨道占位，项目保持列宽稳定，适合列表一致性；auto-fit 把空轨道折叠成 0，让已有项目拉伸铺满整行，适合「少而大」的展示。项目填满所有列时二者渲染完全等价。",
-            bonus:
-              "折叠发生在轨道定义阶段：auto-fit 折叠的是空重复轨道，已有项目占据的轨道不会被折——所以「只有 1 个项目时铺满」的是 auto-fit，而不是某种媒体查询魔法。",
-          },
-          {
-            q: "min-width:auto 的 auto 到底取什么值？为什么图片在 flex 里溢出得比文本更极端？",
+            q: "flex-wrap 换行之后，行与行之间的对齐和间距归谁管？",
             intent:
-              "考自动最小尺寸协议的细节——能答出 min-content 与替换元素差异，说明真读过规范行为而不是背 min-w-0 口诀。",
-            depth: 4,
-            a: "非替换元素的自动最小尺寸基于 min-content（最长不可断单元的宽度：长单词、URL、表格列）；替换元素（图片、视频）则是其固有尺寸——3000px 的原图下限就是 3000px，容器再窄也压不下去，所以图片溢出比文本更极端。解法上文本加 min-w-0 即可；图片必须 min-w-0（解除下限）+ max-w-full（压住上限）双管齐下，只写 max-w-full 无效——它限的是上限，下限仍是 auto。",
+              "考「一维」二字的落地：wrap 出的多行到底是不是网格、能不能跨行看齐——答「align-items」的直接出局。",
+            depth: 3,
+            a: "归 align-content——但只在容器真的换行出多条 flex line 时才生效，单行容器里它是无效属性。行内分布用 justify-content、行间分布用 align-content。wrap 后的每一行都是独立主轴，项目在不同行之间如何跨行看齐 Flex 一概不管——需要这种二维关系，就该换 Grid。",
             bonus:
-              "这套协议只在 flex/grid 子项上生效（普通 block 没有 min:auto 行为）；表格是 min-content 重灾区，惯用做法是外面套一层 overflow-x:auto 的容器。",
+              "常见的坑：容器高度富余时给单行 flex 写 align-content: center 毫无反应——先确认是否真的多行，单行内对齐用 align-items。",
           },
           {
             q: "margin:auto 为什么在 Flex 里能居中，在普通 block 布局里不行？",
@@ -378,19 +332,39 @@ export default function Note() {
             bonus:
               "推论：justify-content:center 与 margin:auto 并存时，auto margin 先分；Grid 里 auto margin 在项目所在轨道内分配，同样优先于 align/justify。",
           },
+          {
+            q: "subgrid 和 container queries 分别解决什么问题？它们怎么改变 Flex/Grid 分工？",
+            intent:
+              "收尾题看技术雷达——停留在「都能用」的人，答不出各自针对的痛点与「骨架响应容器、组件响应格子」的组合关系。",
+            depth: 4,
+            a: "subgrid 解决「嵌套网格轨道不一致」：子网格继承父级的轨道定义，「每张卡片的标题行跨卡片对齐」不再靠魔法数字凑；container queries 解决「组件只能看视口脸色」：组件按容器宽度而非视口宽度响应，真正成为自包含单元。两者与「组件内部 Flex、页面骨架 Grid」的分工天然契合——骨架响应容器、组件响应自己的格子。",
+            bonus:
+              "@container 查询前要先给容器声明 container-type（inline-size 最常用）；subgrid 的主要约束是兼容面——落地前查兼容性，渐进增强不阻塞主路径。",
+          },
         ]}
       />
 
-      <Heading level={2} title="写在最后" />
-      <Paragraph>
-        两个新属性值得放进雷达：<strong>subgrid</strong>{" "}
-        让嵌套网格继承父级的轨道定义——「每张卡片的标题行跨卡片对齐」不再靠魔法数字；{" "}
-        <strong>container queries</strong> 让组件按<strong>容器</strong>
-        宽度而非视口宽度响应——组件真正成为自包含单元，与「组件内部 Flex / 页面骨架
-        Grid」的分工天然契合。布局的原语在变稳，但
-        <strong>分配空间的思维方式</strong>（基准 → 剩余 → 加权 → 夹逼）是长期资产——它同样是理解
-        flex 演进与未来特性的钥匙。
-      </Paragraph>
+      <CrossRef
+        title="下一个该问的问题"
+        notes={[
+          {
+            title: "flex 子项为什么压不到预期宽度？",
+            to: "/note/frontend/css/layout/flex-shrink-min-width",
+            description:
+              "加权收缩公式的完整推导与 min-width:auto 自动最小尺寸协议——本篇收缩两段的深拆版。",
+          },
+          {
+            title: "auto-fill 和 auto-fit 差在哪？",
+            to: "/note/frontend/css/layout/auto-fill-auto-fit",
+            description: "auto-repeat 的精确行为：空轨道保留 vs 塌缩的真实渲染实测与选型场景。",
+          },
+          {
+            title: "为什么改一个样式会引发重排：回流与重绘",
+            to: "/note/frontend/browser/fundamentals/reflow-repaint",
+            description: "布局算完之后的成本线：脏位标记、失效传播与布局抖动的引擎机制。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

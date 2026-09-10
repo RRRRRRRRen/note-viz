@@ -1,65 +1,69 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { CompareTable, DoDont, MemoryCard, OutputTimeline } from "@/components/viz";
+import CodeBlock from "@/components/demo/CodeBlock";
+import { DoDont, MemoryCard, OutputTimeline, Prerequisite, CrossRef } from "@/components/viz";
 
 export default function Note() {
   return (
     <NoteShell>
       <Conclusion>
-        类型判断三把尺子：<code>typeof</code> 判原始值（<code>typeof null === "object"</code>{" "}
-        是第一版实现的历史 bug）、<code>instanceof</code> 沿原型链判对象（跨 iframe/realm 失效）、
-        <code>Object.prototype.toString.call</code> 读内部标签穿透一切。隐式转换记方向：
-        <code>==</code> 偏好 <strong>ToNumber</strong>，<code>+</code> 偏好{" "}
-        <strong>字符串拼接</strong>，<code>!</code> 一律 <strong>ToBoolean</strong>
-        （对象恒真）。0.1 + 0.2 !== 0.3 的根因是 IEEE 754 双精度的二进制舍入，不是「JS 的 bug」。
+        隐式转换不用背清单，记<strong>方向</strong>就够：<code>+</code>
+        只要有一方是字符串就走<strong>拼接</strong>，<code>==</code> 偏好把双方转成
+        <strong>数字</strong>（ToNumber），<code>!</code> 一律走 <strong>ToBoolean</strong>
+        （对象恒真）。对象参与运算前先过 <strong>ToPrimitive</strong>（valueOf → toString）。所以{" "}
+        <code>'1' + 1</code> 是 '11'：'1' 是字符串，+ 选拼接，1 转成 '1'。面试输出题的富矿全在{" "}
+        <code>==</code> 的多步转换链；工程里用 <code>===</code>{" "}
+        规避。类型判断（三把尺子）与浮点精度已拆成独立篇。
       </Conclusion>
 
-      <Heading level={2} title="类型判断的三把尺子" />
-      <Paragraph>
-        JS 有七种原始类型（string、number、boolean、undefined、symbol、bigint、null）加 object。
-        <code>typeof</code> 对原始值够用，但有两个坑：<code>typeof null</code> 返回
-        "object"（追问链第 1 问展开），以及函数返回 "function" 而其他引用类型一律
-        "object"——它分不清数组和普通对象。<code>instanceof</code> 沿原型链查找构造函数的{" "}
-        <code>prototype</code>，能区分对象子类型，但有两个盲区：原始值直接返回
-        false（它们没有原型链），以及<strong>跨 iframe/realm 失效</strong>——两个全局环境各有一套{" "}
-        <code>Array</code> 构造器。
-      </Paragraph>
-      <Paragraph>
-        最可靠的通用判断是 <code>Object.prototype.toString.call(x)</code>
-        ，它读取对象内部的 <code>Symbol.toStringTag</code> 标签，返回规格化的 '[object Array]'
-        之类字符串——不受原型链篡改与 realm 影响。工程实践的组合拳：判数组用{" "}
-        <code>Array.isArray</code>（内部直接读 IsArray 槽，最快最准），判其他内建类型用{" "}
-        <code>toString.call</code>，判自定义类才用 instanceof。
-      </Paragraph>
+      <Prerequisite
+        notes={[
+          {
+            title: 'typeof null 为什么是"object"？',
+            to: "/note/frontend/javascript/types/typeof-null",
+          },
+        ]}
+      >
+        先会「认」一个值的类型（三把尺子），再学值之间怎么「变」——转换只发生在运算符要求的位置。
+      </Prerequisite>
 
-      <DoDont
-        label="判断数组 / array check"
-        dont={{
-          code: `// 跨 iframe 传过来的数组
-iframeWin.arr instanceof Array  // false！
-// realm 不同，构造函数不是同一个`,
-          note: "instanceof 依赖构造函数引用，跨 realm（iframe/worker）失效",
-        }}
-        do={{
-          code: `Array.isArray(iframeWin.arr)      // true
-Object.prototype.toString.call(iframeWin.arr)
-// '[object Array]'`,
-          note: "Array.isArray 内部走规格化的品牌检查，与 realm 无关",
-        }}
+      <Heading level={2} title="'1' + 1 是怎么变成 '11' 的：ToPrimitive" />
+      <Paragraph>
+        <code>+</code> 是唯一身兼两职的算术运算符：数字相加与字符串拼接。它的算法分三步（据 ECMA-262
+        加法运算符的语义）：① 双方各自 ToPrimitive——对象依次尝试 <code>valueOf</code> →{" "}
+        <code>toString</code>，原始值原样通过；② 转换后若<strong>任一方是字符串</strong>，另一方也
+        ToString，走拼接；③ 否则双方 ToNumber 相加。<code>'1' + 1</code> 的完整推演：'1'
+        已是原始值原样通过第①步；第②步发现字符串，把 1 转成 '1'；拼接得 '11'。而{" "}
+        <code>'1' - 1</code> 是 0——减法没有拼接语义，'1' 被 ToNumber 成 1。
+      </Paragraph>
+      <Paragraph>
+        ToPrimitive 是所有转换题的第一站，因为<strong>对象必须先变成原始值才有资格参与运算</strong>
+        。普通对象走 valueOf（默认返回自身，等于没转）→ toString（'[object Object]'）；数组没有
+        valueOf 价值，toString 等价于 <code>join(',')</code>——空数组得 <code>''</code>，[1,2] 得
+        '1,2'。把这两条规则记牢，下面所有诡异表达式都是它们的排列组合。
+      </Paragraph>
+      <CodeBlock
+        lang="javascript"
+        code={`'1' + 1     // "11" —— + 看到字符串走拼接
+'1' - 1     // 0 —— 减法只有数字语义，'1' 被 ToNumber
+1 + '1'     // "11" —— 换个位置，规则不变
+[] + {}     // "[object Object]" —— '' + '[object Object]'
+[1, 2] + 1  // "1,21" —— 数组 ToPrimitive 得 "1,2"
+// （Node 22.17 验证）`}
       />
 
-      <Heading level={2} title="隐式转换的方向" />
+      <Heading level={2} title="== 与 ! 的转换方向" />
       <Paragraph>
-        隐式转换之所以难背，是因为没抓住「方向」这一层：<code>==</code> 比较时偏好把双方转成
-        <strong>数字</strong>（ToNumber），<code>+</code> 运算时只要有一方是字符串就走
-        <strong>拼接</strong>（ToString），<code>!</code> 一律转<strong>布尔</strong>（对象恒为
-        true）。对象参与运算前先过 ToPrimitive （依次尝试 valueOf →
-        toString）——对象到原始值的这一步，是所有转换题的第一站。
+        <code>==</code> 的偏好是<strong>数字</strong>
+        ：遇到布尔先把布尔转数字（false → 0）；对象与原始值比较时，对象过 ToPrimitive 再比。{" "}
+        <code>!</code> 的偏好是<strong>布尔</strong>
+        ：且对象到布尔没有任何转换发生——一律 true。高频输出题 <code>[] == ![]</code>
+        把两条规则拧在了一起，先自己推一遍再看解读：
       </Paragraph>
-
-      <Paragraph>
-        高频输出题 <code>[] == ![]</code>：左右两边都涉及对象转换，逐步拆开就不神秘——
-      </Paragraph>
-
+      <CodeBlock
+        lang="javascript"
+        code={`console.log([] == ![]); // true
+// （Node 22.17 验证）—— 空数组既「真」又「等于 false」，不矛盾`}
+      />
       <OutputTimeline
         label="输出解读 / [] == ![]"
         steps={[
@@ -85,65 +89,80 @@ Object.prototype.toString.call(iframeWin.arr)
           },
         ]}
       />
-      <MemoryCard keyword="转换方向口诀" color="#f59e0b">
-        <code>==</code> 偏好 <strong>数字</strong>（ToNumber），
-        <code>+</code> 偏好 <strong>字符串</strong>（有一方是 string 就拼接），
-        <code>!</code> 一律走 <strong>ToBoolean</strong>（对象恒为 true）。 对象参与运算先过
-        ToPrimitive（valueOf → toString）。
+      <MemoryCard keyword="转换方向口诀">
+        <code>==</code> 偏好 <strong>数字</strong>（ToNumber），<code>+</code> 偏好{" "}
+        <strong>字符串</strong>（有一方是 string 就拼接），<code>!</code> 一律走{" "}
+        <strong>ToBoolean</strong>（对象恒为 true）。 对象参与运算先过 ToPrimitive（valueOf →
+        toString）。
       </MemoryCard>
 
-      <Heading level={2} title="原始值与引用值：一切拷贝问题的源头" />
+      <Heading level={2} title="边界与陷阱" />
       <Paragraph>
-        类型系统里最影响工程判断的一条分界线：原始值按<strong>值</strong>
-        存储，赋值即完整拷贝；引用值按
-        <strong>指针</strong>
-        存储，赋值只复制指针——两个变量指向同一块内存。这条分界解释了三件事：为什么 const
-        对象的属性还能改（const
-        锁的是指针）、为什么函数传对象进去被改外部可见（传的是指针副本）、以及为什么会有「深拷贝」这个命题。
+        三类高频事故，共同点是「结果无法从写法直接推导」——这正是 <code>==</code>{" "}
+        在工程规范里被禁用的原因：它的每一步转换都合规，但组合起来的行为不成体系。
       </Paragraph>
-      <Paragraph>
-        另一个常被忽略的现象：原始值明明没有方法，<code>"abc".length</code>{" "}
-        却能用——引擎在访问时临时创建<strong>包装对象</strong>
-        ，用完即弃。这也意味着给原始值挂属性是静默无效的（{" "}
-        <code>const s = "x"; s.foo = 1; s.foo // undefined</code>
-        ）：属性挂在了那个转瞬即逝的包装对象上。原始值与引用值的完整行为对照：
-      </Paragraph>
-
-      <CompareTable
-        label="值语义 / value vs reference"
-        left={{
-          title: "原始值",
-          color: "#8b5cf6",
-          points: [
-            "赋值/传参 = 完整拷贝，互不影响",
-            "== 与 === 行为一致（同类型比字面值）",
-            "属性不可变，挂属性静默丢失（包装对象）",
-            "typeof 足以判断（null 除外）",
-          ],
+      <DoDont
+        label="== 混用比较 / loose equality"
+        dont={{
+          code: `// 三行看起来该一致，实际：
+''  == 0    // true
+'0' == 0    // true
+''  == '0'  // false！
+// == 的结果不满足传递性`,
+          note: "与数字比走 ToNumber，字符串互比走字面值——同一组值三种结论",
         }}
-        right={{
-          title: "引用值",
-          color: "#1677ff",
-          points: [
-            "赋值/传参 = 复制指针，共享同一块内存",
-            "== 比较指针地址，需注意 [] == ![] 这类转换",
-            "属性可变，const 也锁不住内容变化",
-            "深拷贝命题因此而生（见深浅拷贝篇）",
-          ],
+        do={{
+          code: `Number('0') === 0  // true，显式转换
+'' === '0'         // false，与上一行自洽
+// 语义可推导，不需要背规范`,
+          note: "=== 把「转换」从隐式变显式，比较结果随时能心算验证",
+        }}
+      />
+      <DoDont
+        label="语句位的花括号 / statement position"
+        dont={{
+          code: `// 在控制台/语句开头直接写：
+{} + []
+// 0 —— {} 被解析成「空代码块」，
+// 剩下的是一元正号：+[] → +'' → 0`,
+          note: "同一串字符，语句位与表达式位是两棵语法树——解析层陷阱",
+        }}
+        do={{
+          code: `({} + [])  // "[object Object]"
+[] + {}    // "[object Object]"
+// 需要当值用就包括号，
+// 或永远别让 {} 出现在行首`,
+          note: "表达式位里两者一致：都走 ToPrimitive 拼接",
+        }}
+      />
+      <DoDont
+        label="对象判真 / truthy trap"
+        dont={{
+          code: `if (arr) { }   // 空数组也恒真
+if (obj) { }   // {} 同样恒真
+// 想判「空」的对象写法永远不生效`,
+          note: "ToBoolean 对对象不做任何转换，一律 true——没有「空对象为假」这回事",
+        }}
+        do={{
+          code: `if (arr.length > 0) { }
+if (Object.keys(obj).length > 0) { }
+// 「空不空」问属性，别问对象本身`,
+          note: "唯一例外是 null/undefined/0/''/NaN 这些原始值——它们是 falsy",
         }}
       />
 
       <Heading level={2} title="经典追问链" />
       <QAChain
+        intro="从热身到硬核：每一问都建立在前一答之上。先自己想，再点开参考答案对照。"
         items={[
           {
-            q: "typeof null 为什么是 'object'？后来为什么不修？",
+            q: "'1' + 1 和 '1' - 1 的结果分别是什么？为什么不同？",
             intent:
-              "热身题，筛背口诀的人——答得出类型标签实现，说明你了解语言的历史包袱而非只会背结论。",
+              "热身题，考 + 的拼接偏好这条「方向」的第一反应——背清单的人答得慢，记方向的人脱口而出。",
             depth: 2,
-            a: "JS 第一版实现里，值的机器低位用类型标签区分：000 表示对象。而 null 是全零的空指针，标签恰好也是 000，于是 typeof 把它识别成了 object。这个行为在第一版定型后无法修复——修改会破坏海量存量网站的兼容性，相关提案多次被 TC39 否决。",
+            a: "'1' + 1 是 \"11\"：+ 发现任一方是字符串就走拼接，数字 1 被 ToString 成 '1'。'1' - 1 是 0：减法只有数字语义，'1' 被 ToNumber 成 1。+ 是唯一有双重语义的算术运算符，这正是隐式转换事故的集中地。",
             bonus:
-              "同源的历史怪癖：typeof 对未声明变量返回 'undefined' 而不报错，这让 typeof 成了唯一安全的存在性检查手段。",
+              "规范层面的顺序：先双方 ToPrimitive、再查字符串、最后才 ToNumber——「先转换成原始值、再决定拼接还是相加」，不是直接判断原始类型。",
           },
           {
             q: "[] + {} 和 {} + [] 的结果分别是什么？为什么不一样？",
@@ -152,7 +171,7 @@ Object.prototype.toString.call(iframeWin.arr)
             depth: 3,
             a: "[] + {} 得 '[object Object]'：双方都是对象，+ 偏好字符串拼接，空数组 ToPrimitive 得 ''，空对象得 '[object Object]'，拼接结果就是后者。{} + [] 在表达式语境同样得 '[object Object]'，但在控制台/语句开头，{} 会被解析成空代码块而不是对象字面量，剩下的 + [] 是一元正号转换，[] → '' → 0，所以结果是数字 0。",
             bonus:
-              "规范层面：+ 运算符的 ToPrimitive 不传 hint（default），Date 走 toString、其他对象走 valueOf 优先——这也是 Date 参与加法行为特殊的原因。",
+              "验证方式：把表达式放进括号 ({} + []) 或赋值给变量后求值，都会回到 '[object Object]'——「语句位陷阱」可以用括号消除。",
           },
           {
             q: "Object.is 和 === 的区别在哪？什么场景必须用它？",
@@ -164,30 +183,47 @@ Object.prototype.toString.call(iframeWin.arr)
               "== / === / Object.is 的递进关系：== 做隐式转换后比较，=== 不转换直接比（同类型），Object.is 在 === 基础上修正 NaN 与 ±0 两个边界。",
           },
           {
-            q: "0.1 + 0.2 !== 0.3 的根因是什么？生产里怎么比较浮点数？",
+            q: "对象转原始值的 ToPrimitive 有 hint 吗？Date 为什么行为特殊？",
             intent:
-              "考 IEEE 754 的理解深度——答出「精度丢失」四个字只是入门，能讲二进制表示才是引擎级回答。",
+              "考 hint 三档与 @@toPrimitive 的覆盖关系——说出 Date 的特殊性而不说 hint，是背现象不是懂机制。",
             depth: 4,
-            a: "JS 的 number 是 IEEE 754 双精度浮点（64 位：1 符号 + 11 指数 + 52 尾数）。0.1 和 0.2 的二进制都是无限循环小数，存储时被舍入，两个近似值相加得到 0.30000000000000004，与字面量 0.3 的表示不同，于是 !== 成立。生产比较用 Math.abs(a - b) < Number.EPSILON，金额场景干脆用「分」为单位的整数或 BigInt。",
+            a: '有三档 hint："number"（==、-、*、关系运算）、"string"（模板字符串、String()、属性键）、"default"（+ 与 ==）。普通对象在 default 下 valueOf 优先；Date 通过 @@toPrimitive 把 default 与 string 都导向 toString——所以 new Date() + 1 是字符串拼接而 new Date() - 1 是数字减法（实测），普通对象两个都是数字运算路径。这是「对象可以声明自己的转换偏好」的规范入口。',
             bonus:
-              "Number.MAX_SAFE_INTEGER = 2^53 − 1 正是尾数 52 位加隐含位的边界，超过它整数也不可靠——JSON 大 id（如雪花算法）传到前端会静默失真，惯用字符串传输。",
+              "Symbol.toPrimitive 的优先级高于 valueOf/toString，且返回值必须是原始值——返回对象直接抛 TypeError: Cannot convert object to primitive value（实测）。",
           },
           {
-            q: "为什么 Object.prototype.toString.call 比 instanceof 更可靠？它读的是什么？",
+            q: "为什么 if([]) 为真、[] == false 也为真？两句话矛盾吗？",
             intent:
-              "考类型判断的底层机制——Symbol.toStringTag 与 realm 问题，答出这两点说明真读过规范。",
-            depth: 4,
-            a: "instanceof 沿原型链找构造函数的 prototype 引用，跨 realm（iframe/worker）时两个环境各有一套 Array 构造器，判断失效；原型也可能被业务代码改写。Object.prototype.toString 读的是对象内部槽 Symbol.toStringTag，返回规格化的 '[object Array]' 之类字符串，既不受 realm 影响也不易被篡改（Symbol 属性无法被常规代码覆盖语义）。",
+              "压轴题，考「转换只发生在运算符要求的位置」——把 ToBoolean 与 == 的算法混为一谈就答不出这题。",
+            depth: 5,
+            a: "不矛盾，两条路径用的是不同算法：if 的 ToBoolean 对任何对象一律返回 true——对象到布尔之间没有任何转换发生；而 == 的算法要求双方转数字：![] 先得 false，false 再 ToNumber 成 0，[] 过 ToPrimitive 得 ''，'' ToNumber 成 0，0 == 0。同一份值在不同运算符语境下走不同转换链——转换不是值的固有属性，而是运算符的要求。",
             bonus:
-              "Array.isArray 是更专用的品牌检查：直接读内部槽 IsArray，比 toString 更快也更明确——判断数组用它，判断其他内建类型才用 toString.call。",
+              "这个模型还解释了 Boolean([]) === true 与 [] == false 为什么能共存：Boolean() 走 ToBoolean（不转换对象），== 走 ToPrimitive + ToNumber——JS 里唯一让「对象转原始值再转数字」的常规入口就是 == 和关系运算符。",
           },
         ]}
       />
 
-      <Heading level={2} title="写在最后" />
-      <Paragraph>
-        值与引用的分界是「深浅拷贝」命题的源头，完整展开见站内「深浅拷贝」篇；包装对象的临时机制与原型链的关系，见「原型链」与「继承演进」篇。类型判断的面试价值不在背结论，而在你能对着一段诡异表达式说出引擎的每一步。
-      </Paragraph>
+      <CrossRef
+        title="下一个该问的问题"
+        notes={[
+          {
+            title: 'typeof null 为什么是"object"？',
+            to: "/note/frontend/javascript/types/typeof-null",
+            description:
+              "转换之外另一半基本功：typeof/instanceof/toString.call 三把尺子的原理与边界。",
+          },
+          {
+            title: "0.1 + 0.2 为什么不等于 0.3？",
+            to: "/note/frontend/javascript/types/float-precision",
+            description: "ToNumber 的目的地是 IEEE 754——浮点表示误差与金额处理的工程对策。",
+          },
+          {
+            title: "为什么改了副本，原对象也跟着变：深浅拷贝",
+            to: "/note/frontend/javascript/types/deep-clone",
+            description: "原始值与引用值的分界在拷贝问题上的完整展开。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

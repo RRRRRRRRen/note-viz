@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard, OutputTimeline } from "@/components/viz";
+import { CompareTable, DoDont, MemoryCard, Table, CrossRef } from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -47,7 +48,7 @@ export default function Note() {
         data={{
           direction: "LR",
           nodes: [
-            { id: "base", label: "merge-base 共同祖先", color: "#8b949e" },
+            { id: "base", label: "merge-base 共同祖先", color: "#9ca3af" },
             { id: "ours", label: "ours 当前分支（你的稿）", color: "#1677ff" },
             { id: "theirs", label: "theirs 被合分支（对方的稿）", color: "#f59e0b" },
             { id: "result", label: "merge 结果（新提交）", color: "#3fb950" },
@@ -98,28 +99,67 @@ export default function Note() {
         行文件，两个分支各改一行）：
       </Paragraph>
 
-      <DoDont
+      <Paragraph>
+        所以「同样改一个文件，有时冲突有时不冲突」的答案：
+        <strong>冲突的判定粒度是区域，不是文件</strong>。真实对照组实验（同一个 8
+        行文件的仓库建了两份，两个分支各改一行，输出原样保留）：
+      </Paragraph>
+
+      <CompareTable
         label="同文件合并的两种结局 / same file"
-        dont={{
-          code: `# base 8 行，main 与 feature 都改第 5 行
+        left={{ title: "自动合并", color: "#3fb950" }}
+        right={{ title: "冲突", color: "#f59e0b" }}
+        rows={[
+          {
+            aspect: "改动分布",
+            left: "不同区域（第 1 行 vs 第 7 行）",
+            right: "同一区域（都改第 5 行）",
+          },
+          {
+            aspect: "归因",
+            left: "base 对照下双方改动互不干扰，各自成立",
+            right: "同一位置两种写法，无法归因取舍",
+          },
+          {
+            aspect: "结果",
+            left: "Auto-merging + Merge made by the 'ort' strategy",
+            right: "CONFLICT (content)，Automatic merge failed",
+          },
+          {
+            aspect: "退出码与状态",
+            left: "exit=0，直接产出 merge commit",
+            right: "exit=1，git status 显示 UU（both modified）",
+          },
+        ]}
+      />
+
+      <ShellBlock>{`# 不冲突场景：feature 改第 1 行，main 改第 7 行
+$ git merge feature
+Auto-merging f.txt
+Merge made by the 'ort' strategy.
+ f.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+# 冲突场景：main 与 feature 都改第 5 行
+$ git merge feature
+Auto-merging f.txt
+CONFLICT (content): Merge conflict in f.txt
+Automatic merge failed; fix conflicts and then commit the result.
+$ git status -s
+UU f.txt
+$ cat f.txt
+line1
+line2
+line3
+line4
 <<<<<<< HEAD
 line5-MAIN
 =======
 line5-FEATURE
 >>>>>>> feature
-# exit=1，CONFLICT (content)`,
-          note: "改动落在同一区域、内容不同——无法归因取舍，交给人。",
-        }}
-        do={{
-          code: `# base 8 行，feature 改第 1 行、main 改第 7 行
-# exit=0，Merge made by the 'ort' strategy
-line1-FEATURE      ← feature 的改动
-...
-line7-MAIN         ← main 的改动
-# 1 file changed`,
-          note: "两个区域互不重叠——都收下，全自动完成，连提示都只有一行。",
-        }}
-      />
+line6
+line7
+line8`}</ShellBlock>
       <Paragraph>
         冲突发生时，Git 做三件事：把两个版本都写进工作区（带{" "}
         <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> 标记）、在 index 里为该文件记录多个候选版本（所以{" "}
@@ -127,34 +167,19 @@ line7-MAIN         ← main 的改动
         modified）、然后停下等你。逐行读懂冲突标记——每个部分都有明确身份：
       </Paragraph>
 
-      <OutputTimeline
+      <Table
         label="冲突标记逐行解读 / conflict markers"
-        steps={[
-          {
-            output: "<<<<<<< HEAD",
-            phase: "同步",
-            why: "冲突区开始。HEAD 即当前分支（ours），下一行到分隔符之间是「你这边的版本」。",
-          },
-          {
-            output: "line5-MAIN",
-            phase: "同步",
-            why: "ours 的内容。来自当前分支的 blob——注意它是完整行内容，不是 diff 片段。",
-          },
-          {
-            output: "=======",
-            phase: "同步",
-            why: "分隔线。上半 ours，下半 theirs——纯边界，解决时删掉。",
-          },
-          {
-            output: "line5-FEATURE",
-            phase: "同步",
-            why: "theirs 的内容。被合并分支在同一区域的不同写法。",
-          },
-          {
-            output: ">>>>>>> feature",
-            phase: "同步",
-            why: "冲突区结束，标注 theirs 来自哪个分支。解决后此行也删掉。",
-          },
+        head={["标记行", "身份", "解决冲突时的动作"]}
+        rows={[
+          [<code>{`<<<<<<< HEAD`}</code>, "冲突区开始；HEAD 即当前分支（ours）", "删掉此行"],
+          [
+            <code>line5-MAIN</code>,
+            "ours 的内容，来自当前分支的 blob 完整行",
+            "保留 / 改写 / 融合——这是裁决本体",
+          ],
+          [<code>=======</code>, "分隔线：上半 ours，下半 theirs", "删掉此行"],
+          [<code>line5-FEATURE</code>, "theirs 的内容，被合并分支的写法", "与 ours 一起参与裁决"],
+          [<code>{`>>>>>>> feature`}</code>, "冲突区结束，标注 theirs 来源分支", "删掉此行"],
         ]}
       />
       <MemoryCard keyword="冲突 = 待人类裁决的决策点" color="#f59e0b">
@@ -165,6 +190,45 @@ line7-MAIN         ← main 的改动
           ——产出一个有两个 parent 的 merge commit。
         </p>
       </MemoryCard>
+
+      <DoDont
+        label="标记清理核查 / marker cleanup"
+        dont={{
+          code: `<<<<<<< HEAD
+const a = computeA();
+=======
+const a = computeAFast();
+>>>>>>> feature
+# 觉得两个都要，手动删了标记但留了两行同名 const
+$ git add . && git commit
+# 语法错误进入主干，CI 才发现`,
+          note: "「删标记 = 解决冲突」是最危险的错觉——裁决必须包含取舍或融合的正确结果，不是让文件回到能编译的状态就行。",
+        }}
+        do={{
+          code: `const a = computeAFast();   // 融合：保留更快的一方（或两者兼用并重命名）
+$ grep -rnE "^(<<<<<<<|=======|>>>>>>>)" src/  # 提交前扫一遍残留标记
+$ npm test && git add . && git commit`,
+          note: "裁决 → 测试 → 全局扫残留标记 → add + commit。四步里测试和扫描一次都不能省。",
+        }}
+      />
+
+      <DoDont
+        label="rebase 的适用边界 / rebase scope"
+        dont={{
+          code: `# 同事也基于 feature 开发，你直接：
+$ git rebase main
+$ git push --force
+# → 别人本地的旧哈希链与远端分叉，
+#   他们 pull 之后是两段「平行历史」`,
+          note: "已共享的分支被 rebase 等于换了历史的地基——每个协作者都要手工清理现场。",
+        }}
+        do={{
+          code: `$ git rebase main      # 只 rebase 自己的、未共享的分支
+$ git push --force-with-lease   # 确需强推时用带条件的版本
+# → 只有你一个人受影响，reflog 里有旧链可退`,
+          note: "rebase 改写的是哈希链——共享即分叉。黄金法则「已 push 的共享分支不要 rebase」可以从这里直接推导。",
+        }}
+      />
 
       <Heading level={2} title="快进、普通合并与 squash" />
       <Paragraph>
@@ -181,10 +245,10 @@ line7-MAIN         ← main 的改动
           direction: "TB",
           nodes: [
             { id: "ff", label: "fast-forward：main 直接挪到 feature", color: "#3fb950" },
-            { id: "ffbase", label: "base（main == merge-base）", color: "#8b949e" },
+            { id: "ffbase", label: "base（main == merge-base）", color: "#9ca3af" },
             { id: "fff", label: "feature 新提交", color: "#f59e0b" },
             { id: "noff", label: "--no-ff：新建双 parent 提交", color: "#1677ff" },
-            { id: "nfbase", label: "base（分叉的共同祖先）", color: "#8b949e" },
+            { id: "nfbase", label: "base（分叉的共同祖先）", color: "#9ca3af" },
             { id: "nfmain", label: "main 的新提交", color: "#1677ff" },
             { id: "nffeat", label: "feature 的新提交", color: "#f59e0b" },
             { id: "nfmerge", label: "merge commit（parent ×2）", color: "#3fb950" },
@@ -202,21 +266,55 @@ line7-MAIN         ← main 的改动
       <Paragraph>
         什么时候会走哪条路？合并那一刻 <code>git merge</code> 的判断只有一句：
         <strong>merge-base == 其中一方 → 快进；否则才真正合并并新建双 parent 提交</strong>
-        。真实对照——同一个实验仓库，默认合并输出第一行是 <code>Fast-forward</code>，加{" "}
-        <code>--no-ff</code> 强制造节点后, <code>git cat-file -p</code> 拆开新提交能看到两行
-        parent：
+        。注意「快进」和「造节点」是两个独立维度：默认配置下能快进就快进，但 <code>
+          --no-ff
+        </code>{" "}
+        可以在可快进的场景里<strong>强制</strong>新建合并节点；而 main
+        有分叉时本来就只能真合并。两种场景都在临时仓库真实重放（输出原样保留）：
       </Paragraph>
 
-      <ShellBlock>{`$ git merge feature
-Updating b708ec3..7b4c799
+      <ShellBlock>{`# 场景一：main 无新提交（merge-base 就是 main 本身），能快进
+$ git merge feature
+Updating bdde8e0..22a488a
 Fast-forward
  f.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+# → 0 个新提交，main 指针直接滑到 feature 顶端
 
-$ git merge --no-ff feature      # 换个场景：main 上也有新提交
+# 场景一（续）：可快进，但用 --no-ff 强制造节点
+$ git merge --no-ff feature -m "merge: 合入 feature"
+Merge made by the 'ort' strategy.
 $ git cat-file -p HEAD | head -3
-tree   26362f006fd0f8d0f9cd9854cbf7f7cfc57fc274
-parent b708ec31c1cf9681bde152f3db06b91c6c46f7e2
-parent 7b4c799aee0346c57f4e589e12a130f061283916   ← 第二个 parent`}</ShellBlock>
+tree   575a88bd67420decd11e27f8f854a042c0301170
+parent f101cddb964e4ff9284130aedbf7d1eadaa59f28   ← parent₁：main 原来的位置（此时恰为 merge-base）
+parent a2ca8dcfea8d6aec59f70ef6830d5a2fe0ebec2a   ← parent₂：feature 顶端`}</ShellBlock>
+
+      <ShellBlock>{`# 场景二：main 有自己的新提交（真分叉），默认 merge 就是真合并
+$ git merge feature
+Auto-merging f.txt
+Merge made by the 'ort' strategy.
+ f.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$ git log --oneline --graph
+*   83cb49f Merge branch 'feature'
+|\\
+| * 579ef93 feat: feature 改第 1 行
+* | c869dbd fix: main 改第 3 行
+|/
+* 37a00ac base
+$ git cat-file -p HEAD | head -3
+tree   a338b16d951ccf4cbe695c7fd905901b61edcbbd
+parent c869dbd51916548bce765543d0a9e45f029ad463   ← parent₁：main 的新提交（不是 merge-base！）
+parent 579ef936dc624822fe5de5c11c098f73798d91e1   ← parent₂：feature 顶端`}</ShellBlock>
+      <Paragraph>
+        对照两个场景的 parent 行，merge commit 的结构语义就清楚了：
+        <strong>
+          parent₁ 永远是执行合并时你所在分支（ours）的顶端，parent₂ 是被合入分支（theirs）的顶端
+        </strong>
+        。场景一里 ours 尚未前进，parent₁ 恰好等于 merge-base；场景二里 ours 已经前进，parent₁
+        就是那个新提交。所以「看 parent₁ 是不是
+        merge-base」就能反推一次合并是强造的节点还是自然分叉的结果——排查历史时这是个常用的指纹。
+      </Paragraph>
       <CompareTable
         label="三种合并产出 / merge flavors"
         left={{
@@ -271,7 +369,7 @@ parent 7b4c799aee0346c57f4e589e12a130f061283916   ← 第二个 parent`}</ShellB
             intent: "同一术语出现在两个场景，能贯通的人才是真懂了「指针前移」这个统一模型。",
             a: "是同一个概念的两面：fast-forward 指「目标指针的当前位置是新位置的祖先，可以直接前移、不丢东西」。合并时：main 没有分叉，能直接快进到 feature。推送时：远端 main 上有你没有的提交，你的新提交不是它的后代——快进不成立，硬推（force push）会让远端那几个提交脱离分支链，所以 Git 默认拒绝。正确做法是先 pull 把远端提交合进来，让历史重新变成「远端是本地的祖先」。",
             bonus:
-              "force push 的本质就是「我知道会甩掉远端那些提交，我故意的」——配合 reflog（本地）与服务器端 reflog（如 GitLab/GitHub 可配置保留）才有后悔药。",
+              "force push 的本质就是「我知道会甩掉远端那些提交，我故意的」——后悔药只在本地：reflog 在你这台机器上记着被甩掉之前的哈希；服务端没有面向用户的 reflog，被覆盖的提交在远端没有等价的恢复入口（自建服务器的对象残留可能撑一段时间，但不能依赖）。",
             depth: 3,
           },
           {
@@ -293,24 +391,21 @@ parent 7b4c799aee0346c57f4e589e12a130f061283916   ← 第二个 parent`}</ShellB
         ]}
       />
 
-      <Heading level={2} title="下一步去哪" />
-      <Paragraph>
-        合并的对手盘是<strong>远程协作</strong>
-        ：pull = fetch + merge，冲突经常在协作中遇到——先弄清 fetch
-        到底传输了什么、什么它永远不碰，冲突就不会和「远程问题」混在一起背锅（见「远程协作」篇）。而
-        rebase 重放生成的新提交为什么占不了多少空间、被抛弃的旧提交什么时候消失，答案在
-        <strong>存储与回收</strong>篇。
-      </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "origin/main 是远程上的分支吗？",
+            to: "/note/devtools/git/remote/fetch-pull",
+            description:
+              "pull = fetch + merge 的第一步到底同步了什么；push 被拒的 non-fast-forward 考点也从这里接入。",
+          },
+          {
+            title: "reset --hard 丢弃的提交去哪了？",
+            to: "/note/devtools/git/refs/branch-head",
+            description: "merge-base、~ 与 ^ 寻址都建立在「分支 = 指针文件」的引用模型上。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }

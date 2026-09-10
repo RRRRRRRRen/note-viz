@@ -1,5 +1,12 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { CompareTable, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import {
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Prerequisite,
+  Timeline,
+} from "@/components/viz";
 
 export default function Note() {
   return (
@@ -9,9 +16,20 @@ export default function Note() {
         的。四条绑定规则按优先级：
         <strong>new &gt; 显式（call/apply/bind）&gt; 隐式（obj.fn()）&gt; 默认（独立调用）</strong>
         ；箭头函数是唯一例外，词法捕获定义处的 this，call/bind
-        都改不动。三大丢失现场：方法当回调传出、链式赋值、setTimeout——修法一致：包箭头函数或提前
+        都改不动。三大丢失现场：方法当回调传出、链式赋值、解构取方法——修法一致：包箭头函数或提前
         bind。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "变量是怎么被找到的：作用域与作用域链",
+            to: "/note/frontend/javascript/scope/scope-chain",
+          },
+        ]}
+      >
+        作用域在定义时确定、this 在调用时注入——两套寻址系统先分开，本篇只讲后者。
+      </Prerequisite>
 
       <Heading level={2} title="this 是什么：调用位置说了算" />
       <Paragraph>
@@ -104,18 +122,20 @@ export default function Note() {
       </Paragraph>
 
       <DoDont
-        label="回调丢 this / losing this"
+        label="现场一：方法被抽走当回调 / method detached"
         dont={{
           code: `class Timer {
   seconds = 0;
   tick() { this.seconds++; }
 
   start() {
-    // this 是 undefined（严格模式）
+    // 定时器以普通函数形式调用回调
     setInterval(this.tick, 1000);
+    // TypeError: Cannot read properties
+    // of undefined (reading 'seconds')
   }
 }`,
-          note: "方法本体被传走，调用时没有点前缀 → 默认绑定 → this 不再是实例",
+          note: "方法本体被传走，调用时没有点前缀 → 默认绑定 → this 不是实例（Node 22.17 严格模式实测）",
         }}
         do={{
           code: `class Timer {
@@ -126,8 +146,47 @@ export default function Note() {
     setInterval(this.tick, 1000);   // this 恒为实例
   }
 }
-// 或 start() { setInterval(() => this.tick(), 1000); }`,
-          note: "箭头函数类字段在实例化时词法捕获 this——一次绑定，处处安全",
+// 等价修复：setInterval(() => this.tick(), 1000)
+// 或构造函数里 this.tick = this.tick.bind(this)`,
+          note: "修法一致：把动态绑定变词法（箭头）或显式（bind）",
+        }}
+      />
+
+      <DoDont
+        label="现场二：链式赋值 / chained assignment"
+        dont={{
+          code: `const obj = {
+  id: "obj",
+  say() { return this.id; },
+};
+
+(obj.say = obj.say)();
+// undefined —— 赋值表达式返回函数本体
+// 再调用，点前缀消失`,
+          note: "调用的是「赋值表达式的结果值」，与 obj 无关（严格模式实测）",
+        }}
+        do={{
+          code: `(obj.say = obj.say.bind(obj))();
+// "obj" —— 先绑死再赋值`,
+          note: "或者干脆别用赋值表达式的返回值来发起调用",
+        }}
+      />
+
+      <DoDont
+        label="现场三：解构取方法 / destructuring"
+        dont={{
+          code: `const { say } = obj;
+say();
+// undefined —— 等价于把函数赋给一个
+// 全新变量再独立调用`,
+          note: "本质与现场一相同：函数离开对象，隐式绑定断裂",
+        }}
+        do={{
+          code: `const say = obj.say.bind(obj);
+say(); // "obj"
+
+const shout = () => obj.say(); // 或箭头包一层`,
+          note: "解构是高频语法（React 里 const { setState } 最常见），绑定要跟在解构后面补",
         }}
       />
 
@@ -177,18 +236,26 @@ export default function Note() {
             depth: 4,
             a: "语义上等价（都是实例级绑定），差异在函数引用的创建成本：构造函数里 this.handler = this.handler.bind(this) 整个生命周期只创建一次；类字段箭头函数同样每次实例化创建一次——单实例无差别。真正要警惕的是 JSX 内联写法 onClick={() => this.tick()}：每次渲染创建新函数，子组件若被 memo 包裹会因 props 引用变化而白白重渲染——把绑定提升到渲染之外才是正解。",
             bonus:
-              "React 视角的完整链路：memo 靠 props 引用比较跳过渲染 → 内联箭头/每次 bind 破坏引用稳定 → 类字段箭头或 useCallback 稳定引用——this 绑定与渲染性能在此会合。",
+              "编译器视角：类字段箭头函数会被编译为构造函数里的赋值语句——「类字段」与「构造器 bind」的产物几乎一致，二选一的标准是团队约定与可读性，而不是性能。",
           },
         ]}
       />
 
-      <Heading level={2} title="写在最后" />
-      <Paragraph>
-        动态的 this 与词法的作用域是 JS
-        的两套寻址系统——后者在站内「作用域链」篇完整展开，执行栈视角见「执行上下文与变量提升」。bind
-        的满分手写（含 new 优先级处理）在「手写题精选」篇；this 绑定与 React
-        渲染性能的会合点在「React 核心机制」篇。
-      </Paragraph>
+      <CrossRef
+        title="下一个该问的问题"
+        notes={[
+          {
+            title: "变量是怎么被找到的：作用域与作用域链",
+            to: "/note/frontend/javascript/scope/scope-chain",
+            description: "词法寻址的完整机制——this 的「动态注入」要靠它来对照理解。",
+          },
+          {
+            title: "手写 bind 时，new 为什么能「打败」它？",
+            to: "/note/frontend/javascript/patterns/bind-new-priority",
+            description: "显式绑定的完整规则：bind 返回的函数被 new 调用时，绑定为什么失效。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

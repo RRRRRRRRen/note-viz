@@ -1,10 +1,10 @@
 import type { NoteMeta } from "@/lib/types";
 
 export const meta = {
-  title: "类型系统与隐式转换",
+  title: "「1」+ 1 为什么等于「11」：隐式转换规则",
   description:
-    "typeof/instanceof/toString 三把尺子、== 与 + 的转换方向、[] == ![] 逐步推演、IEEE 754 精度根因。",
+    "「1」+ 1 的 ToPrimitive 完整推演、== 与 + 的转换方向、[] == ![] 逐条解读、== 的三大陷阱与规避写法。",
   difficulty: "进阶",
-  tags: ["类型系统", "隐式转换", "IEEE 754", "面试"],
-  updated: "2026-08-28",
+  tags: ["类型系统", "隐式转换", "ToPrimitive", "面试"],
+  updated: "2026-09-10",
 } satisfies NoteMeta;

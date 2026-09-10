@@ -1,21 +1,31 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { BarChart, CompareTable, DoDont, MemoryCard, Timeline, VizBlock } from "@/components/viz";
+import {
+  BarChart,
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Table,
+  Timeline,
+} from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
     <NoteShell>
       <Conclusion>
-        Homebrew（brew）是 macOS
-        事实标准的包管理器：一条命令完成安装、升级、卸载，并自动解析整棵依赖树。日常使用抓住四条主线就够：
+        brew 装的一切都在一个前缀目录下（Apple Silicon 是 <code>/opt/homebrew</code>）：
+        <strong>真身</strong>在 <code>Cellar/&lt;软件&gt;/&lt;版本&gt;/</code>，
+        <strong>opt/&lt;软件&gt;</strong> 是不带版本的稳定指路牌，<code>bin/</code>{" "}
+        下是命令入口的符号链接——<code>ls -l</code>{" "}
+        顺着链接就能看出当前生效的版本。围绕这个结构抓三条主线：
         <strong>渠道选对</strong>——CLI 工具归 brew、GUI 应用归
         cask、语言运行时归版本管理器（nvm/fnm、uv、rustup）、语言包归语言自己的管理器；
-        <strong>升级机制看懂</strong>——brew 从不覆盖旧版本，而是在 Cellar 里并排装入新版本、由 opt
-        链接指向当前版，旧版本留给 cleanup 回收；
+        <strong>升级机制看懂</strong>——brew 从不覆盖旧版本，而是并排装入新目录、切链接，旧版本留给{" "}
+        <code>cleanup</code> 回收；
         <strong>问题会诊断</strong>——<code>type -a</code> / <code>which -a</code>{" "}
-        查清运行的到底是谁，<code>hash -r</code> 清查找缓存；
-        <strong>网络会选型</strong>——官方源 + 稳定代理是最省心的组合，镜像只覆盖 brew
-        自家内容、管不到 cask 应用的厂商下载源。
+        查清运行的到底是谁，动态链接的依赖断链用 <code>otool -L</code> 亲眼看。
       </Conclusion>
 
       <Heading level={2} title="技术对照：就是 npm 的 macOS 版" />
@@ -128,9 +138,10 @@ ORIGIN: https://github.com/Homebrew/brew.git`}
       <Heading level={3} title="静态与动态：两种打包哲学" />
       <Paragraph>
         一个常见误解是「软件是编译打包好的，自带完整运行能力」。这只对了一半——对应的是
-        <strong>静态链接</strong>：编译期把所有库代码嵌进二进制 （相当于家电自带发电机）。而 C/C++
-        生态的主流是<strong>动态链接</strong>
-        ：程序只记录「我需要哪些共享库」，运行时操作系统才去加载 .dylib 文件（统一插楼的电网）。
+        <strong>静态链接</strong>：编译期把所有库代码嵌进二进制，像 Docker
+        镜像把运行时整个打进镜像、产物单文件即可分发。而 C/C++ 生态的主流是<strong>动态链接</strong>
+        ：程序只记录「我需要哪些共享库」，运行时操作系统才去加载 .dylib
+        文件——类似多个项目共享同一份全局依赖，库升级一次全体生效。
       </Paragraph>
       <Paragraph>
         用 macOS 自带的 <code>otool -L</code> 可以亲眼看到区别——同一台机器上的真实输出：
@@ -161,7 +172,7 @@ $ otool -L "$(which ffmpeg)" | head -3
           title: "静态链接（自包含）",
           color: "#3fb950",
           points: [
-            "所有库代码在编译期嵌进单个二进制（家电自带发电机）",
+            "所有库代码在编译期嵌进单个二进制（Docker 镜像式自包含）",
             "文件偏大，拷到哪台机器都能跑",
             "永不缺依赖，不存在版本断链",
             "库要升级必须重新编译整个程序",
@@ -172,7 +183,7 @@ $ otool -L "$(which ffmpeg)" | head -3
           title: "动态链接（共享库）",
           color: "#8b5cf6",
           points: [
-            "运行时才加载共享库 dylib（统一插楼的电网）",
+            "运行时才加载共享库 dylib（共享一份全局依赖）",
             "二进制小，磁盘与内存共享一份库",
             "库升一次级，所有用它的程序同时受益",
             "库版本断链即崩：Library not loaded",
@@ -239,7 +250,7 @@ $ otool -L "$(which ffmpeg)" | head -3
         {`$ ls -l /opt/homebrew/bin/ffmpeg
 lrwxr-xr-x@ 1 ren admin 35 Aug 30 00:16 /opt/homebrew/bin/ffmpeg -> ../Cellar/ffmpeg/9.0.1_1/bin/ffmpeg`}
       </ShellBlock>
-      <MemoryCard keyword="升级 = 并排装新，不清旧" color="#f59e0b">
+      <MemoryCard keyword="升级 = 并排装新，不清旧" color="#3fb950">
         <p>
           brew 升级一个软件时，旧版本目录原封不动地留在 Cellar 里，opt
           指路牌改指新版本。运行层面永远只有一个版本生效（链接决定），磁盘层面可以多版本并存（目录隔离）。旧版本默认保留约
@@ -282,72 +293,17 @@ lrwxr-xr-x@ 1 ren admin 35 Aug 30 00:16 /opt/homebrew/bin/ffmpeg -> ../Cellar/ff
       <ShellBlock>
         {`dyld: Library not loaded: /opt/homebrew/opt/icu4c/lib/libicuuc.76.dylib
 Referenced from: /opt/homebrew/bin/node
-Reason: no image loaded`}
+Reason: image not found`}
       </ShellBlock>
       <Paragraph>
-        翻译：node 是对着 icu4c 76 编译的，而依赖已经升到 77、旧箱子又被 cleanup
-        清掉了——电网改造后插头对不上。修复两选一：
+        逐字读一遍：node 的二进制里写死了「去 /opt/homebrew/opt/icu4c/lib/ 加载
+        libicuuc.76.dylib」，而依赖已经升到 77、76 的目录又被 cleanup
+        清掉了——动态链接器按记录的路径找不到文件，进程在启动阶段直接终止。修复两选一：
         <code>brew reinstall node</code>（首选，重新拿到对着新版依赖编译的版本），或{" "}
         <code>brew install icu4c@76</code>
-        （把旧版电网补回来救急）。防翻车的习惯：大版本升级后顺手跑一遍 <code>brew outdated</code>
+        （把旧版依赖目录补回来救急）。防翻车的习惯：大版本升级后顺手跑一遍{" "}
+        <code>brew outdated</code>
         ，对报错的工具统一 reinstall。
-      </Paragraph>
-
-      <Heading level={2} title="网络方案：镜像与代理" />
-      <Paragraph>
-        国内网络环境下，让 brew 顺畅下载有两条主流路线，原理完全不同：<strong>镜像</strong>
-        是「换个下载点」——国内服务器定时同步官方内容，把 brew 的下载地址改指过去；
-        <strong>代理</strong>是「换条路」——本机代理客户端把流量转发出去，直连官方源。
-      </Paragraph>
-
-      <CompareTable
-        label="网络路线 / mirror vs proxy"
-        left={{
-          title: "镜像源",
-          color: "#f59e0b",
-          points: [
-            "国内服务器定时同步官方内容，等于换个下载点",
-            "配置 HOMEBREW_API_DOMAIN 等环境变量",
-            "国内带宽满速，但有同步延迟（新版本晚几小时）",
-            "只覆盖 brew 自家内容：配方元数据与 bottle",
-            "cask 应用存在各厂商服务器，镜像管不到",
-          ],
-        }}
-        right={{
-          title: "代理",
-          color: "#1677ff",
-          points: [
-            "本机客户端转发流量，内容来自官方源",
-            "配置 http_proxy / https_proxy 指向本地端口",
-            "与官方零延迟一致，无镜像漂移问题",
-            "速度与稳定性取决于节点质量",
-            "覆盖一切下载源，包括 cask 的厂商源",
-          ],
-        }}
-      />
-      <MemoryCard keyword="镜像管不到厂商源" color="#8b5cf6">
-        <p>
-          brew 要下载的东西分两类：自家内容（配方元数据、bottle 二进制）镜像全覆盖；cask 装的 GUI
-          应用包存在各软件厂商自己的服务器（大量是 GitHub
-          Releases），镜像无能为力，只能靠代理。所以国内典型配置是双保险——镜像管 brew
-          自家、代理管散落在外的下载源；而追求最省心，<strong>官方源 + 一个稳定代理</strong>
-          就够了，配置只剩 shellenv 一行。
-        </p>
-      </MemoryCard>
-      <Paragraph>
-        镜像方案的配置长这样（写在 <code>~/.zshrc</code> 里；想恢复官方默认，删掉这些变量即可）：
-      </Paragraph>
-
-      <ShellBlock>
-        {`export HOMEBREW_API_DOMAIN=https://mirrors.example.com/homebrew/api   # 配方元数据
-export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.example.com/homebrew/bottles  # bottle 二进制
-export http_proxy=http://127.0.0.1:7897    # 代理：指向本机代理客户端端口`}
-      </ShellBlock>
-      <Paragraph>
-        判断自己当前的生效配置：<code>brew config</code> 会列出 ORIGIN（brew 本体的 git
-        远端）、API_DOMAIN、BOTTLE_DOMAIN 和代理。一个隐藏的坑：镜像同步有延迟——某天{" "}
-        <code>brew update</code>{" "}
-        后突然冒出几十个可升级的包，多半不是官方同一天发版，而是镜像之前落后了。
       </Paragraph>
 
       <Heading level={2} title="渠道规范：一个软件只认一个渠道" />
@@ -357,42 +313,22 @@ export http_proxy=http://127.0.0.1:7897    # 代理：指向本机代理客户�
         <strong>系统工具归 brew，GUI 归 cask，运行时归版本管理器，语言包归语言自己</strong>。
       </Paragraph>
 
-      <VizBlock label="渠道决策 / decision">
-        <DecisionTable
-          rows={[
-            {
-              type: "CLI 系统工具",
-              channel: "brew install",
-              examples: "git、ripgrep、fd、jq、fzf、wget",
-            },
-            {
-              type: "GUI 应用",
-              channel: "brew install --cask",
-              examples: "iterm2、google-chrome、visual-studio-code",
-            },
-            {
-              type: "语言运行时",
-              channel: "版本管理器",
-              examples: "node→nvm/fnm，python→uv/pyenv，rust→rustup，java→sdkman",
-            },
-            {
-              type: "语言包 / 全局 CLI",
-              channel: "语言自己的管理器",
-              examples: "npm、uv tool install、cargo install",
-            },
-            {
-              type: "App Store 应用",
-              channel: "App Store / mas",
-              examples: "系统级应用，只此一渠道",
-            },
-            {
-              type: "冷门厂商软件",
-              channel: "官网 dmg（先 brew search）",
-              examples: "cask 未收录时才手动下载",
-            },
-          ]}
-        />
-      </VizBlock>
+      <Table
+        label="渠道决策 / channel decision"
+        head={["软件类型", "安装渠道", "典型例子"]}
+        rows={[
+          ["CLI 系统工具", <code>brew install</code>, "git、ripgrep、fd、jq、fzf、wget"],
+          [
+            "GUI 应用",
+            <code>brew install --cask</code>,
+            "iterm2、google-chrome、visual-studio-code",
+          ],
+          ["语言运行时", "版本管理器", "node→nvm/fnm，python→uv/pyenv，rust→rustup，java→sdkman"],
+          ["语言包 / 全局 CLI", "语言自己的管理器", "npm -g、uv tool install、cargo install"],
+          ["App Store 应用", "App Store / mas", "系统级应用，只此一渠道"],
+          ["冷门厂商软件", "官网 dmg（先 brew search）", "cask 未收录时才手动下载"],
+        ]}
+      />
       <Paragraph>
         两条判断依据：brew 只装「当前最新」一个版本，所以
         <strong>需要多版本切换的运行时不适合</strong>
@@ -595,48 +531,29 @@ brew bundle install --file=~/Brewfile   # 新机器一键装回`}
         ]}
       />
 
-      <Heading level={2} title="下一步去哪" />
+      <Heading level={2} title="写在最后" />
       <Paragraph>
         brew 的整套模型——
         <strong>账本记录依赖、依赖树自动解析、版本目录隔离、锁定的入口链接</strong>
-        ——在前端工程化里有一个一模一样的孪生兄弟：npm 的
-        package.json（账本）、node_modules（依赖树）、lockfile（版本锁定）。理解了 brew，再看 npm
-        生态的依赖治理会非常顺畅，这条线可以在「前端 / 工程化 / 构建」主题里继续。
+        ——与 npm 的 package.json（账本）、node_modules（依赖树）、lockfile（版本锁定）完全同构；
+        「运行时归版本管理器」这条渠道纪律的具体落地，在版本管理器选型一篇里有完整对照。装完之后，国内网络下的
+        <strong>下载慢</strong>是下一个绕不开的问题：换镜像还是挂代理、各管哪一段，是独立的一篇。
       </Paragraph>
-      <Paragraph>
-        另一个自然延伸是 <strong>shell 环境与 dotfiles</strong>：把
-        ~/.zshrc、Brewfile、版本管理器配置收进一个仓库，换机时一条脚本恢复全部环境——brew
-        是这套体系的基石，Brewfile 就是它的清单文件。
-      </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "brew 下载慢怎么救：镜像与代理",
+            to: "/note/devtools/homebrew/basics/mirror-proxy",
+            description:
+              "HOMEBREW_API_DOMAIN / BOTTLE_DOMAIN 与标准代理变量各管什么、镜像滞后与半镜像配置的坑。",
+          },
+          {
+            title: "nvm、fnm、Volta、mise 差在哪？",
+            to: "/note/frontend/engineering/package-management/version-managers",
+            description: "brew 装管理器、管理器管运行时——语言运行时渠道的正确归属与选型。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
-  );
-}
-
-function DecisionTable({ rows }: { rows: { type: string; channel: string; examples: string }[] }) {
-  return (
-    <div className="space-y-2">
-      {rows.map((row) => (
-        <div
-          key={row.type}
-          className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-lg border border-border bg-background px-3.5 py-2.5"
-        >
-          <span className="w-28 shrink-0 text-xs font-semibold">{row.type}</span>
-          <code className="rounded bg-accent/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
-            {row.channel}
-          </code>
-          <span className="text-xs text-muted">{row.examples}</span>
-        </div>
-      ))}
-    </div>
   );
 }

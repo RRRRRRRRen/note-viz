@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { CompareTable, DoDont, MemoryCard, Timeline, CrossRef } from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -9,9 +10,10 @@ export default function Note() {
         Git 的引用系统只有三层，每层都简单到不像设计：<strong>分支</strong>是一个 41
         字节的文本文件，内容只有一行哈希（所以开分支、切分支近乎免费）；<strong>HEAD</strong>{" "}
         是另一个文件，记录「下一个 commit 挂在哪」，它指着分支名，分支再指着 commit；
-        <strong>reflog</strong> 是 HEAD 的移动日志，你每次切换、提交、重置都记一笔，默认保留 90
-        天——这就是 reset --hard 之后提交还能找回来的原因。看懂 <code>.git/HEAD</code> 和{" "}
-        <code>refs/</code> 目录，所有指针类命令（checkout / reset /
+        <strong>reflog</strong> 是 HEAD
+        的移动日志，你每次切换、提交、重置都记一笔，可达提交的记录默认保留 90
+        天、不可达提交的记录默认 30 天——这就是 reset --hard 之后提交还能找回来的原因。看懂{" "}
+        <code>.git/HEAD</code> 和 <code>refs/</code> 目录，所有指针类命令（checkout / reset /
         rebase）都从「需要背的咒语」变成「看图说话」。
       </Conclusion>
 
@@ -90,11 +92,17 @@ c94b1f5ad9151b404368aec5f7cc6dee6223cc09    ← 分支的全部内容：一行�
         label="detached HEAD 自救 / recovery"
         dont={{
           code: `$ git checkout a1b2c3d
-Note: switching to a1b2c3d... HEAD is now at a1b2c3d
+Note: switching to 'a1b2c3d'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+...（警告其余部分略）...
+HEAD is now at a1b2c3d
 $ # 随便看了看，切回 main
 $ git checkout main
 $ # ……刚才基于 a1b2c3d 改的东西呢？log 里没有！`,
-          note: "切走之后新提交不在任何分支链上，git log 自然看不到——但对象还在，别慌，也别急着重做。",
+          note: "切走之后新提交不在任何分支链上，git log 自然看不到——但对象还在，别慌，也别急着重做。（输出为节选，警告全文会再解释 stash 与 -c 建分支两条出路。）",
         }}
         do={{
           code: `$ git checkout a1b2c3d
@@ -107,11 +115,13 @@ $ git branch rescue <哈希>`,
         }}
       />
 
-      <Heading level={2} title="reflog：指针的行车记录仪" />
+      <Heading level={2} title="reflog：HEAD 的追加写日志" />
       <Paragraph>
         reflog 是 <strong>HEAD 的移动日志</strong>：每次 HEAD
         变化（提交、切换、重置、合并）都在本地记一笔「HEAD@&#123;n&#125;
-        现在指向谁、因为什么」。真实仓库里的样子：
+        现在指向谁、因为什么」。它的形态就是一个<strong>append-only 的日志文件</strong>
+        ——和数据库的
+        WAL、系统的审计日志同一思路：事件只追加、永不改写，读侧随时按序号回放。真实仓库里的样子：
       </Paragraph>
 
       <ShellBlock>{`$ git reflog -3
@@ -120,7 +130,10 @@ a266a08 HEAD@{1}: commit: fix: 评审修复——closeOtherDomains 领域判定�
 1603be9 HEAD@{2}: commit: fix: 侧栏四级条目恢复可变色竖线……`}</ShellBlock>
       <Paragraph>
         每一行都在说：「HEAD 在这个操作之后指向了这个哈希」。它只存在于本地（不会被 push、clone
-        带走），默认条目保留 90 天。它的存在建立在一个更强的保证上：
+        带走），保留期分两档：<strong>可达提交的条目默认 90 天</strong>（
+        <code>gc.reflogExpire</code>），<strong>不可达提交的条目默认 30 天</strong>（
+        <code>gc.reflogExpireUnreachable</code>）——后者更短，因为 amend、rebase、reset
+        抛下的旧提交不属于当前项目，过期策略故意更激进。reflog 的存在建立在一个更强的保证上：
         <strong>commit 对象一旦写入就不可变</strong>，分支怎么移动、HEAD
         怎么乱跳，都不可能销毁对象——「删除」永远只是把指针从链上摘下来。所以 reflog
         才敢承诺：只要记着哈希，随时能回去。
@@ -133,27 +146,31 @@ a266a08 HEAD@{1}: commit: fix: 评审修复——closeOtherDomains 领域判定�
 
       <ShellBlock>{`$ git commit -am c2
 $ git rev-parse HEAD
-ee8f46d8f78b9c924b9a27b8f45f5f77d54785a2
+c2b44117a1b4f220ab92791733bbfd2c433b3932
 
 $ git reset --hard HEAD~1        # “丢弃” c2
+HEAD is now at 81b52e0 c1
 $ git log --oneline
-18a6009 c1                       ← log 里没有 c2 了
+81b52e0 c1                       ← log 里没有 c2 了
 
 $ git reflog -2
-18a6009 HEAD@{0}: reset: moving to HEAD~1
-ee8f46d HEAD@{1}: commit: c2     ← reflog 里清清楚楚
+81b52e0 HEAD@{0}: reset: moving to HEAD~1
+c2b4411 HEAD@{1}: commit: c2     ← reflog 里清清楚楚
 
 $ git rev-parse 'HEAD@{1}'
-ee8f46d8f78b9c924b9a27b8f45f5f77d54785a2   ← 一秒找回
+c2b44117a1b4f220ab92791733bbfd2c433b3932   ← 一秒找回
 
 $ git fsck --unreachable --no-reflogs
-unreachable commit ee8f46d8...   ← 从引用视角看：它只是“不可达”，不是“不存在”`}</ShellBlock>
+unreachable commit c2b44117a1b4f220ab92791733bbfd2c433b3932
+unreachable tree 286e6959...                ← 同批 tree、blob 也不可达（输出节选）
+unreachable blob 16f9ec00...
+                                             ← 从引用视角看：它们只是“不可达”，不是“不存在”`}</ShellBlock>
       <Paragraph>
         三个视角对照着读：<code>git log</code> 看的是「从分支可达的提交」；
         <code>git reflog</code> 看的是「HEAD 走过的路」（不管可不可达）；
         <code>git fsck --unreachable</code> 看的是「对象库里所有没人指的对象」。c2
-        在第一个视角消失、在后两个视角都在。真正的物理删除要等两件事同时发生：reflog 条目过期（默认
-        90 天）+ GC 修剪可达性。
+        在第一个视角消失、在后两个视角都在。真正的物理删除要等两件事同时发生：reflog
+        条目过期（可达记录默认 90 天 / 不可达记录默认 30 天）+ GC 修剪可达性。
       </Paragraph>
 
       <FlowChart
@@ -164,7 +181,11 @@ unreachable commit ee8f46d8...   ← 从引用视角看：它只是“不可达�
           nodes: [
             { id: "gc", label: "git gc 修剪的“存活名单”", color: "#f59e0b" },
             { id: "refs", label: "所有引用（分支 / 标签 / 远程书签）", color: "#8b5cf6" },
-            { id: "reflog", label: "所有 reflog 条目（默认 90 天）", color: "#1677ff" },
+            {
+              id: "reflog",
+              label: "所有未过期 reflog 条目（可达 90 天 / 不可达 30 天）",
+              color: "#1677ff",
+            },
             { id: "index", label: "当前 index（暂存区）", color: "#3fb950" },
             { id: "dead", label: "三个入口都走不到 → 才会物理删除", color: "#f85149" },
           ],
@@ -181,7 +202,7 @@ unreachable commit ee8f46d8...   ← 从引用视角看：它只是“不可达�
 
       <ShellBlock>{`HEAD~2      代际：HEAD 往上数 2 代（~ 穿透合并，走第一父链）
 HEAD^2      分叉：HEAD 的第 2 个 parent（只对 merge commit 有意义）
-HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于查行车记录仪）`}</ShellBlock>
+HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于回放日志）`}</ShellBlock>
       <CompareTable
         label="三种寻址 / ~ ^ @"
         left={{
@@ -213,6 +234,25 @@ HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于查�
         </p>
       </MemoryCard>
 
+      <DoDont
+        label="坐标系统不混用 / ~ vs @"
+        dont={{
+          code: `# 刚 reset --hard 回退了 2 次，想反悔再回去
+$ git reset --hard HEAD~1
+# 又往回退了一代！~ 是「沿 parent 上溯」，
+# reset 之后 HEAD 的祖先链已经变了`,
+          note: "想撤销「指针的移动」却用了「提交图的上溯」——两套坐标系在变动的历史上指向完全不同的地方。",
+        }}
+        do={{
+          code: `$ git reflog -3
+a1b2c3d HEAD@{0}: reset: moving to HEAD~1
+9f8e7d6 HEAD@{1}: reset: moving to HEAD~1
+4c5b6a7 HEAD@{2}: commit: 事故前的位置
+$ git reset --hard HEAD@{2}   # 时间坐标：回到移动之前`,
+          note: "撤销指针移动用 @{n}（查日志），在历史上游走用 ~n（查祖先）——分清这两个问题，坐标就不会用错。",
+        }}
+      />
+
       <Heading level={2} title="追问链" />
       <QAChain
         items={[
@@ -227,7 +267,7 @@ HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于查�
           {
             q: "git checkout main 之后，之前 detached 状态下做的提交还在吗？去哪找？",
             intent: "「丢代码」是 detached HEAD 最高频的事故，考察是否掌握 reflog 这条恢复路径。",
-            a: "还在，commit 对象完好地躺在 .git/objects 里，只是不在任何分支的引用链上。找法：git reflog 列出 HEAD 的移动历史，找到那个提交的哈希，然后 git branch rescue <哈希>（或 git checkout -b rescue <哈希>）把它挂回一个书签。注意 reflog 是纯本地记录，默认保留 90 天，所以要在同一台机器、过期之前操作。",
+            a: "还在，commit 对象完好地躺在 .git/objects 里，只是不在任何分支的引用链上。找法：git reflog 列出 HEAD 的移动历史，找到那个提交的哈希，然后 git branch rescue <哈希>（或 git checkout -b rescue <哈希>）把它挂回一个书签。注意 reflog 是纯本地记录，且保留期分两档——可达提交的记录默认 90 天、不可达提交的记录默认 30 天——所以要在同一台机器、过期之前操作。",
             bonus:
               "git fsck --unreachable 能列出所有不可达对象，是 reflog 也被清掉之后的最后手段；日常用 reflog 就够，因为 reflog 里连「你切过去」这个动作都记着。",
             depth: 2,
@@ -243,15 +283,15 @@ HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于查�
           {
             q: "branch -d 和 branch -D 的区别，从引用模型怎么解释？",
             intent: "考察能否用「可达性」解释命令的安全设计，而不是死记 -d 安全 -D 强制。",
-            a: "branch -d 删指针文件前会检查：这个分支的提交是否已经合并进当前分支（即删掉书签后，那串提交是否仍从别的书签可达）。可达才允许删——因为删的只是书签，内容不丢。branch -D 跳过这个检查，直接删文件；如果那些提交没有别的书签指着，它们立刻变成不可达，只能靠 reflog（90 天内）或 fsck 找回。",
+            a: "branch -d 删指针文件前会检查：这个分支的提交是否已经合并进当前分支（即删掉书签后，那串提交是否仍从别的书签可达）。可达才允许删——因为删的只是书签，内容不丢。branch -D 跳过这个检查，直接删文件；如果那些提交没有别的书签指着，它们立刻变成不可达，只能靠 reflog（不可达提交的记录默认 30 天内）或 fsck 找回。",
             bonus:
-              "tag 和 branch 的唯一区别也在这里：tag 创建后从不移动，所以「删 tag」永远安全——指向的提交只要还有分支可达就不受影响。",
+              "tag 和 branch 的唯一区别也在这里：tag 创建后从不移动。但「删 tag 永远安全」是误解——tag 没有 reflog，如果某个提交只被这个 tag 可达（没有任何分支指着），删掉 tag 后它立刻失联，reflog 里捞不到，只能靠 git fsck --unreachable 这类对象级扫描找回。",
             depth: 3,
           },
           {
             q: "reflog 会不会无限膨胀？它和对象库的 GC 是什么关系？",
             intent: "压轴题，把 reflog 的「保险」属性和 GC 的「回收」属性拼成完整的生命周期图。",
-            a: "会过期，不会无限膨胀。每条 reflog 条目默认 90 天过期（不可达提交的记录是 30 天），过期条目在 gc 时被清掉；对象库那边，一个提交只有在「所有引用 + 所有未过期 reflog + index 都不可达」时，才会在 gc 修剪中被物理删除。所以准确的生命周期是：提交被「丢弃」→ 在 reflog 里躺 90 天（此期间随时可救）→ 条目过期 → 下一次 gc 物理删除。两层机制共同保证了「后悔药有时间窗，仓库又不会无限膨胀」。",
+            a: "会过期，不会无限膨胀。保留期分两档：可达提交的 reflog 条目默认 90 天过期（gc.reflogExpire），不可达提交的条目默认 30 天（gc.reflogExpireUnreachable）——rebase、amend、reset 抛下的旧提交走 30 天那一档，过期条目在 gc 时被清掉；对象库那边，一个提交只有在「所有引用 + 所有未过期 reflog + index 都不可达」时，才会在 gc 修剪中被物理删除。所以准确的生命周期是：提交被「丢弃」→ 成为不可达，reflog 里的记录再保它 30 天（此期间随时可救）→ 条目过期 → 下一次 gc 物理删除；仍被分支或 tag 指着的提交则走 90 天档，那是针对「引用被误删」这类事故的保险。两层机制共同保证了「后悔药有时间窗，仓库又不会无限膨胀」。",
             bonus:
               "gc.reflogExpire / gc.reflogExpireUnreachable 两个配置可以调整保留期；团队规范里如果有人经常 rebase 共享分支，可以把窗口调长当作事故保险。",
             depth: 4,
@@ -259,25 +299,20 @@ HEAD@{2}    时间：HEAD 两次移动之前在哪（读 reflog，等价于查�
         ]}
       />
 
-      <Heading level={2} title="下一步去哪" />
-      <Paragraph>
-        引用系统之后，两条自然延伸：<strong>合并</strong>
-        篇会用到本篇的「结构坐标」（merge-base
-        就是在提交图上找共同祖先），解释为什么同一个文件有时冲突有时不冲突；
-        <strong>远程协作</strong>
-        篇会把「分支 = 本地文件」推广到「远程分支 = 远程书签的本地缓存」，fetch
-        的全部行为立刻变得可预测。
-      </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "git 的三个区是怎么分工的？",
+            to: "/note/devtools/git/basics/daily-commands",
+            description: "三区坐标系里 status/diff 的方向语义——日常命令的下一层地基。",
+          },
+          {
+            title: "restore、reset、revert 怎么选？",
+            to: "/note/devtools/git/basics/undo-commands",
+            description: "把本篇的指针模型用起来：撤销四场景的路由与 reset 三档实验。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }

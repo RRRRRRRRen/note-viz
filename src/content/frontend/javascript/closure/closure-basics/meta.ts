@@ -5,5 +5,5 @@ export const meta = {
   description: "从词法作用域讲到闭包捕获，拆解内存泄漏场景与循环变量的经典陷阱。",
   difficulty: "进阶",
   tags: ["闭包", "作用域", "内存"],
-  updated: "2026-08-27",
+  updated: "2026-09-10",
 } satisfies NoteMeta;

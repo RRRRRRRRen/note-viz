@@ -1,44 +1,62 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { BarChart, CompareTable, DoDont, MemoryCard, Timeline, VizBlock } from "@/components/viz";
+import {
+  BarChart,
+  CompareTable,
+  CrossRef,
+  DoDont,
+  MemoryCard,
+  Timeline,
+  VizBlock,
+} from "@/components/viz";
 import { motion } from "framer-motion";
-import URLJourney from "./URLJourney";
 
 export default function Note() {
   return (
     <NoteShell>
       <Conclusion>
         「输入 URL 到渲染」是浏览器面试的总纲：
-        <strong>DNS 解析 → TCP 握手 → TLS → HTTP 请求（缓存判断贯穿）→ 响应 → 渲染管线</strong>
+        <strong>
+          缓存判定（Service Worker 拦截 → 强缓存）→ DNS 解析 → TCP 握手 → TLS → HTTP
+          请求（协商缓存随请求头走）→ 响应 → 渲染管线
+        </strong>
         （解析 HTML 建 DOM/CSSOM → 渲染树 → 布局 → 绘制 →
         合成）。性能优化的全部套路都是这两句话的展开：
         <strong>减少网络往返</strong>（强缓存 + 指纹文件名、CDN、HTTP/2）和
         <strong>不阻塞渲染管线</strong>（关键 CSS、JS 异步加载、动画只动合成属性）。
-        缓存先查强缓存再走协商缓存；渲染成本三档位（回流＞重绘＞合成）的引擎机制见专题篇「回流与重绘」。
+        缓存先强缓存后协商，强缓存命中时连 DNS
+        都不会发生；渲染成本三档位（回流＞重绘＞合成）的引擎机制见专题篇「回流与重绘」。
       </Conclusion>
 
       <Heading level={2} title="全景流水线" />
       <Paragraph>
-        这道题能答多深，取决于你能否把散落的知识点挂到一条主线上。从敲下回车开始：浏览器先查 URL
-        缓存，再走 DNS（浏览器缓存 → 系统 → 路由器 → 运营商 → 根/顶级/权威服务器）拿到 IP；然后 TCP
-        三次握手建立连接（HTTPS 再加 TLS 握手协商密钥）；发送 HTTP 请求——发出前先过一遍
-        <strong>本地缓存判断</strong>
-        （强缓存命中直接结束，协商缓存问服务器）；拿到响应后浏览器进入渲染阶段。
+        这道题能答多深，取决于你能否把散落的知识点挂到一条主线上。从敲下回车开始，
+        <strong>缓存判定走在一切网络动作之前</strong>
+        ：请求先被 <strong>Service Worker</strong>{" "}
+        拦截（注册了的话，它可以直接用本地资源应答）；随后是
+        <strong>强缓存判定</strong>——<code>Cache-Control</code> 有效期内直接使用本地副本，
+        <strong>一个字节都不会发上网络，连 DNS 都不会发生</strong>。判定未命中才走 DNS（浏览器缓存 →
+        系统 → 路由器 → 运营商 → 根/顶级/权威服务器）拿到 IP，TCP 三次握手建立连接（HTTPS 再加 TLS
+        握手协商密钥）；然后发送 HTTP 请求——
+        <strong>协商缓存</strong>的校验头（If-None-Match / If-Modified-Since）就随这枚请求一起出发，
+        由服务器裁定 304 复用还是 200 新内容。拿到响应后浏览器进入渲染阶段。
       </Paragraph>
 
-      <URLJourney />
       <FlowChart
         label="全景流水线 / pipeline"
-        height={520}
+        height={560}
         data={{
           direction: "TB",
           nodes: [
-            { id: "url", label: "输入 URL → 拦截判断（service worker/缓存）", color: "#1677ff" },
+            { id: "url", label: "输入 URL", color: "#1677ff" },
+            { id: "sw", label: "Service Worker 拦截（可编程直接应答）", color: "#8b5cf6" },
+            { id: "strong", label: "强缓存判定：max-age 未过期？", color: "#8b5cf6" },
+            { id: "local", label: "使用本地副本（0 网络往返）", color: "#3fb950" },
             { id: "dns", label: "DNS 解析（多级缓存 → 权威服务器）", color: "#f59e0b" },
             { id: "tcp", label: "TCP 三次握手 + TLS 握手", color: "#f59e0b" },
-            { id: "cache", label: "强缓存命中？", color: "#8b5cf6" },
-            { id: "neg", label: "协商缓存：ETag / Last-Modified 问服务器", color: "#f59e0b" },
-            { id: "resp", label: "HTTP 响应（200 / 304）", color: "#3fb950" },
+            { id: "req", label: "发送 HTTP 请求（协商缓存头随请求走）", color: "#f59e0b" },
+            { id: "neg", label: "服务器比对 ETag / Last-Modified", color: "#8b5cf6" },
+            { id: "resp", label: "HTTP 响应（200 新内容 / 304 复用）", color: "#3fb950" },
             { id: "parse", label: "解析 HTML → DOM 树 + CSSOM 树", color: "#1677ff" },
             { id: "tree", label: "合成渲染树（排除 display:none）", color: "#1677ff" },
             { id: "layout", label: "布局 Layout（计算几何 → 回流）", color: "#f85149" },
@@ -46,13 +64,17 @@ export default function Note() {
             { id: "composite", label: "合成 Composite（GPU 层合成）", color: "#3fb950" },
           ],
           edges: [
-            { source: "url", target: "dns" },
+            { source: "url", target: "sw" },
+            { source: "sw", target: "strong", label: "未拦截 / 放行" },
+            { source: "strong", target: "local", label: "命中：不发任何网络请求", dashed: true },
+            { source: "strong", target: "dns", label: "未命中" },
             { source: "dns", target: "tcp" },
-            { source: "tcp", target: "cache" },
-            { source: "cache", target: "resp", label: "命中，直接用本地副本", dashed: true },
-            { source: "cache", target: "neg" },
+            { source: "tcp", target: "req" },
+            { source: "req", target: "neg", label: "带 If-None-Match / If-Modified-Since" },
             { source: "neg", target: "resp", label: "未变更 → 304" },
+            { source: "req", target: "resp", label: "无校验头 → 直接 200" },
             { source: "resp", target: "parse" },
+            { source: "local", target: "parse", label: "本地副本同样进入解析" },
             { source: "parse", target: "tree" },
             { source: "tree", target: "layout" },
             { source: "layout", target: "paint" },
@@ -80,7 +102,8 @@ export default function Note() {
 
       <Heading level={2} title="缓存体系：面试必考的主战场" />
       <Paragraph>
-        缓存是这场考试里区分度最高的部分。请求发出后的判断顺序固定：<strong>先查强缓存</strong>
+        缓存是这场考试里区分度最高的部分。判定顺序固定，且先于任何网络请求：
+        <strong>先查强缓存</strong>
         ——
         <code>Cache-Control: max-age</code> 在有效期内直接用本地副本，一个字节都不问服务器（
         <code>no-cache</code> 不是不缓存，而是「跳过强缓存、每次都协商」；<code>no-store</code>{" "}
@@ -99,12 +122,12 @@ export default function Note() {
       </Paragraph>
 
       <Timeline
-        label="缓存判断顺序 / cache flow"
+        label="缓存判定链 / cache flow"
         steps={[
-          { label: "Service Worker", sub: "可编程拦截", color: "#8b5cf6" },
-          { label: "强缓存", sub: "max-age 内直接用", color: "#1677ff" },
-          { label: "协商缓存", sub: "ETag 问服务器", color: "#f59e0b" },
-          { label: "DNS 请求", sub: "缓存全未命中才发出", color: "#f85149" },
+          { label: "Service Worker", sub: "可编程拦截，可短路应答", color: "#8b5cf6" },
+          { label: "强缓存", sub: "max-age 内直接用，不发请求", color: "#1677ff" },
+          { label: "DNS + 建连", sub: "强缓存未命中才发生", color: "#f85149" },
+          { label: "协商缓存", sub: "校验头随请求走，304/200", color: "#f59e0b" },
         ]}
       />
       <CompareTable
@@ -159,7 +182,7 @@ index.html  → no-cache`,
         （GPU 拼层，几乎免费）。改 width/top 走满整条管线；改 color/background
         跳过布局；transform/opacity
         由合成器线程直改，主线程卡死照样播放。这条成本线背后有一套完整的引擎机制——脏位标记、失效传播边界、读写交错的强制同步布局——全部展开在独立专题「
-        <strong>回流与重绘：渲染管线的成本</strong>」一篇里，含布局抖动模拟器与度量手段。
+        <strong>为什么改一个样式会引发重排</strong>」一篇里，含布局抖动模拟器与度量手段。
       </Paragraph>
 
       <BarChart
@@ -172,7 +195,7 @@ index.html  → no-cache`,
         ]}
       />
 
-      <Heading level={2} title="HTTP 演进与安全速览" />
+      <Heading level={2} title="HTTP 演进与安全轮廓" />
       <Timeline
         label="HTTP 演进 / evolution"
         steps={[
@@ -194,33 +217,17 @@ index.html  → no-cache`,
       <HolLanes />
       <Paragraph>
         HTTPS = HTTP + TLS：用<strong>非对称加密</strong>（证书公钥）交换 <strong>对称加密</strong>
-        的会话密钥，之后全部流量走对称加密（性能好）；证书由 CA
-        签名防中间人。安全两件套的攻击模型完全不同，混为一谈是面试大忌：
+        的会话密钥，之后全部流量走对称加密（性能好）；证书由 CA 签名防中间人。
       </Paragraph>
-
-      <CompareTable
-        label="对比 / web security"
-        left={{
-          title: "XSS · 注入执行",
-          color: "#f85149",
-          points: [
-            "本质：恶意脚本被当成本站代码执行",
-            "利用的是「站点对输出的信任」",
-            "典型：评论里注入脚本窃取 cookie",
-            "防御：输出转义、CSP、HttpOnly cookie",
-          ],
-        }}
-        right={{
-          title: "CSRF · 伪造请求",
-          color: "#f59e0b",
-          points: [
-            "本质：第三方页面借用户 cookie 发伪造请求",
-            "利用的是「服务器对请求来源的信任」",
-            "典型：跨站 img/form 触发转账请求",
-            "防御：CSRF token、SameSite cookie、校验 Origin",
-          ],
-        }}
-      />
+      <Paragraph>
+        与「响应拿到手之后」这条主线交汇的还有一类话题——<strong>安全</strong>
+        ，本篇只勾轮廓。两大高频攻击的信任模型完全相反：<strong>XSS</strong>{" "}
+        把恶意脚本当成本站代码执行，利用的是「站点对输出的信任」，防御走输出转义、CSP、HttpOnly
+        cookie；<strong>CSRF</strong> 让第三方页面借用户 cookie
+        发伪造请求，利用的是「服务器对请求来源的信任」，防御走 CSRF token、 SameSite cookie、校验
+        Origin。一句话分野：一个防「注入执行」、一个防「伪造请求」—— 展开属于独立的 Web
+        安全专题，这里记住信任模型的分野即可。
+      </Paragraph>
 
       <Heading level={2} title="经典追问链" />
       <QAChain
@@ -262,13 +269,26 @@ index.html  → no-cache`,
         ]}
       />
 
-      <Heading level={2} title="写在最后" />
-      <Paragraph>
-        这篇把「一条主线」走完了：网络层的缓存与协议、渲染层的全景管线。三个延伸方向：渲染成本怎么一档档算出来的——脏位、失效传播、布局抖动，展开在「
-        <strong>回流与重绘：渲染管线的成本</strong>
-        」专题篇；MySQL「索引原理」讲的是同一套「缓存与检索成本」思想在数据库侧的形态；React
-        核心机制则回到渲染之上——框架如何调度这些 DOM 更新。
-      </Paragraph>
+      <CrossRef
+        title="下一个该问的问题"
+        notes={[
+          {
+            title: "为什么改一个样式会引发重排：回流与重绘",
+            to: "/note/frontend/browser/fundamentals/reflow-repaint",
+            description: "渲染成本怎么一档档算出来：脏位、失效传播、布局抖动与度量手段。",
+          },
+          {
+            title: "为什么有了索引还要回表？",
+            to: "/note/database/mysql/index/covering-index",
+            description: "「缓存与检索成本」思想在数据库侧的形态：B+ 树、回表与覆盖索引。",
+          },
+          {
+            title: "setState 之后 React 做了什么？",
+            to: "/note/frontend/react/core/setstate-scheduling",
+            description: "渲染之上的调度：框架如何入队、合并并驱动这些 DOM 更新。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

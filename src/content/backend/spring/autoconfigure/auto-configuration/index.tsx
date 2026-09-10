@@ -1,7 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard, Timeline, VizBlock } from "@/components/viz";
+import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline, VizBlock } from "@/components/viz";
 
 export default function Note() {
   return (
@@ -33,32 +32,11 @@ export default function Note() {
         ——出错点离根因很远，排查成本极高。自动配置正是冲着这两个痛点来的。
       </Paragraph>
       <Paragraph>
-        把 Spring 容器想象成一套房子：手动配置是<strong>毛坯房</strong>
-        ——空房间交付，水电、空调、窗帘全自己张罗，每个新项目重新装修一遍；自动配置是
-        <strong>精装修房</strong>——交付即可入住，默认家具已经就位，只有不合心意时才动手换。
+        用程序员熟悉的技术对照一句：自动配置是<strong>依赖注入版的默认路由</strong>
+        ——starter 提供 <code>@ConditionalOnMissingBean</code> 的默认 Bean，用户定义即整体覆盖，与
+        HTTP 缓存里「显式配置优先于默认约定」是同一个语义：<strong>默认值永远让位于显式声明</strong>
+        。
       </Paragraph>
-
-      <CompareTable
-        label="类比 / housing"
-        left={{
-          title: "毛坯房 = 手动配置",
-          color: "#f59e0b",
-          points: [
-            "交付时空空如也：Bean 全靠自己逐个声明",
-            "每个新项目重复装修一遍，复制粘贴成灾",
-            "漏装一件家具（Bean）不会报错，住进去才发现",
-          ],
-        }}
-        right={{
-          title: "精装修 = 自动配置",
-          color: "#3fb950",
-          points: [
-            "交付即可入住：starter 进 classpath，默认 Bean 自动就位",
-            "只有不合心意才动手：@ConditionalOnMissingBean 用户优先",
-            "水电动线已预设：框架预留的扩展点被自动填上",
-          ],
-        }}
-      />
       <Paragraph>
         注意一个关键认知：自动配置<strong>不是替代你配置</strong>
         ，而是「先给你一套合理的默认值，你只在需要改的时候才动手」——这就是 Spring Boot
@@ -298,15 +276,15 @@ public class AcmeRedisAutoConfiguration {
         }}
       />
 
-      <Heading level={2} title="深度案例：starter 的两个样板间" />
-      <Heading level={3} title="样板间一：MyBatis starter——before 抢注扩展点" />
+      <Heading level={2} title="整合应用：两个 starter 案例" />
+      <Heading level={3} title="案例一：MyBatis starter——before 抢注扩展点" />
       <Paragraph>
         一个真实感很强的自定义 starter 通常同时用到本篇所有机制。看这个精简版 MyBatis starter
         的自动配置类，注意四个设计点：
       </Paragraph>
 
-      <CodeBlock
-        lang="typescript"
+      <PlainCode
+        label="案例一：MyBatis starter 自动配置 / acme-mybatis-starter"
         code={`@AutoConfiguration(before = MybatisPlusAutoConfiguration.class) // ① 抢在官方配置前注册
 @MapperScan(value = "\${acme.info.base-package}",               // ② 包路径来自配置项，不写死
         annotationClass = Mapper.class)
@@ -353,12 +331,13 @@ public class AcmeMybatisAutoConfiguration {
       <Paragraph>
         装配完成后业务代码得到什么？Mapper
         自动扫描、分页开箱即用、审计字段自动填充、多数据库主键适配——全部
-        <strong>零感知</strong>。这就是精装修：住户（业务代码）从来不用关心水电走线（Bean 装配）。
+        <strong>零感知</strong>。这正是自动配置的价值：业务代码从不感知 Bean
+        装配的存在，只面对框架约定好的类型消费它们。
       </Paragraph>
 
-      <Heading level={3} title="样板间二：Redis starter——抢在默认实现前面" />
-      <CodeBlock
-        lang="typescript"
+      <Heading level={3} title="案例二：Redis starter——抢在默认实现前面" />
+      <PlainCode
+        label="案例二：Redis starter 自动配置 / acme-redis-starter"
         code={`@AutoConfiguration(before = RedissonAutoConfigurationV2.class) // 抢在 Redisson 前注册
 public class AcmeRedisAutoConfiguration {
 
@@ -532,14 +511,30 @@ public class AcmeSigninAutoConfiguration {
 
       <Heading level={2} title="写在最后" />
       <Paragraph>
-        回到精装修的类比收个尾：Spring Boot 把「水电走线、家具摆位」（Bean
-        装配）做成标准交付，住户只在换家具时出手。而这套「框架预留扩展点 +
-        按契约装配」的思想并不只属于 Spring——React 里你声明
-        UI、由协调器决定何时以及如何更新（站内「协调与 Diff」）；Node 流里你只管写、背压由 pipeline
-        自动传导（站内「backpressure 背压」）。同一个母题反复出现：
+        回到标题的问题——starter 加个依赖为什么就能生效？答案就是本篇的三件套：
+        <strong>imports 清单</strong>让 starter 无需扫描即被发现，<strong>before/after 排序</strong>
+        让「用户先、默认后」的时序成立，<strong>条件装配</strong>让默认值在用户定义时自动让位。
+        这套「框架预留扩展点 + 按契约装配」的思想并不只属于 Spring：React 里你声明
+        UI、由协调器决定何时以及如何更新； Node 流里你只管写、背压由 pipeline
+        自动传导。同一个母题反复出现：
         <strong>把「什么时候做」交给框架，你只声明「做什么」</strong>
         。理解了一处，处处相通。
       </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "用 index 做 key 为什么会状态错位？",
+            to: "/note/frontend/react/reconcile/key-index-mismatch",
+            description: "React 协调机制的同一母题：声明「做什么」，Diff 策略决定「怎么做」。",
+          },
+          {
+            title: "write() 返回 false 之后会怎样？",
+            to: "/note/backend/nodejs/stream/backpressure",
+            description:
+              "Node 流同样把「何时写」交给框架：pipeline 自动传导背压，你只声明数据加工。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

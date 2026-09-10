@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard } from "@/components/viz";
+import { CompareTable, DoDont, MemoryCard, CrossRef } from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -9,9 +10,7 @@ export default function Note() {
         Git 远程传输走 HTTPS 或 SSH 两种协议，<strong>SSH 用密钥对认证</strong>
         ：私钥留在本机、公钥贴到平台，连接时靠「服务器出题、私钥签名」完成身份证明——全程不传输任何秘密，比密码安全且免输入。配置一次终身受益的四件事：生成
         Ed25519 密钥对 → 公钥上传平台 → <code>~/.ssh/config</code> 写好主机别名与端口 →{" "}
-        <code>git remote set-url</code> 切换协议。fork 协作再加一条：origin
-        指自己的仓库（有推送权），upstream 指源仓库（只读拉取），「同步上游」就变成一次 fetch +
-        merge。
+        <code>git remote set-url</code> 切换协议。之后每次 push/pull 都不再需要任何身份输入。
       </Conclusion>
 
       <Heading level={2} title="密钥对认证：不传秘密的身份证明" />
@@ -73,7 +72,7 @@ git remote -v        # 确认两个 URL 都已变为 git@ 开头`}</ShellBlock>
 
       <Heading level={3} title="ssh-agent：passphrase 只输一次" />
       <Paragraph>
-        给私钥设了 passphrase（口令），安全是真安全——每次 pull/pull 都要输一遍也是真烦。{" "}
+        给私钥设了 passphrase（口令），安全是真安全——每次 pull/push 都要输一遍也是真烦。{" "}
         <strong>ssh-agent</strong>{" "}
         解这道题：它是后台进程，把解密后的私钥缓存在内存里，之后的签名请求直接用缓存，passphrase
         只在首次添加时输入一次。macOS 更进一步：<code>UseKeychain</code> 选项把 passphrase
@@ -160,49 +159,12 @@ Host github-work
         https:// 地址切回 HTTPS。remote 只是 <code>.git/config</code> 里的一行 URL（远程协作篇讲过
         origin 的本质），换协议不产生任何对象迁移。
       </Paragraph>
-
-      <Heading level={2} title="fork 协作：origin 与 upstream 双远程" />
       <Paragraph>
-        给开源项目贡献代码的标准姿势：fork 一份到自己的账号下，clone 自己的 fork——此时 origin
-        指向你的 fork（你有推送权）。但上游项目还在每天更新，需要另一条只读通道：{" "}
-        <strong>upstream</strong> 指向源仓库。这就是 fork 协作的双远程模型：
-      </Paragraph>
-
-      <ShellBlock>{`# 一次性配置：给现有仓库添加 upstream
-git remote add upstream https://github.com/original/repo.git
-git remote -v
-# origin    git@github.com:you/repo.git (fetch/push)   ← 你的 fork：读 + 写
-# upstream  https://github.com/original/repo.git (fetch/push)  ← 源仓库：只用 fetch
-
-# 日常同步上游（上游永远只 fetch，不 push）
-git fetch upstream
-git switch main
-git merge upstream/main      # 或 git rebase upstream/main
-git push origin main         # 把同步结果推回自己的 fork`}</ShellBlock>
-      <FlowChart
-        label="双远程拓扑 / fork remotes"
-        height={330}
-        data={{
-          direction: "TB",
-          nodes: [
-            { id: "upstream", label: "upstream 源仓库（只 fetch）", color: "#f59e0b" },
-            { id: "local", label: "本地仓库（fetch + merge 同步上游）", color: "#1677ff" },
-            { id: "origin", label: "origin 你的 fork（fetch + push）", color: "#3fb950" },
-            { id: "pr", label: "Pull Request：fork → 源仓库", color: "#8b5cf6" },
-          ],
-          edges: [
-            { source: "upstream", target: "local", label: "fetch：拉取上游更新", dashed: true },
-            { source: "local", target: "origin", label: "push：推到自己的 fork" },
-            { source: "origin", target: "pr", label: "PR 申请合入上游" },
-          ],
-        }}
-      />
-      <Paragraph>
-        一句话记住分工：
-        <strong>origin 是你的地盘（读 + 写），upstream 是别人的地盘（只读）</strong>
-        。所有写入动作（push）永远只指向 origin；对 upstream 唯一合法的操作是 fetch。误 push 到
-        upstream 只会发生一种情况：你对源仓库也有推送权限（公司内部仓库常见）——这也是为什么开源 fork
-        场景要刻意识别两个 remote。
+        配置过程中第一次连接时会遇到「 authenticity 」提问：ssh
+        把服务器主机的公钥指纹展示给你确认，同意后记进 <code>~/.ssh/known_hosts</code>
+        ，之后每次连接都比对——对不上就拒绝并警告（可能是服务器重装，也可能是中间人）。这套机制叫
+        <strong>信任首次使用</strong>（TOFU）：GitHub 的指纹在其官方文档公布，核对一次再 yes
+        ，就是这条信任链的全部手工环节。
       </Paragraph>
 
       <DoDont
@@ -230,6 +192,65 @@ $ git remote -v              # URL 是 git@ 还是 https://？`,
         SSH（<code>git remote -v</code> 一眼定案）。剩下 10%
         是公钥没上传或上传错账号——重传一遍即解。
       </Paragraph>
+
+      <DoDont
+        label="私钥文件权限 / key permissions"
+        dont={{
+          code: `$ ls -l ~/.ssh/id_ed25519
+-rw-r--r--  1 me  staff   411  id_ed25519   # 644，全员可读
+$ ssh -T git@github.com
+WARNING: UNPROTECTED PRIVATE KEY FILE!
+Permissions 0644 for 'id_ed25519' are too open.`,
+          note: "ssh 直接拒绝使用权限过松的私钥——它是你的数字身份，不是普通配置文件。",
+        }}
+        do={{
+          code: `$ chmod 600 ~/.ssh/id_ed25519
+$ ls -l ~/.ssh/id_ed25519
+-rw-------  1 me  staff   411  id_ed25519   # 仅本用户可读写`,
+          note: "600 是私钥的标准权限；.ssh 目录本身 700。权限检查在认证之前，报错往往比配错更早出现。",
+        }}
+      />
+
+      <DoDont
+        label="多账号身份混用 / multi-account"
+        dont={{
+          code: `# 公司、个人两把钥匙都挂在 github.com 的 Host 上
+Host github.com
+  IdentityFile ~/.ssh/id_work
+  IdentityFile ~/.ssh/id_personal
+# → ssh 按顺序逐把试，哪个先通过用哪个，
+#   提交推错账号身份只差一次运气的距离`,
+          note: "共享同一个 Host 的多把钥匙，让「用哪个身份」取决于尝试顺序而非你的意图。",
+        }}
+        do={{
+          code: `# Host 别名一一对应，身份由 remote URL 显式选择
+Host github-work
+  HostName github.com
+  IdentityFile ~/.ssh/id_work
+Host github-personal
+  HostName github.com
+  IdentityFile ~/.ssh/id_personal
+# clone 时写 git@github-work:company/repo.git`,
+          note: "别名机制让「哪个仓库用哪个身份」变成 remote URL 里的静态事实，不再依赖运行时匹配。",
+        }}
+      />
+
+      <DoDont
+        label="重新生成密钥 / regenerating"
+        dont={{
+          code: `$ ssh-keygen -t ed25519 -C "new key"
+Enter file in which to save the key (~/.ssh/id_ed25519):
+# 直接回车 → 旧密钥文件被静默覆盖
+# 所有还在用旧公钥的平台瞬间断联`,
+          note: "ssh-keygen 默认路径已有文件时会问一句、回车即覆盖——换钥匙请显式指定新路径。",
+        }}
+        do={{
+          code: `$ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_laptop -C "new key"
+# 用 -f 指定独立路径，旧密钥原样保留
+# 再在 ~/.ssh/config 里给新钥匙配 Host/IdentityFile`,
+          note: "新钥匙新路径 + config 指路，旧平台不断联；确认迁移完成后再吊销旧公钥。",
+        }}
+      />
 
       <Heading level={2} title="追问链" />
       <QAChain
@@ -271,30 +292,26 @@ $ git remote -v              # URL 是 git@ 还是 https://？`,
             intent: "安全压轴题，检验事故响应路径：密钥泄露的处置与密码泄露完全不同。",
             a: "拿到私钥 = 冒充你对该平台上所有仓库的读写（取决于该账号权限），且无需任何第二因素。补救动作有时序要求：①立即在平台（GitHub/GitLab）删除该公钥并生成新密钥对、上传新公钥——旧私钥立刻作废；②排查私钥可能泄露的途径（误提交进仓库、网盘、聊天记录发过）；③如果私钥曾被提交进任何仓库历史，按敏感信息泄露处理：filter-repo 清史 + 强推 + 所有协作者重克隆。预防永远便宜于补救：生成时设 passphrase，本机由 agent 缓存，兼顾安全与顺手。",
             bonus:
-              "GitHub 的 Secret scanning 会扫描公开仓库中的 SSH 私钥模式并自动通知/吊销（对部分托管方）——但别依赖它兜底，自己的密钥自己盯。",
+              "GitHub 的 Secret scanning 自 2023 年 11 月起把 OpenSSH 私钥列为 non-provider pattern：需在仓库/组织侧显式开启、且只产生告警——SSH key 没有吊销端点，「检测到即自动吊销」仅对提供 revoke API 的合作方 token 成立。所以别依赖平台兜底，自己的密钥自己盯。",
             depth: 4,
           },
         ]}
       />
 
-      <Heading level={2} title="下一步去哪" />
-      <Paragraph>
-        传输层之上，远程协作的机制主线已在三篇收拢：<strong>fetch 与远程同步</strong>
-        讲对象怎么传、书签怎么更新；本篇讲通道怎么建、身份怎么证明；遇到 push
-        被拒（non-fast-forward）回到合并篇看拓扑判断。配好 SSH 之后值得顺手做的一件事：
-        <code>git remote -v</code> 检查一遍现有仓库的协议，把日常开发机统一到 SSH，临时机器和 CI
-        保留 HTTPS——两类场景用两类协议，各取所长。
-      </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "SSH 是怎么保证远程登录安全的？",
+            to: "/note/devtools/ssh/fundamentals/remote-access",
+            description: "传输层之下：sshd、握手七步与签名挑战模型的完整拆解。",
+          },
+          {
+            title: "origin/main 是远程上的分支吗？",
+            to: "/note/devtools/git/remote/fetch-pull",
+            description: "配好的通道上传输的是什么：fetch/push 协议与远程书签机制。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }

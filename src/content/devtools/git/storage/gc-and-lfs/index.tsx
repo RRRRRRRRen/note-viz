@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { BarChart, CompareTable, DoDont, MemoryCard } from "@/components/viz";
+import { CompareTable, DoDont, MemoryCard, CrossRef } from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -23,15 +24,19 @@ export default function Note() {
       <Paragraph>看一个真实仓库的体量统计：</Paragraph>
 
       <ShellBlock>{`$ git count-objects -v
-count: 575        ← 575 个松散对象（独立小文件）
-size: 2496        ← 共约 2.4 MB
+count: 774        ← 774 个松散对象（独立小文件）
+size: 3484        ← 共约 3.4 MB
 in-pack: 0        ← 从未打包
 packs: 0
+size-pack: 0      ← 完整输出还有 size-pack / prune-packable / garbage 等行
+prune-packable: 0
+garbage: 0
+size-garbage: 0
 
 $ ls .git/objects/
-24/ 3d/ 9d/ ce/ e6/ ... info/ pack/     ← 哈希前两位做目录，剩下 38 位做文件名`}</ShellBlock>
+00/ 01/ 02/ 03/ 04/ 05/ 06/ 07/ ... info/ pack/   ← 哈希前两位做目录，剩下 38 位做文件名`}</ShellBlock>
       <Paragraph>
-        575
+        774
         个小文件对文件系统毫无压力，但一个十万提交级仓库会积累数百万个松散对象——小文件本身会拖垮文件系统（inode、目录项、open
         调用全是开销）。所以 Git
         的设计是「日常松散、定期打包」：写入永远走最便宜的路，整理交给后台的 <strong>git gc</strong>
@@ -56,15 +61,18 @@ $ ls .git/objects/
       <Paragraph>真实打包实验：一个 200 行文本文件提交 10 个版本（每次追加一行改动）——</Paragraph>
 
       <ShellBlock>{`$ git count-objects -v | grep -E "count|size"
-count: 30        ← gc 前：30 个松散对象
-size: 120
+count: 33        ← gc 前：33 个松散对象
+size: 132
+size-pack: 0     ← grep "size" 还会带出 size-pack 与 size-garbage 两行
+size-garbage: 0
 
 $ git gc         ← 后台大扫除
 
 $ git count-objects -v | grep -E "count|in-pack|packs"
 count: 0         ← 松散对象全部收纳
-in-pack: 30      ← 30 个对象进了包
-packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）`}</ShellBlock>
+in-pack: 33      ← 33 个对象进了包
+packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）
+# 完整输出里 size-pack 也从 0 变为 4（KiB）——33 个对象压进 4 KB`}</ShellBlock>
       <Paragraph>
         10 个版本的对象最终只占一个包——其中就包含 delta 压缩的功劳。触发时机：松散对象数量超阈值（约
         6700 个）自动触发、push 时服务端打包、以及你手动 <code>git gc</code>
@@ -84,7 +92,11 @@ packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）`}</ShellBlock>
           direction: "TB",
           nodes: [
             { id: "entry1", label: "所有引用：分支 / 标签 / 远程书签", color: "#8b5cf6" },
-            { id: "entry2", label: "所有 reflog 条目（默认 90 天）", color: "#1677ff" },
+            {
+              id: "entry2",
+              label: "所有未过期 reflog 条目（可达 90 天 / 不可达 30 天）",
+              color: "#1677ff",
+            },
             { id: "entry3", label: "当前 index（暂存区）", color: "#3fb950" },
             { id: "scan", label: "gc：从三个入口遍历", color: "#f59e0b" },
             { id: "alive", label: "可达 → 留下（可打包，不删除）", color: "#3fb950" },
@@ -101,8 +113,10 @@ packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）`}</ShellBlock>
       />
       <Paragraph>
         把引用系统篇的 reflog 保险串起来，一次「事故提交」的完整生命周期是：被 reset
-        抛弃（分支不再指着它）→ 仍被 reflog 指着 → 躺 90 天 → 条目过期 → 下一次 gc 物理删除。
-        <strong>双重条件都满足才会真的丢</strong>——这就是「Git 里很难真正丢数据」的精确含义。
+        抛弃（分支不再指着它）→ 成为不可达，reflog 里的记录默认再保 30 天（
+        <code>gc.reflogExpireUnreachable</code>；仍被引用指着的提交走 90 天档）→ 条目过期 → 下一次
+        gc 物理删除。<strong>双重条件都满足才会真的丢</strong>——这就是「Git
+        里很难真正丢数据」的精确含义。
       </Paragraph>
 
       <MemoryCard keyword="逻辑删除 ≠ 物理删除" color="#1677ff">
@@ -113,6 +127,42 @@ packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）`}</ShellBlock>
           blob 依然可达，必须改写历史（filter-repo）再让所有克隆重新同步。
         </p>
       </MemoryCard>
+
+      <DoDont
+        label="清理对象库 / housekeeping"
+        dont={{
+          code: `# .git 目录太大，手动「清理」
+$ rm -rf .git/objects/ab .git/objects/pack
+# → 历史对象缺失，仓库从此 fsck 报损、
+#   checkout 旧版本报错，基本只能重新克隆`,
+          note: "对象库里没有「垃圾文件」可手删——每个对象都被哈希索引着，删任意一个都是挖仓库的地基。",
+        }}
+        do={{
+          code: `$ git count-objects -v      # 先看松散对象数量
+$ git gc                    # 打包 + 修剪不可达对象（受 reflog 保护）
+$ git gc --prune=now        # 确认不要 reflog 后悔药时的激进修剪`,
+          note: "清理只有一条正路：让 gc 自己判断可达性。--prune=now 会连 reflog 时间窗一起放弃，慎用。",
+        }}
+      />
+
+      <DoDont
+        label="敏感文件的事后处理 / leaked secrets"
+        dont={{
+          code: `$ git rm credentials.env
+$ git commit -m "fix: 移除密钥文件"
+$ git push
+# → 最新版本干净了，但历史里那个 blob 仍可达，
+#   checkout 旧版本即可原样取回密码`,
+          note: "删除只影响之后的版本；可达性不变，历史里的对象一个字节都不会少。",
+        }}
+        do={{
+          code: `# ① 先作废泄露的凭据（改密码/换 key），再做 Git 侧清理
+$ git filter-repo --path credentials.env --invert-paths
+$ git push --force
+# ② 通知所有协作者重新克隆`,
+          note: "改写历史让旧 blob 不可达，下一次 gc 才可能物理删除；凭据作废永远排在清理前面。",
+        }}
+      />
 
       <Heading level={2} title="checkout 的真实成本模型" />
       <Paragraph>
@@ -146,7 +196,7 @@ packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）`}</ShellBlock>
           title: "治本：别让仓库变大",
           color: "#f59e0b",
           points: [
-            "大文件出库（下一节的主角 LFS）",
+            "大文件出库（LFS / 对象存储，见大文件专篇）",
             "构建产物绝不入库（.gitignore 前置）",
             "一个仓库一个领域，避免万物 monorepo",
             "历史臃肿后无法自愈——预防远便宜于治理",
@@ -155,88 +205,18 @@ packs: 1         ← 只剩 1 个 packfile（+1 个 idx 索引）`}</ShellBlock>
         }}
       />
 
-      <Heading level={2} title="二进制文件：diff 没救，存储有解" />
+      <Heading level={2} title="与大文件问题的交界" />
       <Paragraph>
-        二进制文件在 Git 里分两半说。<strong>diff：基本没救</strong>
-        。Git 靠「内容里有没有 NUL 字节」判定二进制，然后只显示{" "}
-        <code>Binary files a/x and b/x differ</code>。可以配 textconv
-        让它转成文本再比（图片按尺寸/EXIF、docx 用 docx2txt），但线性文本 diff
-        对二进制本质无意义，这只用于人类阅读。
-        <strong>存储：delta 压缩对未压缩格式其实有效</strong>
-        （字节级比对不认文本还是二进制），真正失效的是「已经压缩过的格式」——jpg/mp4/zip
-        每版都是全新字节流。
+        本篇的成本模型还能推出大文件问题的根源：内容寻址按「内容是否相同」去重，二进制大文件的每个版本都是全新字节流——既没有
+        blob 复用，delta 压缩对已压缩格式（jpg/mp4/zip 每版字节全变）也几乎失效，于是{" "}
+        <strong>每个版本都是一个完整 blob 进包</strong>
+        ，再乘上「别人没有就必须传」的同步原则，克隆体积随历史线性膨胀。
       </Paragraph>
       <Paragraph>
-        于是真正的大问题浮出水面：<strong>每个版本都是一个完整 blob</strong>
-        。100 MB 的模型文件改 50 次 ≈ 5 GB
-        进包；且对象库的「别人没有就必须传」原则（远程协作篇讲过），让每个新克隆的人都得拉下全部 5
-        GB。社区方案思路高度一致——<strong>把大文件请出对象库</strong>：
-      </Paragraph>
-
-      <FlowChart
-        label="Git LFS 指针流 / lfs pointer"
-        height={430}
-        data={{
-          direction: "TB",
-          nodes: [
-            { id: "commit", label: "仓库里：只有指针文件（SHA-256 + 大小）", color: "#1677ff" },
-            { id: "lfsstore", label: "LFS 内容服务器：存真实大文件", color: "#f59e0b" },
-            { id: "localgit", label: "你的 .git/objects：不膨胀", color: "#3fb950" },
-            { id: "worktree", label: "checkout 时按需流式拉取 → 工作区", color: "#8b5cf6" },
-          ],
-          edges: [
-            {
-              source: "commit",
-              target: "lfsstore",
-              label: "指针 → 真身（按哈希取）",
-              dashed: true,
-            },
-            { source: "commit", target: "localgit", label: "普通 blob：照旧入库" },
-            { source: "lfsstore", target: "worktree", label: "smudge 过滤器下载" },
-          ],
-        }}
-      />
-      <Paragraph>
-        <strong>Git LFS</strong>（Large File Storage）的做法：commit
-        里只留一个小指针文本，真身放在外部内容服务器，checkout
-        时按需下载、按哈希缓存去重。配套还有数据集场景的 <strong>DVC</strong>（Git 管元数据、S3
-        等后端管数据）和 clone 侧的 partial clone。最有意思的是 LFS 的本质：它自己就是一个
-        <strong>迷你内容寻址数据库</strong>——哈希寻址、指针引用、按哈希去重，和 .git/objects
-        同构，只是把存储后端从 packfile 换成了 HTTP 服务。等于社区承认「巨型 blob
-        不该住在提交图里」，但把 Git 的核心思想原样搬了过去。
-      </Paragraph>
-
-      <BarChart
-        label="100MB 文件改 50 次的代价 / cost intuition"
-        title="同一大文件两种管理方式的克隆体积（数量级直觉，非精确值）"
-        items={[
-          { label: "直接进 Git（50 个版本）", value: 5000, color: "#f85149", suffix: " MB" },
-          { label: "Git LFS（按需拉取当前版）", value: 100, color: "#3fb950", suffix: " MB" },
-        ]}
-      />
-      <DoDont
-        label="大文件入库决策 / binary policy"
-        dont={{
-          code: `git add model_v3_final_final2.psd
-git commit -m "update design"
-# → 仓库永久多 200MB，每个克隆者买单
-# → delta 压缩失效（psd 内部已压缩）
-# → 后悔时 filter-repo 改写历史，全团队重克隆`,
-          note: "大文件一旦入库就是永久负债：存储、克隆、filter 治理，处处付费。",
-        }}
-        do={{
-          code: `# 超过几 MB、按版本演进的二进制 → LFS
-git lfs install
-git lfs track "*.psd" "*.mp4"     # 写进 .gitattributes
-git add .gitattributes design.psd
-# 偶发的小附件 → 网盘/对象存储发链接`,
-          note: "先 track 再 add：LFS 靠 .gitattributes 识别文件类型，顺序反了就会漏网入库。",
-        }}
-      />
-      <Paragraph>
-        判断口诀收束本节：<strong>文本按行演进的进 Git</strong>（delta 友好、diff 有意义）；
-        <strong>二进制大文件进 LFS 或对象存储</strong>；<strong>构建产物永远不进任何库</strong>
-        （能随时重新生成的东西没有版本价值，只有垃圾价值）。
+        解法是把大文件请出对象库——Git LFS 的指针文件机制、数据集场景的 DVC、clone 侧的{" "}
+        <code>--filter</code> 部分克隆，以及已经入库后的 filter-repo
+        清史手术，这些是另一条完整的故事线，全部在大文件专篇展开。本篇剩下的部分回答纯 Git
+        侧的问题：对象何时打包、何时被物理删除。
       </Paragraph>
 
       <Heading level={2} title="追问链" />
@@ -275,35 +255,24 @@ git add .gitattributes design.psd
               "BFG Repo-Cleaner 是 filter-repo 的替代品；GitHub 对敏感数据还有官方协助渠道（撤下缓存视图）。事故处置的优先级永远是：先作废凭据，再清理历史——历史清理慢一步没关系，密码泄露多一刻都是事故。",
             depth: 3,
           },
-          {
-            q: "Git LFS 为什么能解决大文件问题？它的本质是什么？",
-            intent: "压轴题。检验能否识别 LFS 与 Git 对象库的同构性——这是整条内容寻址主线的回响。",
-            a: "LFS 把大文件从提交图中剥离：仓库里只存一个小指针文件（SHA-256 哈希 + 大小），真身放在独立的内容服务器；checkout 时由 smudge 过滤器按指针的哈希去 LFS 服务器流式拉取，本地按哈希缓存去重。效果：.git 不膨胀、clone 不再连带全部历史版本的大文件、diff 也不再受无关二进制拖累。",
-            bonus:
-              "本质层面：LFS 就是一个迷你版内容寻址数据库——与 .git/objects 同构（哈希即地址、指针引用、天然去重），只是存储后端从本地 packfile 换成了 HTTP 服务。这说明「内容寻址 + 指针」不仅是 Git 的实现细节，而是可迁移的架构模式：DVC、Docker 镜像层、CAS 存储、IPFS 都在用同一套思想。",
-            depth: 4,
-          },
         ]}
       />
 
-      <Heading level={2} title="下一步去哪" />
-      <Paragraph>
-        至此 Git 的五层模型闭环：对象（存什么）→ 引用（指什么）→ 合并（怎么汇合）→ 远程（怎么同步）→
-        存储（怎么安放）。继续深挖的两个方向：一是把这套「内容寻址 + 不可变对象 +
-        指针图」的思想迁移到别的系统——Docker
-        镜像层、区块链、CRDT，你会发现它们都是同一个模式的不同化身；二是动手实验——本篇所有输出都来自临时目录里{" "}
-        <code>git init</code> 出来的实验仓库，亲手做一遍比读十遍记得牢。
-      </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "仓库为什么被几张大文件撑爆？",
+            to: "/note/devtools/git/storage/large-files",
+            description:
+              "delta 救不了的二进制大文件：LFS 指针机制、DVC、partial clone 与清史手术。",
+          },
+          {
+            title: "git 为什么不存 diff：内容寻址怎么做的？",
+            to: "/note/devtools/git/object-model/content-addressing",
+            description: "GC 修剪与打包的对象从哪来：blob/tree/commit/tag 的物理形态。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }

@@ -1,9 +1,10 @@
 import type { NoteMeta } from "@/lib/types";
 
 export const meta = {
-  title: "闭包实战：私有变量、防抖节流与模块模式",
-  description: "闭包三大应用模式的真实代码：数据封装、独立计数器、防抖节流与柯里化实现。",
+  title: "闭包在工程里怎么用：私有状态与模块模式",
+  description:
+    "闭包封装状态的工程手法：私有变量、独立计数器、IIFE 模块模式（单例 vs 多实例）与常见陷阱。",
   difficulty: "进阶",
-  tags: ["闭包", "防抖", "节流", "模块模式"],
-  updated: "2026-08-28",
+  tags: ["闭包", "私有状态", "模块模式", "IIFE"],
+  updated: "2026-09-10",
 } satisfies NoteMeta;

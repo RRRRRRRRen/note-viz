@@ -1,7 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { CrossRef, DoDont, MemoryCard, Prerequisite, Timeline } from "@/components/viz";
 import LayoutThrashingSimulator from "./LayoutThrashingSimulator";
 
 export default function Note() {
@@ -15,6 +15,17 @@ export default function Note() {
         才停，<code>contain</code> 可以人为设界收窄波及范围。<code>transform</code>/
         <code>opacity</code> 走合成器线程，主线程繁忙照样流畅——但层提升有显存代价，警惕层爆炸。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "从输入 URL 到页面渲染，中间发生了什么？",
+            to: "/note/frontend/browser/fundamentals/url-to-render",
+          },
+        ]}
+      >
+        回流与重绘是渲染流水线的后两站——先有「HTML 到像素」的全景图，成本模型才有挂靠的位置。
+      </Prerequisite>
 
       <Heading level={2} title="一帧的生命周期：批处理发生在哪" />
       <Paragraph>
@@ -146,6 +157,43 @@ items.forEach((el, i) => {
         反过来合成线程过载（层太多、栅格化量大）时滚动会掉帧——排查时 Performance 面板的 主线程轨与
         GPU/合成轨要分开看。
       </Paragraph>
+      <DoDont
+        label="动画属性选型 / animate transform"
+        dont={{
+          code: `/* 动 top/left：每帧改几何 → 每帧回流 */
+@keyframes slide {
+  from { top: 0; left: 0; }
+  to   { top: 100px; left: 300px; }
+}`,
+          note: "top/left 参与布局几何，动画的每一帧都走满 Style → Layout → Paint，主线程被持续打满",
+        }}
+        do={{
+          code: `/* transform：合成器直改，跳过主线程 Layout/Paint */
+@keyframes slide {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(300px, 100px); }
+}`,
+          note: "transform 不参与布局，作用于合成层变换——动画从「回流档」迁到「仅合成档」，主线程繁忙照样流畅",
+        }}
+      />
+      <DoDont
+        label="层提升的范围 / will-change"
+        dont={{
+          code: `/* 长列表 1000 项全部预提升 */
+.list-item {
+  will-change: transform;
+}`,
+          note: "每层是一块显存纹理（面积 = 尺寸 × dpr²）：层爆炸让显存暴涨、栅格化量激增，比不加还卡",
+        }}
+        do={{
+          code: `/* 只给真正在动画的元素，动画结束及时移除 */
+.list-item.is-animating {
+  will-change: transform;
+}
+/* 也可以监听 animationstart 加、animationend 移除 */`,
+          note: "层是昂贵的缓存，不是装饰——提升范围与动画生命周期严格对齐",
+        }}
+      />
 
       <MemoryCard keyword="属性三分类" color="#3fb950">
         <strong>仅合成</strong>：transform、opacity（已提升层）；
@@ -248,13 +296,26 @@ items.forEach((el, i) => {
         ]}
       />
 
-      <Heading level={2} title="写在最后" />
-      <Paragraph>
-        全景流水线（这条成本线挂在哪一帧）见站内「从输入 URL 到页面渲染」；rAF
-        与事件循环的调度关系在「事件循环」篇；把「只动合成属性」用到极致的工程案例是「React
-        核心机制」篇的虚拟列表——DOM 数量本身才是最大的回流成本。回流重绘的面试题几乎全部能从「脏位 +
-        传播边界 + 两线程分工」这三个机制推导出来，机制在手，清单不用背。
-      </Paragraph>
+      <CrossRef
+        title="下一个该问的问题"
+        notes={[
+          {
+            title: "从输入 URL 到页面渲染，中间发生了什么？",
+            to: "/note/frontend/browser/fundamentals/url-to-render",
+            description: "全景流水线：回流重绘这条成本线，挂在从网络到像素的哪一帧。",
+          },
+          {
+            title: "事件循环是怎么调度的：从调用栈到微任务",
+            to: "/note/frontend/javascript/event-loop/event-loop-basics",
+            description: "rAF 回调排进哪一轮循环：帧边界与任务队列的调度关系。",
+          },
+          {
+            title: "setState 之后 React 做了什么？",
+            to: "/note/frontend/react/core/setstate-scheduling",
+            description: "从引擎侧切到框架侧：DOM 数量本身才是最大的回流成本，重渲染由谁调度。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

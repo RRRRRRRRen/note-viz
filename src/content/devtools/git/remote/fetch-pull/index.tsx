@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { CompareTable, DoDont, MemoryCard, Timeline, Callout, CrossRef } from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -22,8 +23,8 @@ export default function Note() {
       </Paragraph>
 
       <ShellBlock>{`$ git for-each-ref | grep origin
-0b03d09... commit  refs/remotes/origin/HEAD
-0b03d09... commit  refs/remotes/origin/main
+97a743dc765ba3ec3f892cc2d6ec526285e56b24 commit	refs/remotes/origin/HEAD
+97a743dc765ba3ec3f892cc2d6ec526285e56b24 commit	refs/remotes/origin/main
 
 $ git config --get remote.origin.fetch
 +refs/heads/*:refs/remotes/origin/*    ← 「书签映射表」：对方的 heads/* 抄到我的 remotes/origin/*`}</ShellBlock>
@@ -50,6 +51,25 @@ $ git config --get remote.origin.fetch
           不改工作区、push 的冲突与 pull 的冲突是两回事。
         </p>
       </MemoryCard>
+
+      <DoDont
+        label="远程书签的正确用法 / remote refs"
+        dont={{
+          code: `$ git checkout origin/main
+# detached HEAD（书签不是分支，不能挂提交）
+$ vim fix.ts && git commit -am "fix"
+$ git switch main     # 切走……
+# 那个提交不在任何分支链上了`,
+          note: "远程书签是只读的缓存指针——直接在上面提交，产物会被留在无书签拽着的悬空状态。",
+        }}
+        do={{
+          code: `$ git switch -c fix/remote-main origin/main
+# 基于远程书签创建本地分支，HEAD 立刻有了书签
+$ vim fix.ts && git commit -am "fix"
+$ git push -u origin fix/remote-main`,
+          note: "想在「远程的状态」上动手，标准动作是基于它开一个本地分支——书签本身保持只读。",
+        }}
+      />
 
       <Heading level={2} title="fetch 到底做了什么：四步协议" />
       <Paragraph>
@@ -82,17 +102,20 @@ $ git config --get remote.origin.fetch
 # ……此时远端有人提交了 v2 ……
 
 $ git fetch origin
+From /tmp/gitlab-origin
+   97a743d..13aaf4b  main       -> origin/main    ← 书签被改写：97a743d → 13aaf4b
+
 $ git status -sb
-## main...origin/main [behind 1]  ← 书签被改写：差距现形
+## main...origin/main [behind 1]  ← 差距现形
 
-$ cat .git/refs/remotes/origin/main
-0b03d097362f7bbb7ded8002b2764e804a16b165     ← 书签指向 v2
+$ git rev-parse refs/remotes/origin/main
+13aaf4b8d45b98fa8fba1ef541d6fb5fe4cd7e0c     ← 书签指向 v2
 
-$ cat .git/refs/heads/main
-（还是旧哈希）                    ← 你的 main 纹丝未动
+$ git rev-parse refs/heads/main
+97a743dc765ba3ec3f892cc2d6ec526285e56b24     ← 你的 main 纹丝未动
 
 $ git log --oneline main..origin/main
-0b03d09 v2                       ← 新对象已在本地，只是 main 还没跟上`}</ShellBlock>
+13aaf4b v2                       ← 新对象已在本地，只是 main 还没跟上`}</ShellBlock>
       <Paragraph>
         这就是 fetch 的完整语义：
         <strong>对象库多了新对象 + 远程书签改了指向，其余一切不动</strong>
@@ -146,7 +169,7 @@ $ git log --oneline main..origin/main
         data={{
           direction: "LR",
           nodes: [
-            { id: "base", label: "共同祖先", color: "#8b949e" },
+            { id: "base", label: "共同祖先", color: "#9ca3af" },
             { id: "remote", label: "远端 main（别人的提交）", color: "#f59e0b" },
             { id: "local", label: "本地 main（你的提交）", color: "#1677ff" },
             { id: "ok", label: "先 pull 合并 → 恢复快进关系", color: "#3fb950" },
@@ -165,7 +188,9 @@ $ git log --oneline main..origin/main
         所以「push 冲突」和「pull 冲突」是两回事：<strong>push 被拒是拓扑问题</strong>
         （历史形状不允许快进，一个字节的内容对比都没做）；
         <strong>pull 的冲突是内容问题</strong>
-        （三方对比遇到同区域两种改法）。前者用合并恢复形状，后者用人类裁决解决内容。
+        （三方对比遇到同区域两种改法）。前者用合并恢复形状，后者用人类裁决解决内容。真要强推（例如自己
+        rebase 过的个人分支），用 <code>--force-with-lease</code> 代替 <code>--force</code>
+        ：若远端书签在你上次 fetch 之后又变过，仍然拒绝——防的是「覆盖掉你不知道的新提交」。
       </Paragraph>
 
       <DoDont
@@ -188,6 +213,55 @@ $ git push                              # 历史重新线性，快进成立`,
         }}
       />
 
+      <Heading level={2} title="整合应用：fork 协作的双远程" />
+      <Paragraph>
+        前面所有讨论只有一个远程 origin，而开源贡献的标准姿势是两个：fork 一份到自己的账号、clone
+        自己的 fork（origin，有推送权），再给源仓库挂一条只读通道（upstream）。remote 只是{" "}
+        <code>.git/config</code> 里的配置项，多个 remote 各自拥有一套{" "}
+        <code>refs/remotes/&lt;名字&gt;/*</code> 缓存书签，fetch 互不干扰：
+      </Paragraph>
+
+      <ShellBlock>{`# 一次性配置：给现有仓库添加 upstream
+$ git remote add upstream https://github.com/original/repo.git
+
+$ git remote -v
+origin	git@github.com:you/repo.git (fetch)
+origin	git@github.com:you/repo.git (push)
+upstream	https://github.com/original/repo.git (fetch)
+upstream	https://github.com/original/repo.git (push)`}</ShellBlock>
+      <Paragraph>
+        日常同步上游的三步全是本篇机制的组合拳：<code>git fetch upstream</code>{" "}
+        把源仓库的新对象拉进本地、更新 <code>upstream/main</code> 书签；<code>git merge</code> 或{" "}
+        <code>git rebase</code> 把 <code>upstream/main</code> 整合进自己的 main；
+        <code>git push origin main</code> 把同步结果推回自己的 fork。注意每个 remote 的 fetch 与
+        push URL <strong>可以不同也可以禁用</strong>——对 upstream 唯一合法的操作是 fetch，push
+        只指向 origin。
+      </Paragraph>
+
+      <FlowChart
+        label="双远程拓扑 / fork remotes"
+        height={330}
+        data={{
+          direction: "TB",
+          nodes: [
+            { id: "upstream", label: "upstream 源仓库（只 fetch）", color: "#f59e0b" },
+            { id: "local", label: "本地仓库（fetch + merge 同步上游）", color: "#1677ff" },
+            { id: "origin", label: "origin 你的 fork（fetch + push）", color: "#3fb950" },
+            { id: "pr", label: "Pull Request：fork → 源仓库", color: "#8b5cf6" },
+          ],
+          edges: [
+            { source: "upstream", target: "local", label: "fetch：拉取上游更新", dashed: true },
+            { source: "local", target: "origin", label: "push：推到自己的 fork" },
+            { source: "origin", target: "pr", label: "PR 申请合入上游" },
+          ],
+        }}
+      />
+      <Callout kind="warning" title="误推 upstream 的唯一场景">
+        如果你对源仓库也有推送权限（公司内部仓库常见），remote
+        别名写错就会把代码直接推进上游——这也是开源 fork 场景要刻意识别两个 remote
+        的原因：写入权限跟着 remote 的 URL 走，不跟着你的意图走。
+      </Callout>
+
       <Heading level={2} title="追问链" />
       <QAChain
         items={[
@@ -204,7 +278,7 @@ $ git push                              # 历史重新线性，快进成立`,
             intent: "考察 pull 拆分的意义——「获取事实」与「做出决策」分离的设计哲学。",
             a: "因为合并是需要决策的操作：可能产生冲突、可能你想用 rebase 而不是 merge、可能你想先 review 远端改了什么再表态。fetch 刻意止步于「更新事实」（对象 + 书签），把「如何整合」留给你。git pull 是为「我信任远端、直接同步」场景提供的组合快捷键，两者各有适用场景。",
             bonus:
-              "团队实践中更推荐 fetch + 查看decin + 整合的三步走：log main..origin/main 看新提交、diff main origin/main 看内容差异，再决定 merge 还是 rebase——这比盲目 pull 少很多「pull 完一团乱」的事故。",
+              "团队实践中更推荐 fetch → 查看 → 整合的三步走：log main..origin/main 看新提交、diff main origin/main 看内容差异，再决定 merge 还是 rebase——这比盲目 pull 少很多「pull 完一团乱」的事故。",
             depth: 2,
           },
           {
@@ -216,11 +290,12 @@ $ git push                              # 历史重新线性，快进成立`,
             depth: 2,
           },
           {
-            q: "push 被拒说 non-fast-forward，和合并的 fast-forward 是同一个概念吗？",
-            intent: "同一术语两个场景，能贯通的人才真正掌握「指针前移」这个统一模型。",
-            a: "是同一个概念：快进 = 「新位置是旧位置的后代，指针可以直接前移而不丢弃任何提交」。合并时：main 没分叉，指针能直接滑到 feature → 快进合并。推送时：远端 main 上有你没有的提交，你的提交不是它的后代 → 快进不成立 → 拒绝。解法都是先恢复「祖先关系」：pull 合并（或 rebase）后再推。",
+            q: "git pull --rebase 和默认 pull 有什么区别？什么时候该用哪个？",
+            intent:
+              "替换与合并篇重复的 non-fast-forward 考点，考察整合方式的第二维——历史形状由谁决定。",
+            a: "默认 pull = fetch + merge：远端新提交和你的本地提交通过一个 merge commit 汇合，历史保留分叉事实。pull --rebase = fetch + rebase：把你的本地提交逐个重放到远端新提交之上，历史保持一条直线、不产生合并节点。个人未推送过的功能分支上两者皆可——想保持线性历史用 rebase；本地已有共享的合并历史时用 merge，避免 rebase 改写哈希造成分叉。",
             bonus:
-              "git push --force 的语义就是「放弃快进检查，强制改写远端书签」——协作分支上禁用，因为它会悬空别人的提交；--force-with-lease 是带条件的版本：若远端书签在你上次 fetch 之后又变过，仍然拒绝，防的是「覆盖掉你不知道的新提交」。",
+              "git config pull.rebase true 可把 rebase 设为默认；新版本 Git 在 pull 会产生分歧且未配置整合策略时会直接拒绝执行并提示选择——这是它在逼你显式表态 merge 还是 rebase。",
             depth: 3,
           },
           {
@@ -234,24 +309,26 @@ $ git push                              # 历史重新线性，快进成立`,
         ]}
       />
 
-      <Heading level={2} title="下一步去哪" />
-      <Paragraph>
-        远程同步之后有两条线：<strong>存储与回收</strong>
-        篇回答「fetch 传回的对象、rebase
-        抛弃的旧提交，最终在磁盘上是什么形态、何时被清理」——packfile、delta 压缩、GC
-        的可达性法则，以及大文件的出路 LFS；如果想先补协作场景，合并篇的冲突裁决正是 pull
-        第二步的实战主场。
-      </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "同一文件为什么有时冲突有时不冲突？",
+            to: "/note/devtools/git/merge/three-way-merge",
+            description:
+              "push 被拒的 non-fast-forward 与合并的 fast-forward 是同一概念——拓扑判断的完整推导在合并篇。",
+          },
+          {
+            title: "ssh 免密推送是怎么配出来的？",
+            to: "/note/devtools/git/remote/ssh-setup",
+            description: "fetch/push 走的传输层：密钥认证、ssh-agent 与协议切换。",
+          },
+          {
+            title: "SSH 是怎么保证远程登录安全的？",
+            to: "/note/devtools/ssh/fundamentals/remote-access",
+            description: "更底层的 SSH 机制：握手流程、签名挑战模型与 ~/.ssh/config 四件套。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }

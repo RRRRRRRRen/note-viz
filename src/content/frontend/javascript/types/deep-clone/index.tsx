@@ -1,6 +1,13 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
-import { CompareTable, DoDont, MemoryCard } from "@/components/viz";
+import {
+  CompareTable,
+  DoDont,
+  MemoryCard,
+  MemoryMap,
+  Prerequisite,
+  CrossRef,
+} from "@/components/viz";
 
 export default function Note() {
   return (
@@ -15,6 +22,32 @@ export default function Note() {
         <strong>弱引用不阻止源对象被 GC</strong>。
       </Conclusion>
 
+      <Prerequisite
+        notes={[
+          {
+            title: "「1」+ 1 为什么等于「11」：隐式转换规则",
+            to: "/note/frontend/javascript/types/type-coercion",
+          },
+        ]}
+      >
+        原始值与引用值的分界（值语义 vs 指针语义）是拷贝问题的源头，本篇直接沿它展开。
+      </Prerequisite>
+
+      <Paragraph>
+        先把分界线画出来：原始值（number/string/boolean…）按<strong>值</strong>
+        存储，赋值即完整拷贝，两个变量从此毫无关系；引用值（对象/数组/函数）按<strong>指针</strong>
+        存储，赋值只复制指针——两个变量指向同一块内存。所以 <code>const b = a</code> 之后改{" "}
+        <code>b.x</code>，<code>a.x</code> 一起变：不是拷贝出了
+        bug，而是从头到尾只有一份对象。顺带一个反直觉的边角： 原始值明明没有方法，
+        <code>"abc".length</code>{" "}
+        却能用——引擎临时创建包装对象、用完即弃，给原始值挂属性因此静默无效。
+      </Paragraph>
+      <Paragraph>
+        深拷贝要解决的就是这条分界线带来的问题：<strong>造一个真正独立的副本</strong>
+        ——改副本的任何一层，原对象都不受影响。判断一段代码有没有拷贝问题，只需要追一个问题：
+        <strong>改嵌套属性时，谁还和它共享内存？</strong>下面从「断开几层」开始拆。
+      </Paragraph>
+
       <Heading level={2} title="三层语义：赋值、浅拷贝、深拷贝" />
       <Paragraph>
         一切从值语义开始：原始值赋值是完整拷贝，两个变量此后毫无关系；引用值赋值是复制指针，两个变量共享同一块内存——改一个另一个跟着变。浅拷贝（
@@ -23,13 +56,28 @@ export default function Note() {
         的值/引用抄进去：第一层原始值安全，第一层引用仍是共享指针；深拷贝则递归断开所有层。
       </Paragraph>
       <Paragraph>
-        判断一段代码会不会出拷贝问题，只需要追一个问题：
-        <strong>改嵌套属性时，谁还和它共享内存？</strong>
-        常见事故：从 props/state 里 <code>{"{...user}"}</code> 之后再改{" "}
+        高频事故正是「浅拷贝侥幸」：从 props/state 里 <code>{"{...user}"}</code> 之后再改{" "}
         <code>copy.profile.name</code>——profile 是引用，原始对象同步被改，React
-        的引用比较优化也随之失效。这类「浅拷贝侥幸」bug
-        在表单草稿、撤销重做（历史栈存引用等于没存）里高发。
+        的引用比较优化也随之失效；表单草稿、撤销重做（历史栈存引用等于没存）是重灾区。
       </Paragraph>
+
+      <DoDont
+        label="浅拷贝的侥幸 / shallow trap"
+        dont={{
+          code: `const copy = { ...state };
+copy.profile.city = "上海";
+
+state.profile.city
+// "上海" —— 源对象被改脏`,
+          note: "profile 是嵌套引用，浅拷贝后仍共享同一块内存",
+        }}
+        do={{
+          code: `// 明确只改第一层 → 浅拷贝够用
+// 要断开所有层 → 深拷贝
+const copy = structuredClone(state);`,
+          note: "先问「会改到第几层」，再选拷贝深度",
+        }}
+      />
 
       <CompareTable
         label="对比 / copy depth"
@@ -53,6 +101,68 @@ export default function Note() {
             "适合：撤销栈、缓存快照、跨组件状态隔离",
           ],
         }}
+      />
+
+      <MemoryMap
+        label="浅拷贝断到第几层 / shallow copy layers"
+        regions={[
+          {
+            id: "stack",
+            title: "变量（栈）",
+            desc: "赋值只是复制指针",
+            layout: "column",
+            color: "#f59e0b",
+          },
+          {
+            id: "heap",
+            title: "对象（堆）",
+            desc: "{...state} 之后的内存",
+            layout: "wrap",
+            color: "#1677ff",
+          },
+        ]}
+        objects={[
+          {
+            id: "v-src",
+            label: "state",
+            region: "stack",
+            fields: [{ name: "ptr", refTo: "o-src" }],
+          },
+          {
+            id: "v-copy",
+            label: "copy",
+            region: "stack",
+            fields: [{ name: "ptr", refTo: "o-copy" }],
+          },
+          {
+            id: "o-src",
+            label: "state（源对象）",
+            region: "heap",
+            color: "#1677ff",
+            fields: [
+              { name: "city", value: '"北京"' },
+              { name: "profile", refTo: "o-inner" },
+            ],
+          },
+          {
+            id: "o-copy",
+            label: "copy（浅拷贝）",
+            region: "heap",
+            color: "#3fb950",
+            fields: [
+              { name: "city", value: '"北京"' },
+              { name: "profile", refTo: "o-inner" },
+            ],
+          },
+          {
+            id: "o-inner",
+            label: "profile（嵌套对象）",
+            region: "heap",
+            color: "#8b5cf6",
+            fields: [{ name: "city", value: '"北京"' }],
+          },
+        ]}
+        note={`第一层已断开：state 与 copy 是两块内存，改 copy.city 互不影响；但 profile 的引用 chip 同色——还是同一个对象，copy.profile.city = "上海" 时两边一起变。深拷贝会把 profile 也复制一份，chip 各指各的。`}
       />
 
       <Heading level={2} title="JSON 拷贝的缺陷清单" />
@@ -107,6 +217,28 @@ const copy = structuredClone(state); // 通用首选
         节点与<strong>原型链</strong>
         ——类实例拷出来是普通对象，方法消失。它不是手写的替代品，而是「纯数据快照」场景的最优解；需要保留行为（方法）时，只剩手写一条路。
       </Paragraph>
+      <DoDont
+        label="structuredClone 的边界 / structured clone"
+        dont={{
+          code: `class Cart {
+  items = [];
+  total() { return this.items.length; }
+}
+const copy = structuredClone(new Cart());
+copy.total; // undefined —— 原型与方法全丢
+// （copy.constructor === Object，实测 Node 22.17）
+
+structuredClone(() => {});
+// DataCloneError：函数不能克隆`,
+          note: "结构化克隆只认「数据」：类实例退化为普通对象，函数直接抛错",
+        }}
+        do={{
+          code: `// 带行为的对象 → 手写递归（见下），
+// 或拷贝后手动挂回原型：
+Object.setPrototypeOf(copy, Cart.prototype);`,
+          note: "纯数据快照用 structuredClone，要保留行为就走手写",
+        }}
+      />
       <Paragraph>
         手写版的及格线是「递归 + WeakMap 断循环」，满分要补三件事：<strong>内建类型</strong>
         （Date/RegExp/Map/Set 各有专属构造）、<strong>Symbol 键</strong>
@@ -117,6 +249,8 @@ const copy = structuredClone(state); // 通用首选
       <CodeBlock
         lang="typescript"
         code={`function deepClone(source, seen = new WeakMap()) {
+  // null/原始值/函数直接返回：函数的 typeof 是 "function"，
+  // 走这行原样返回引用——克隆无状态函数没有意义，共享即可
   if (source === null || typeof source !== "object") return source;
   if (seen.has(source)) return seen.get(source); // 命中：断开循环
   if (source instanceof Date) return new Date(source);
@@ -174,6 +308,14 @@ const copy = structuredClone(state); // 通用首选
               "同样的判断出现在所有「过程性缓存」场景：DOM 关联元数据用 WeakMap、观察者列表用 WeakRef——强引用还是弱引用，问「缓存该活多久」。",
           },
           {
+            q: "seen 登记的时机为什么必须在递归之前？放到递归之后会怎样？",
+            intent: "考断环机制的时序——「登记时机」是循环引用检测的成败点，顺序写错环照样爆栈。",
+            depth: 4,
+            a: "必须先 seen.set(source, target) 再对属性值递归。登记在前，递归中再次遇到同一个对象时 seen.has 命中、直接返回缓存，环被截断；登记在后，第一次回到自身时缓存里还没有记录，递归继续深入——无限展开直到栈溢出，WeakMap 形同虚设。选型（WeakMap）管的是拷贝结束后的回收，时序（先登记）管的是拷贝过程中的断环——两问答的不是一个层面。",
+            bonus:
+              "Map/Set 分支同理：先创建空容器并登记，再逐项深拷贝——先把「壳」挂进缓存，环引用回来时拿到的是完整的壳，而不是等待中的递归。",
+          },
+          {
             q: "structuredClone 为什么不能替代所有手写深拷贝？",
             intent: "考内建 API 的边界——说得出「原型与函数」这一层，说明真对比过而不只是知道名字。",
             depth: 4,
@@ -193,12 +335,22 @@ const copy = structuredClone(state); // 通用首选
         ]}
       />
 
-      <Heading level={2} title="写在最后" />
-      <Paragraph>
-        值与引用的原始分界见「类型系统与隐式转换」篇；满分手写版的面试考点拆解（WeakMap
-        为什么这么选、怎么应对追问）见「手写题精选」篇的深拷贝小节。拷贝的本质是「内存共享边界的管理」——想继续往内存方向深挖，站内「GC
-        与内存泄漏」篇是下一站。
-      </Paragraph>
+      <CrossRef
+        title="下一个该问的问题"
+        notes={[
+          {
+            title: "「1」+ 1 为什么等于「11」：隐式转换规则",
+            to: "/note/frontend/javascript/types/type-coercion",
+            description: "值与引用的分界从类型系统讲起——原始值按值、引用值按指针。",
+          },
+          {
+            title: "JS 是怎么释放内存的：GC 与泄漏排查",
+            to: "/note/frontend/javascript/memory/gc-and-leaks",
+            description:
+              "拷贝管理「内存的复制」，GC 管理「内存的回收」——WeakMap 弱引用选型在那边完整展开。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

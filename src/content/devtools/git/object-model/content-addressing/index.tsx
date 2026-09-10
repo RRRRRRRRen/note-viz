@@ -1,6 +1,7 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { Callout, CompareTable, DoDont, MemoryCard, Timeline, CrossRef } from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -11,7 +12,7 @@ export default function Note() {
         哈希，哈希就是它在对象库里的地址；每次提交记录的是整个项目的快照（一棵指针树），没改的文件直接引用旧对象，所以取版本是
         O(1) 定位、diff 只是展示用的临时计算。<code>git cat-file -p HEAD</code>{" "}
         可以直接拆开任意一个对象看内部——理解了
-        blob（内容）、tree（目录）、commit（历史）三层结构，Git
+        blob（内容）、tree（目录）、commit（历史）、tag（锚定版本的批注）四种对象，Git
         的一切行为都能从模型推出来，不再需要死记。
       </Conclusion>
 
@@ -142,7 +143,10 @@ ce013625030ba8dba906f756967f9e9ca394464a    ← 一模一样`}</ShellBlock>
         ——tree 是「有内容的清单」，目录里没有任何文件就没有东西可指，连 tree
         都不会生成。这不是功能缺失，是模型下的必然。
       </Paragraph>
-      <Paragraph>把三种对象拼起来，一次提交的完整结构长这样：</Paragraph>
+      <Paragraph>
+        把 blob、tree、commit 三层拼起来，一次提交的完整结构长这样（tag
+        对象不参与提交图，它在引用层给某个 commit 钉锚点）：
+      </Paragraph>
 
       <FlowChart
         label="对象引用图 / object graph"
@@ -156,7 +160,7 @@ ce013625030ba8dba906f756967f9e9ca394464a    ← 一模一样`}</ShellBlock>
             { id: "tree1", label: "tree 根目录清单 v1", color: "#8b5cf6" },
             { id: "blobA2", label: "blob a.txt（新内容）", color: "#1677ff" },
             { id: "blobB", label: "blob b.txt（复用）", color: "#3fb950" },
-            { id: "blobA1", label: "blob a.txt（旧内容）", color: "#8b949e" },
+            { id: "blobA1", label: "blob a.txt（旧内容）", color: "#9ca3af" },
           ],
           edges: [
             { source: "commit2", target: "tree2", label: "tree" },
@@ -198,6 +202,45 @@ refactor: 事件循环笔记按最新规范重写——DoDont 陷阱对照、追
         <strong>author/committer 行</strong>
         ——谁、什么时候。仅此而已，没有任何魔法字段。
       </Paragraph>
+
+      <Heading level={3} title="tag：第四种对象，给提交钉上的批注" />
+      <Paragraph>
+        <strong>tag</strong> 是四种对象里最不常被拆开看的一种：它是「指向另一个对象 +
+        一段批注」的封装，典型用途是给发布锚定的那个 commit
+        附上版本号、打签名的人和时间。注意对象模型里说的 tag 指 <strong>annotated tag</strong>（
+        <code>git tag -a</code> 创建）——它自己就是一个可 <code>cat-file</code> 的对象；而轻量 tag（
+        <code>git tag v0.0</code>）只是 <code>refs/tags/</code> 下一个直接指向 commit
+        的指针文件，和分支文件同构，没有对象本体。真机拆开对比：
+      </Paragraph>
+
+      <ShellBlock>{`$ git tag -a v0.1 -m "release v0.1"
+
+$ git cat-file -t v0.1
+tag                                    ← v0.1 是一个「tag 对象」
+
+$ git cat-file -p v0.1
+object 8e56b172a1571e1c91b1cc58fc846889886614a4    ← 指向哪个 commit
+type commit                                        ← 指向的对象类型
+tag v0.1                                           ← tag 的名字
+tagger dev <dev@example.com> 1788973952 +0800      ← 谁打的、何时
+
+release v0.1
+
+$ git tag v0.0                         # 轻量 tag 对照
+$ git cat-file -t v0.0
+commit                                 ← 没有对象本体，直接就是 commit`}</ShellBlock>
+      <Paragraph>
+        tag 对象让「版本」从分支的移动状态里独立出来：分支会前进，tag 对象一经创建就钉死在那个
+        commit 上——发布历史因此有了不可变的锚点。批量看一个仓库的对象构成，{" "}
+        <code>git cat-file --batch-all-objects --batch-check</code>{" "}
+        能列出全部对象的类型与大小，四种类型一目了然。
+      </Paragraph>
+      <Callout kind="tip" title="签名 tag">
+        <code>git tag -s</code> 创建 GPG 签名的 tag 对象：批注区域带上{" "}
+        <code>-----BEGIN PGP SIGNATURE-----</code>
+        ，任何人都能用发布者的公钥验证「这个版本确实是本人发布的」。发布不可变锚点 +
+        可验证来源，这是 tag 对象区别于分支文件的全部意义。
+      </Callout>
 
       <MemoryCard keyword="哈希即地址，快照即版本" color="#8b5cf6">
         <p>
@@ -248,15 +291,50 @@ commit = 完整快照（复用未变对象）
         }}
       />
 
+      <DoDont
+        label="海量小文件仓库 / loose objects"
+        dont={{
+          code: `# 数十万文件的仓库 + 高频提交，从不整理
+$ ls .git/objects/00 | wc -l
+2002                        # 每个两位目录下塞满小文件
+# inode、目录项、open 调用全面吃紧`,
+          note: "松散对象是「写路径最便宜」的设计，但读路径与文件系统迟早为海量小文件买单。",
+        }}
+        do={{
+          code: `$ git gc            # 打包成 packfile + idx 索引
+$ ls .git/objects/pack
+pack-xxx.pack  pack-xxx.idx   # 几十万个对象收敛成两个文件`,
+          note: "「日常松散、定期打包」是设计意图——写入永不整理，整理交给 gc（存储篇细讲）。",
+        }}
+      />
+
+      <DoDont
+        label="改代码前的对齐 / before edit"
+        dont={{
+          code: `# 上周 clone 的仓库，直接开工
+$ vim app.ts && git commit -am "fix: ..."
+$ git push
+ ! [rejected] main -> main (fetch first)`,
+          note: "远端早前进了新提交，你的提交和它分叉——内容寻址下这是两个必然不同的新对象。",
+        }}
+        do={{
+          code: `$ git pull --rebase   # 先对齐再开工（或开工前 fetch）
+$ vim app.ts && git commit -am "fix: ..."
+$ git push             # 快进关系成立，一次推过`,
+          note: "改之前先让本地 main 与远端对齐，避免制造注定要合并的分叉历史。",
+        }}
+      />
+
       <Heading level={2} title="追问链" />
       <QAChain
         items={[
           {
-            q: "一个文件被修改并提交 10 次，仓库里存了几份？",
-            intent: "检验是否真正区分「快照模型」与「全量复制」——这是对象模型的第一道分水岭。",
-            a: "逻辑上 10 个版本，物理上 10 个 blob 对象，但不是 10 份完整拷贝。每次修改内容变化 → SHA-1 变化 → 生成新 blob，旧 blob 原样保留（这正是版本回溯的依据）；同时其余没改的文件一个新对象都不产生。所以 10 次提交只会新增 10 个该文件的 blob + 10 棵有变化的 tree + 10 个 commit，仓库整体增长与「变化量」成正比，与项目大小无关。",
+            q: "在一个已有提交的基础上，同一文件修改并提交 10 次，仓库里存了几份？",
+            intent:
+              "检验是否真正区分「快照模型」与「全量复制」——这是对象模型的第一道分水岭。注意口径：已有 1 个首次提交，再改 10 次。",
+            a: "该文件逻辑上 11 个版本，物理上 11 个 blob 对象（首次提交 1 个 + 后续 10 次修改各 1 个），但不是 11 份完整拷贝。每次修改内容变化 → SHA-1 变化 → 生成新 blob，旧 blob 原样保留（这正是版本回溯的依据）；同时其余没改的文件一个新对象都不产生。仓库整体是 11 个 commit + 有变化的 tree + 11 个该文件的 blob，增长与「变化量」成正比，与项目大小无关。",
             bonus:
-              "Git 后台还会把松散对象打包成 packfile，对相似 blob 做字节级 delta 压缩——10 个版本在磁盘上可能只有 1 份基准 + 9 份增量。这是存储层的透明优化，不改变「每版一个对象」的逻辑模型。",
+              "Git 后台还会把松散对象打包成 packfile，对相似 blob 做字节级 delta 压缩——11 个版本在磁盘上可能只有 1 份基准 + 10 份增量。这是存储层的透明优化，不改变「每版一个对象」的逻辑模型。",
             depth: 1,
           },
           {
@@ -295,27 +373,21 @@ commit = 完整快照（复用未变对象）
         ]}
       />
 
-      <Heading level={2} title="下一步去哪" />
-      <Paragraph>
-        对象模型是地基，上面已经长出了三栋楼：<strong>分支与 HEAD</strong>
-        （41 字节指针文件如何驱动一切操作，见「引用系统」篇）；<strong>三方合并</strong>
-        （冲突判定为什么是区域级而非文件级，见「合并」篇）；<strong>存储与 GC</strong>
-        （松散对象何时被打包、被删的对象什么时候才真的消失，见「存储与回收」篇）。
-      </Paragraph>
-      <Paragraph>
-        如果只选一篇接着读，选引用系统——「分支只是文件」这个事实配合本篇的对象图，会让
-        rebase、reset、checkout 这些曾经需要背的命令全部变成看图说话。
-      </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "reset --hard 丢弃的提交去哪了？",
+            to: "/note/devtools/git/refs/branch-head",
+            description:
+              "「分支只是文件」配合本篇的对象图，让 rebase、reset、checkout 全部变成看图说话。",
+          },
+          {
+            title: "同一文件为什么有时冲突有时不冲突？",
+            to: "/note/devtools/git/merge/three-way-merge",
+            description: "对象模型之上的图算法：merge-base 与三方对比如何裁决冲突。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }

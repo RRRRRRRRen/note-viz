@@ -1,6 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import CodeBlock from "@/components/demo/CodeBlock";
-import { DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { CrossRef, DoDont, MemoryCard, Prerequisite, Timeline } from "@/components/viz";
 
 export default function Note() {
   return (
@@ -13,6 +13,18 @@ export default function Note() {
         <strong>new 的四步语义</strong>
         ：创建对象 → 挂原型链 → 以新对象为 this 执行 → 按返回值类型决定结果。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "属性是怎么被继承的：原型链查找",
+            to: "/note/frontend/javascript/prototype/prototype-chain",
+          },
+        ]}
+      >
+        new 四步里的「挂原型链」与 [[Prototype]]/prototype/__proto__
+        三者关系，是本篇一切方案的地基。
+      </Prerequisite>
 
       <Heading level={2} title="new 的四步语义：一切继承的地基" />
       <Paragraph>
@@ -83,8 +95,29 @@ b.hobbies // [] ← 互不影响`,
           note: "寄生组合：属性走 Parent.call 各自创建，方法走中间原型共享",
         }}
       />
+
+      <DoDont
+        label="父构造执行两次 / double call"
+        dont={{
+          code: `function Child(name, age) {
+  Parent.call(this, name);      // 第 2 次执行
+}
+Child.prototype = new Parent(); // 第 1 次执行
+// 原型上躺着多余的 name/hobbies
+// （实测 Node 22.17：Object.keys(Child.prototype)
+//   → ['name', 'hobbies', 'constructor']）`,
+          note: "组合继承：父构造跑两遍，第一遍创建的实例属性全浪费在原型上",
+        }}
+        do={{
+          code: `Child.prototype =
+  Object.create(Parent.prototype); // 不调用 Parent
+Child.prototype.constructor = Child;
+// 中间原型是空壳，父构造只在实例化时执行一次`,
+          note: "寄生组合消掉了第一次执行——这正是它成为正解的原因之一",
+        }}
+      />
       <CodeBlock
-        lang="typescript"
+        lang="javascript"
         code={`function Parent(name) {
   this.name = name;
   this.hobbies = []; // 引用类型，必须在实例上创建
@@ -104,6 +137,45 @@ Child.prototype.constructor = Child; // ③ 修复 constructor 指回
 
 const c = new Child("ada", 3);
 c.say(); // 原型方法可用；hobbies 修改不影响其他实例`}
+      />
+      <DoDont
+        label="整体重写 prototype 忘修 constructor / constructor fix"
+        dont={{
+          code: `Child.prototype =
+  Object.create(Parent.prototype);
+// 少了修复行：
+
+const c = new Child("ada");
+c.constructor // Parent —— 沿原型链找到父类
+// （实测 Node 22.17：c.constructor === Parent 为 true）`,
+          note: "靠 constructor 做类型判断或 new c.constructor() 复制实例的代码会翻车",
+        }}
+        do={{
+          code: `Child.prototype =
+  Object.create(Parent.prototype);
+Child.prototype.constructor = Child; // 指回`,
+          note: "或者直接用 class——语法糖自动维护 constructor",
+        }}
+      />
+      <DoDont
+        label="方法写在实例上 / methods on instance"
+        dont={{
+          code: `function Child(name) {
+  Parent.call(this, name);
+  this.say = function () {   // 每个实例
+    return \`I am \${this.name}\`; // 一份新函数
+  };
+}`,
+          note: "1000 个实例 = 1000 个函数对象，内存与创建成本双高",
+        }}
+        do={{
+          code: `Child.prototype.say = function () {
+  return \`I am \${this.name}\`;
+}; // 全体实例共享同一份
+
+class Child { say() {} } // class 默认挂原型`,
+          note: "「属性进 this、方法进 prototype」不只是约定，也是性能决策",
+        }}
       />
       <MemoryCard keyword="一句选型" color="#3fb950">
         手写场景直接背结论：
@@ -175,13 +247,21 @@ c.say(); // 原型方法可用；hobbies 修改不影响其他实例`}
         ]}
       />
 
-      <Heading level={2} title="写在最后" />
-      <Paragraph>
-        原型链的查找细节与 constructor 陷阱的更多案例在站内「原型链」篇；new 与 this
-        绑定的联动在「this 绑定四规则」篇；手写 myNew/myBind
-        的完整实现在「手写题精选」篇。继承这条线从 ES5 的手工修补走到 class
-        的语义收紧——理解修补史，class 的每个约束都能被推导出来。
-      </Paragraph>
+      <CrossRef
+        title="下一个该问的问题"
+        notes={[
+          {
+            title: "属性是怎么被继承的：原型链查找",
+            to: "/note/frontend/javascript/prototype/prototype-chain",
+            description: "[[Prototype]] 查找机制与 constructor 陷阱的更多案例。",
+          },
+          {
+            title: "手写 bind 时，new 为什么能「打败」它？",
+            to: "/note/frontend/javascript/patterns/bind-new-priority",
+            description: "new 四步第③步与显式绑定的优先级之争——[[Construct]] 视角的完整拆解。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }

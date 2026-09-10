@@ -2,13 +2,14 @@ import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components
 import {
   BarChart,
   CompareTable,
+  CrossRef,
   DoDont,
   MemoryCard,
   OutputTimeline,
-  StateFlow,
 } from "@/components/viz";
 import { PlayGround } from "@/components/demo/PlayGround";
 import { StepThrough } from "@/components/demo/StepThrough";
+import EventLoopDiagram from "./EventLoopDiagram";
 
 export default function Note() {
   return (
@@ -107,18 +108,19 @@ export default function Note() {
         与刷新对齐不掉帧的原因。
       </Paragraph>
 
-      <Heading level={2} title="事件循环状态机：一轮的固定顺序" />
+      <Heading level={2} title="事件循环全景：容器与流转" />
       <Paragraph>
-        把一轮循环压缩成三个阶段，顺着箭头走完就回到起点。两条关键规则直接写在转换标签上—— 紫色的
-        <strong>自环</strong>是整篇最关键的一笔：清微任务的过程中新产生的微任务，
-        仍然在本轮清空；蓝色虚线<strong>回边</strong>则是循环永不停机的保证。
+        读图沿箭头走一圈：宏任务队列每轮只放 <strong>1 个任务</strong>
+        上栈；栈上的同步代码产生微任务； 栈一清空，微任务队列<strong>整体清空</strong>
+        ——清的过程中新增的微任务也插队清完（这条递归规则就写在容器里）； 然后才是渲染检查，
+        最后回到队列取下一个任务，循环往复。
       </Paragraph>
       <Paragraph>
-        别忘了脚本本身也是第一个宏任务——第一轮的「执行宏任务」就是你的整段同步代码。
-        「渲染检查」每轮都会进行，但检查的结论可以是"本轮不绘制"：页面在后台标签时整步跳过，
-        清完微任务直接沿回边进入下一轮。
+        对照开头的数据库类比：批处理作业一条条捞出来执行（宏任务「只取一个」），
+        语句级触发器随当前语句连锁执行完毕才放行（微任务「全部清空」）。 这两条规则的
+        <strong>不对称</strong>，就是「微任务永远插队」的全部原因， 也是渲染不被饿死的关键。
       </Paragraph>
-      <EventLoopStates />
+      <EventLoopDiagram />
       <MemoryCard keyword="微任务永远插队">
         微任务不是"优先级高的宏任务"，而是绑定在<strong>本轮</strong>的收尾工作：
         每个宏任务执行完，都要先把微任务队列<strong>彻底清空</strong>
@@ -128,7 +130,9 @@ export default function Note() {
       <Heading level={2} title="动手验证：经典输出题" />
       <Paragraph>
         先自己推一遍输出，再单步对照。这段代码覆盖了本文全部关键机制：同步 executor、
-        微任务递归、宏任务逐轮取。下面的 Playground 可以直接修改做实验：
+        微任务递归、宏任务逐轮取。三个视图分工：下面的 Playground 可直接改代码运行； StepThrough
+        只看<strong>三容器（调用栈/微任务/宏任务）的快照流转</strong>； 每条输出的逐条解读在随后的
+        OutputTimeline。
       </Paragraph>
       <PlayGround
         label="在线运行 / playground"
@@ -152,105 +156,50 @@ console.log(2);
       />
       <StepThrough
         label="逐步推演 / step by step"
-        height={276}
+        height={190}
         autoMs={1600}
         steps={[
           {
-            title: "console.log(1)：同步立即执行",
+            title: "同步代码执行中",
             color: "#f59e0b",
-            desc: "脚本本身是第一个宏任务，正在调用栈上执行；同步语句当场出结果，不进任何队列。",
-            render: <Queues stack={["main 脚本"]} micro={[]} macro={[]} logs={["1"]} />,
-          },
-          {
-            title: "new Promise：executor 是同步的",
-            color: "#f59e0b",
-            desc: "executor 被立即调用——输出「executor 同步执行」。resolve() 不是执行回调，只是把 .then 的回调放进微任务队列。",
+            desc: "调用栈从 main 脚本一路执行到最后一条同步语句；.then 回调与两个 setTimeout 此时只是入队，谁都不执行。",
             render: (
               <Queues
                 stack={["main 脚本"]}
-                micro={["then → log(3)"]}
-                macro={[]}
-                logs={["1", "executor 同步执行"]}
-              />
-            ),
-          },
-          {
-            title: "setTimeout A / B：登记 ≠ 执行",
-            color: "#f59e0b",
-            desc: "两个回调进入宏任务队列排队。延时 0 不代表 0 等待——它们要等轮次。",
-            render: (
-              <Queues
-                stack={["main 脚本"]}
-                micro={["then → log(3)"]}
+                micro={["then 回调"]}
                 macro={["setTimeout → A", "setTimeout → B"]}
-                logs={["1", "executor 同步执行"]}
               />
             ),
           },
           {
-            title: "console.log(2)：同步代码走完",
-            color: "#f59e0b",
-            desc: "最后一条同步语句执行完，调用栈即将清空——事件循环的推进信号到了。",
-            render: (
-              <Queues
-                stack={["main 脚本"]}
-                micro={["then → log(3)"]}
-                macro={["setTimeout → A", "setTimeout → B"]}
-                logs={["1", "executor 同步执行", "2"]}
-              />
-            ),
-          },
-          {
-            title: "栈清空 → 清微任务：输出 3",
+            title: "栈清空 → 清微任务（递归）",
             color: "#8b5cf6",
-            desc: "栈空的瞬间开始清微任务：then 回调上栈执行，输出 3。注意它内部又调用了 queueMicrotask——新微任务此刻入队（补话引出了新补话）。",
+            desc: "栈空即推进信号，微任务检查点触发。关键在中间那列：回调执行中产生的新微任务立刻入队——清空是递归的。",
             render: (
               <Queues
                 stack={["then 回调"]}
-                micro={["queueMicrotask → 3+"]}
+                micro={["queueMicrotask 产生的新微任务"]}
                 macro={["setTimeout → A", "setTimeout → B"]}
-                logs={["1", "executor 同步执行", "2", "3"]}
               />
             ),
           },
           {
-            title: "新微任务仍在本轮：输出 3+",
+            title: "微任务队列真正清空",
             color: "#8b5cf6",
-            desc: "关键一步：清空是递归的——刚产生的新微任务立刻上栈执行，输出 3+，绝不留给下一轮。直到队列真正为空才算清完。",
+            desc: "「队列空」才是取宏任务的前提——本轮产生的所有微任务（包括执行中新生成的）全部处理完，宏任务仍原地等待。",
             render: (
               <Queues
                 stack={["queueMicrotask 回调"]}
                 micro={[]}
                 macro={["setTimeout → A", "setTimeout → B"]}
-                logs={["1", "executor 同步执行", "2", "3", "3+"]}
               />
             ),
           },
           {
-            title: "渲染检查 → 取 1 个宏任务：A",
+            title: "每轮只取一个宏任务",
             color: "#3b82f6",
-            desc: "微任务已空，浏览器视情况渲染或跳过；然后每轮只取一个宏任务：A 上栈，输出 A。",
-            render: (
-              <Queues
-                stack={["宏任务 A"]}
-                micro={[]}
-                macro={["setTimeout → B"]}
-                logs={["1", "executor 同步执行", "2", "3", "3+", "A"]}
-              />
-            ),
-          },
-          {
-            title: "A 完 → 栈空 → 微任务空 → 取 B",
-            color: "#3b82f6",
-            desc: "每轮只取一个的代价：B 必须等 A 这一轮走完（清微任务、渲染检查）才轮到它——这就是 A、B 分属两轮的原因。",
-            render: (
-              <Queues
-                stack={["宏任务 B"]}
-                micro={[]}
-                macro={[]}
-                logs={["1", "executor 同步执行", "2", "3", "3+", "A", "B"]}
-              />
-            ),
+            desc: "取出第一个定时器上栈；它执行完后还要再走一遍「清微任务 → 渲染检查」，第二个定时器才轮得到——两个 setTimeout 分属两轮。",
+            render: <Queues stack={["宏任务 A"]} micro={[]} macro={["setTimeout → B"]} />,
           },
         ]}
       />
@@ -469,88 +418,56 @@ Promise.resolve().then(() => console.log("second"));
         ]}
       />
 
-      <Heading level={2} title="延伸阅读" />
-      <Paragraph>
-        异步回调最终也要回到调用栈上执行——它能不能读到外层变量、<code>this</code> 指向谁，
-        由创建它的那次调用决定，而不是由事件循环决定。下一步建议阅读同技术下的
-        「闭包」（回调如何捕获状态）与「执行上下文」（栈帧里到底存了什么），
-        把同步世界的词法规则和异步世界的调度规则接成完整链路。
-      </Paragraph>
+      <CrossRef
+        title="下一步：从异步调度回到同步世界"
+        notes={[
+          {
+            title: "闭包到底是什么：词法环境的快照",
+            to: "/note/frontend/javascript/closure/closure-basics",
+            description: "异步回调捕获的外层变量活在闭包里——回调如何记住状态。",
+          },
+          {
+            title: "变量提升是怎么发生的：执行上下文",
+            to: "/note/frontend/javascript/scope/execution-context",
+            description: "栈帧里到底存了什么——同步世界的词法规则。",
+          },
+        ]}
+      />
     </NoteShell>
   );
 }
 
-/** 状态机图：一轮事件循环的三个阶段 + 自环（微任务递归）+ 回边（下一轮） */
-function EventLoopStates() {
-  return (
-    <StateFlow
-      label="事件循环状态机 / event loop"
-      direction="LR"
-      states={[
-        {
-          id: "run",
-          label: "执行宏任务",
-          kind: "start",
-          color: "#f59e0b",
-          desc: "脚本也是宏任务",
-        },
-        { id: "drain", label: "清空微任务", color: "#8b5cf6", desc: "全部 · 递归" },
-        { id: "render", label: "渲染检查", color: "#3fb950", desc: "是否绘制由浏览器定" },
-      ]}
-      transitions={[
-        { from: "run", to: "drain", label: "栈清空", color: "#f59e0b" },
-        { from: "drain", to: "drain", label: "新微任务继续插队", color: "#8b5cf6" },
-        { from: "drain", to: "render", label: "队列已空", color: "#8b5cf6" },
-        {
-          from: "render",
-          to: "run",
-          label: "下一轮 · 只取 1 个宏任务",
-          color: "#3b82f6",
-          dashed: true,
-        },
-      ]}
-    />
-  );
-}
-
-/** 推演用三容器快照：调用栈 / 微任务队列 / 宏任务队列 + 控制台输出 */
-function Queues(props: { stack: string[]; micro: string[]; macro: string[]; logs: string[] }) {
+/** 推演用三容器快照：调用栈 / 微任务队列 / 宏任务队列（输出的逐条解读由 OutputTimeline 负责） */
+function Queues(props: { stack: string[]; micro: string[]; macro: string[] }) {
   const cols = [
     { title: "调用栈", items: props.stack, color: "#f59e0b" },
     { title: "微任务队列", items: props.micro, color: "#8b5cf6" },
     { title: "宏任务队列", items: props.macro, color: "#3b82f6" },
   ];
   return (
-    <div>
-      <div className="grid grid-cols-3 gap-2">
-        {cols.map((c) => (
-          <div key={c.title} className="rounded-md border border-border p-2">
-            <div className="mb-1.5 text-[10px] font-semibold" style={{ color: c.color }}>
-              {c.title}
-            </div>
-            <div className="flex min-h-14 flex-col gap-1">
-              {c.items.length === 0 ? (
-                <span className="text-[10px] text-muted">（空）</span>
-              ) : (
-                c.items.map((t) => (
-                  <span
-                    key={t}
-                    className="truncate rounded px-1.5 py-0.5 font-mono text-[10px]"
-                    style={{ backgroundColor: `${c.color}1a`, color: c.color }}
-                  >
-                    {t}
-                  </span>
-                ))
-              )}
-            </div>
+    <div className="grid grid-cols-3 gap-2">
+      {cols.map((c) => (
+        <div key={c.title} className="rounded-md border border-border p-2">
+          <div className="mb-1.5 text-[10px] font-semibold" style={{ color: c.color }}>
+            {c.title}
           </div>
-        ))}
-      </div>
-      <div className="mt-2 rounded bg-[#0d1117] px-2.5 py-1.5 font-mono text-[10px] leading-relaxed text-[#7ee787]">
-        {props.logs.map((l) => (
-          <div key={l}>{`> ${l}`}</div>
-        ))}
-      </div>
+          <div className="flex min-h-14 flex-col gap-1">
+            {c.items.length === 0 ? (
+              <span className="text-[10px] text-muted">（空）</span>
+            ) : (
+              c.items.map((t) => (
+                <span
+                  key={t}
+                  className="truncate rounded px-1.5 py-0.5 font-mono text-[10px]"
+                  style={{ backgroundColor: `${c.color}1a`, color: c.color }}
+                >
+                  {t}
+                </span>
+              ))
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

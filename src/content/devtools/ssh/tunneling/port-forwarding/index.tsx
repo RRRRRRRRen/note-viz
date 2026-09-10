@@ -1,32 +1,43 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard } from "@/components/viz";
+import { CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
 
 export default function Note() {
   return (
     <NoteShell>
       <Conclusion>
-        端口转发的本质是<strong>借 SSH 的加密通道访问你原本「够不着」的服务</strong>
-        ：本地转发 <code>
-          -L
-        </code> 把远端服务「拉」到本地端口（访问内网数据库/管理后台），远程转发{" "}
-        <code>-R</code> 把本地服务「推」到远端端口（临时给外部展示本机开发中的服务），动态转发{" "}
-        <code>-D</code> 起一个 SOCKS5
-        代理（目标地址由每个请求当场决定）。跳板机解决的是更底层的问题——
-        <strong>目标机器路由不通</strong>：现代写法 <code>ssh -J jump target</code>{" "}
-        一条命令完成两段转发，
-        认证流量端到端加密穿透跳板机，体验等同直连。三个方向共用一个记忆锚点：
-        <strong>-L 拉远到近，-R 推近到远，-J 借道中转</strong>。
+        <code>ssh -L 3306:localhost:3306</code> 的两个 3306 分属两台机器：
+        <strong>第一个是你本机的监听端口</strong>（转发入口），冒号后的 <code>localhost:3306</code>{" "}
+        是「<strong>从服务器视角解析</strong>」的目标地址——本例指服务器 自己的
+        3306。记住这个视角，-L/-R/-D 三种转发就通了：本地转发 <code>-L</code>{" "}
+        把远端服务拉到本地端口，远程转发 <code>-R</code> 把本地服务推到远端端口（注意 sshd
+        默认只绑回环，对外暴露需 <code>GatewayPorts</code>），动态转发 <code>-D</code> 起 SOCKS5
+        代理、目标由每个请求当场决定。技术对照：-L/-R ≈ nginx
+        反向代理的一条条静态路由（一个端口固定一个 upstream），-D ≈ SOCKS
+        层的动态代理（目标写在每个请求里）。数据流向统一一句话：
+        <strong>谁监听端口，流量就从谁进来；对面接谁，数据最终到谁那里</strong>。
       </Conclusion>
+
+      <Prerequisite
+        notes={[
+          {
+            title: "SSH 是怎么保证远程登录安全的？",
+            to: "/note/devtools/ssh/fundamentals/remote-access",
+          },
+        ]}
+      >
+        端口转发是 SSH
+        连接层（SSH-CONN）能力的延伸——先有「一条加密连接」的模型，隧道才有挂靠的地方。
+      </Prerequisite>
 
       <Heading level={2} title="隧道思想的来源：一条连接里的多条通道" />
       <Paragraph>
-        篇一讲过 SSH 协议分层：最上层是连接层（SSH-CONN），它允许在
-        <strong>一条加密连接里多路复用 多个逻辑通道</strong>（channel）——你的交互 shell 是一个
-        channel，再开一个窗口复制文件是另一 个
+        SSH 协议分层里最上层是连接层（SSH-CONN），它允许在
+        <strong>一条加密连接里多路复用多个逻辑通道</strong>（channel）——你的交互 shell 是一个
+        channel，再开一个窗口复制文件是另一个
         channel，彼此独立互不阻塞。端口转发只是把这个机制用在了别处：
         <strong>channel 的两端不再都接「你的 shell」，而是各接一个不同的数据源</strong>
-        ——一端接本地 端口，另一端接远端能到达的某个地址。
+        ——一端接本地端口，另一端接远端能到达的某个地址。
       </Paragraph>
       <Paragraph>
         理解了这一点，三种转发模式就不用死记：它们只是「channel 两端接什么」的三种组合。数据流向统一
@@ -34,6 +45,13 @@ export default function Note() {
         <strong>谁监听端口，流量就从谁那里进来；对面接谁，数据最终就到谁那里</strong>。加密
         始终只发生在 SSH 连接内部的两点之间。
       </Paragraph>
+      <MemoryCard keyword="谁监听端口流量就从谁进，对面接谁数据就到谁" color="#1677ff">
+        <p>
+          判断任何转发场景只问两个问题：① 我在本机（还是远端）连哪个新端口？②
+          数据出了隧道后要去哪？答完这两问，-L / -R / -D
+          的命令参数自动浮出来。所有转发的前提是：你先要有一台「两头都够得着」的 SSH 服务器。
+        </p>
+      </MemoryCard>
 
       <FlowChart
         label="本地转发的数据流向 / ssh -L"
@@ -53,13 +71,6 @@ export default function Note() {
           ],
         }}
       />
-      <MemoryCard keyword="转发是「开在新端口的门」，加密是「门后的走廊」" color="#1677ff">
-        <p>
-          判断任何转发场景只问两个问题：① 我在本机（还是远端）连哪个新端口？②
-          数据出了隧道后要去哪？答完 这两问，-L / -R / -D
-          的命令参数自动浮出来。所有转发的前提是：你先要有一台「两头都够得着」的 SSH 服务器。
-        </p>
-      </MemoryCard>
 
       <Heading level={2} title="三种转发：拉远到近、推近到远、动态代理" />
       <Heading level={3} title="本地转发 -L：把远端服务拉到本地" />
@@ -81,8 +92,8 @@ export default function Note() {
       <Paragraph>
         方向反过来：你在本机开发了一个 Web 服务（localhost:3000），想让外网的人临时访问到。
         <code>ssh -R 9000:localhost:3000 myserver</code> 让服务器监听自己的 9000 端口，外部访问
-        <code>myserver:9000</code> → 数据顺着隧道回流到你本机的 3000。相当于穷人版 ngrok，给外部
-        webhook 回调联调、给同事演示本地半成品，都是它的经典用法。
+        <code>myserver:9000</code> → 数据顺着隧道回流到你本机的 3000。相当于自建版的 ngrok/frp
+        反向隧道，给外部 webhook 回调联调、给同事演示本地半成品，都是它的经典用法。
       </Paragraph>
       <Paragraph>
         注意一个默认行为：sshd 出于安全默认只把 -R 的端口绑在服务器的 localhost 上——外网真正访问
@@ -120,129 +131,100 @@ export default function Note() {
       />
       <Paragraph>
         把浏览器代理指向 <code>localhost:1080</code> 后：访问内网 Wiki →
-        流量穿隧道、以服务器身份访问 ，于是「仅内网可见」的站点打开了；在不可信的公共 Wi-Fi
-        上，浏览流量全部加密回家。对比记忆：
-        <strong>-L 是固定线路的专用通道，-D 是出租的通用通道，去哪由乘客（每个请求）说了算</strong>
+        流量穿隧道、以服务器身份访问，于是「仅内网可见」的站点打开了；在不可信的公共 Wi-Fi
+        上，浏览流量全部加密回家。技术对照把三种模式一次分清：
+        <strong>
+          -L/-R 是 nginx 反向代理式的静态路由——一个端口写死一个 upstream；-D 是 SOCKS
+          层的动态代理——upstream 写在每个请求报文里，由发起方当场决定
+        </strong>
         。
       </Paragraph>
 
-      <CompareTable
-        label="三种转发选型 / -L vs -R vs -D"
-        left={{
-          title: "-L 本地转发（拉）",
-          color: "#1677ff",
-          points: [
-            "方向：远端服务 → 本地新端口",
-            "目标写死在参数里，一端口一服务",
-            "典型：GUI 连内网数据库、看内网 Grafana",
-            "本机程序无感知，当 localhost 用",
+      <Table
+        label="三种转发速查 / -L vs -R vs -D"
+        head={["模式", "谁监听新端口", "数据出隧道后到哪", "典型场景"]}
+        rows={[
+          [
+            <code>-L 3306:db:3306</code>,
+            "本机 3306",
+            "由服务器去连 db:3306（服务器视角解析）",
+            "GUI 连内网数据库、看内网 Grafana",
           ],
-        }}
-        right={{
-          title: "-R 远程转发（推）与 -D 动态",
-          color: "#8b5cf6",
-          points: [
-            "-R 方向：本地服务 → 远端新端口（外部访问回流）",
-            "-R 典型：给外网展示本地开发中服务、webhook 联调",
-            "-D：起 SOCKS5 代理，目标随请求变化",
-            "-D 典型：一次代理访问全部内网站点、公共 Wi-Fi 加密",
+          [
+            <code>-R 9000:localhost:3000</code>,
+            "服务器 9000",
+            "回流到你本机 3000（客户端视角解析）",
+            "给外网展示本地开发中服务、webhook 联调",
           ],
-        }}
+          [
+            <code>-D 1080</code>,
+            "本机 1080（SOCKS5）",
+            "由每个请求的目标决定",
+            "一次代理访问全部内网站点、公共 Wi-Fi 加密",
+          ],
+        ]}
       />
-
-      <Heading level={2} title="跳板机：目标机器路由不通怎么办" />
       <Paragraph>
-        前面所有转发的前提是「你至少能 SSH 到一台服务器」。但公司内网机器（10.x.x.x）连 SSH 都路由不
-        到——没有公网 IP，你的包根本出不了公网到达它。此时唯一办法是借一台
-        <strong>两头都通</strong>的 机器中转，它就是跳板机（jump host）：
+        配套两个小但重要的选项：<code>-N</code> 表示「只建隧道不开 shell」（纯转发时脚本里必配）；
+        <code>-f</code> 把 ssh 放进后台，终端不被占用——两者常连用为 <code>ssh -fN -L ...</code>。
       </Paragraph>
 
-      <FlowChart
-        label="跳板拓扑 / jump host"
-        height={280}
-        data={{
-          direction: "LR",
-          nodes: [
-            { id: "laptop", label: "笔记本（家庭网络）", color: "#1677ff" },
-            { id: "jump", label: "跳板机（唯一有公网 IP）", color: "#f59e0b" },
-            { id: "target", label: "目标机 10.0.0.5（内网）", color: "#3fb950" },
-          ],
-          edges: [
-            { source: "laptop", target: "jump", label: "第一段：公网可达" },
-            { source: "jump", target: "target", label: "第二段：内网可达" },
-          ],
-        }}
-      />
-      <Heading level={3} title="两跳手动 vs 端到端隧道" />
-      <Paragraph>
-        传统方式是先登录跳板机、再从跳板机上登录目标机。能用，但有两个深层问题：
-        <strong>① 你的全部流量在跳板机上以明文形态流过</strong>
-        （第二段连接由跳板机发起，跳板机 root 可以看到你敲的一切）；② 体验割裂——scp、rsync、git
-        都没法直接对目标机操作，每个工具都 得手动中转两遍。
-      </Paragraph>
-      <Paragraph>
-        现代方式 <code>ssh -J jump@跳板机 deploy@10.0.0.5</code> 的本质是{" "}
-        <strong>TCP 层转发</strong>：跳板机的 sshd 收到你的转发请求后，替你向 10.0.0.5 发起 TCP
-        连接，然后把两条连接拼接成一条管道。你的认证和数据<strong>端到端加密穿透</strong>
-        跳板机，跳板机只看到不透明的加密字节流——体验完全等同直连，所有工具透明工作。
-      </Paragraph>
-
-      <ShellBlock>{`# 一条命令直达（跳板机、目标机的认证各自独立）
-ssh -J jump@jump.example.com deploy@10.0.0.5
-
-# 写进 ~/.ssh/config 后：ssh target 即达
-Host target
-  HostName 10.0.0.5
-  User deploy
-  ProxyJump jump@jump.example.com   # 借道跳板机
-
-# 多级跳板空格分隔：ssh -J jump1,jump2 target`}</ShellBlock>
-      <MemoryCard keyword="两种信任模型：流量路过 ≠ 流量可见" color="#f59e0b">
-        <p>
-          两跳手动：跳板机是<strong>流量的终点和起点</strong>
-          ，能看到一切（对审计产品是特性，对个人是 隐患）。ProxyJump：跳板机只是
-          <strong>管道的拼接点</strong>，只看到加密字节流。选哪种取决于
-          你要「可控的中转」还是「透明的通路」——商业堡垒机选前者（为了录像），个人跳板选后者（为了
-          体验）。
-        </p>
-      </MemoryCard>
-
-      <Heading level={2} title="自建简易跳板机的加固清单" />
-      <Paragraph>
-        没有预算上堡垒机产品时，一台加固过的跳板机足以覆盖小团队需求。核心思路：
-        <strong>跳板机只做转发这一件事，其余能力全部关闭</strong>
-        ——它是你内网的唯一入口，也是最贵的 攻击目标，一旦沦陷等于整个内网沦陷。
-      </Paragraph>
-
+      <Heading level={2} title="边界与陷阱" />
       <DoDont
-        label="跳板机 sshd_config / hardening"
+        label="-R 暴露面的控制 / GatewayPorts"
         dont={{
-          code: `# 默认配置直接暴露公网
-#PermitRootLogin prohibit-password
-#PasswordAuthentication yes
-#AllowTcpForwarding yes
-#X11Forwarding no
-# → root 可登、密码可爆破、
-#   任何账号都能转发、还开了 X11`,
-          note: "裸奔的跳板机等于把内网大门焊在公网上：爆破脚本 7×24 小时不断，一旦弱口令失守，攻击者以此为跳板横向扫描整个内网。",
+          code: `# /etc/ssh/sshd_config（服务器）
+GatewayPorts yes
+# 任何能登录的用户执行：
+$ ssh -R 0.0.0.0:9000:localhost:3000 myserver
+# → 本地开发服务直接暴露在公网 0.0.0.0:9000`,
+          note: "GatewayPorts yes 允许远程端口绑 0.0.0.0：内网任何一台服务器的 SSH 账号失守，攻击者都能用 -R 把内网服务搬到公网。",
         }}
         do={{
-          code: `# /etc/ssh/sshd_config（跳板机专用）
-PermitRootLogin no
-PasswordAuthentication no      # 只允许密钥
-AllowTcpForwarding yes         # 转发是它的本职
-AllowAgentForwarding no        # 防密钥被服务器借用
-X11Forwarding no
-AllowUsers jumpuser            # 只留一个受限账号`,
-          note: "原则：关闭一切与「转发」无关的能力。配合 fail2ban 防爆破、防火墙只放行 SSH 端口、系统精简不跑业务、补丁及时打。",
+          code: `# 默认 no：-R 端口只绑服务器 localhost
+GatewayPorts clientspecified   # 需要时由客户端显式指定绑定地址
+# 搭配防火墙白名单，只放行明确要对外的端口
+# ufw allow from 203.0.113.0/24 to any port 9000`,
+          note: "保持默认 no 最稳；确有对外需求用 clientspecified + 防火墙精确放行，让「谁能暴露、暴露给谁」成为显式决策。",
         }}
       />
-      <Paragraph>
-        清单之外还有两条认知：其一，<strong>跳板机是单点</strong>
-        ——它挂了所有人都进不去内网，重要环境要么准备第二台，要么接受这个风险写进预案；其二，简易跳板
-        机没有<strong>审计能力</strong>
-        （谁在什么时候连了哪台机器、干了什么），这正是它与堡垒机产品 的分界线——下一讲的起点。
-      </Paragraph>
+      <DoDont
+        label="后台隧道忘断 / -fN leak"
+        dont={{
+          code: `$ ssh -fN -L 3306:db:3306 myserver
+# 用完了忘了关——进程还活着
+$ lsof -iTCP:3306 -sTCP:LISTEN
+ssh 12345 user  (LISTEN)
+# 端口一直被占，几周后忘了它是谁`,
+          note: "后台转发的生命周期没有管理界面：不关就一直占着本地端口、挂着一条连接。长期累积的「僵尸隧道」还会让人误判端口归属。",
+        }}
+        do={{
+          code: `$ ssh -fN -L 3306:db:3306 myserver
+# 用完即关：按监听端口找进程
+$ kill $(lsof -tiTCP:3306 -sTCP:LISTEN)
+# 或给隧道起专用别名，管理有据：
+# ~/.ssh/config 里 Host db-tunnel 配 LocalForward，用后 Ctrl+C`,
+          note: "后台隧道当一次性资源用：建立时记下端口，用完按端口 kill。常用隧道写进 config 用前台跑，Ctrl+C 即断，生命周期清晰。",
+        }}
+      />
+      <DoDont
+        label="目标地址的视角 / whose localhost"
+        dont={{
+          code: `# 笔记本上想连「服务器上的」MySQL：
+$ ssh -L 3306:localhost:3306 myserver
+# 想连「本机笔记本上的」MySQL 时也写它——错
+# localhost 是从 myserver 视角解析的`,
+          note: "-L 冒号后的地址按「服务器视角」解析：localhost 指服务器自己，不是你的笔记本。视角搞反，隧道通到的往往是意料之外的那台机器。",
+        }}
+        do={{
+          code: `# 连服务器本机服务：localhost 没问题
+$ ssh -L 3306:localhost:3306 myserver
+# 连「服务器能到、本机到不了」的第三台：
+$ ssh -L 5432:internal-db.internal:5432 myserver
+# 记忆：目标永远描述「服务器往哪连」`,
+          note: "写 -L 前先自问：数据出了隧道，由谁去连哪个地址？答案永远是「服务器去连」，目标地址就按服务器的网络环境写。",
+        }}
+      />
 
       <Heading level={2} title="追问链" />
       <QAChain
@@ -252,25 +234,25 @@ AllowUsers jumpuser            # 只留一个受限账号`,
             intent: "热身题：端口转发翻车第一名就是没分清「监听端口」和「目标地址」的归属视角。",
             a: "第一个 3306 是你本机的监听端口（转发入口），冒号后面的 localhost:3306 是「从服务器视角解析」的目标地址——本例指服务器自己的 3306。所以 -L 3306:internal-db:5432 的意思是：本机开 3306，数据出隧道后由服务器去连它内网的 internal-db 的 5432——一跃穿透到服务器能到达、而你到不了的第三台机器。记忆：本地端口:目标地址:目标端口，目标按服务器视角解析。",
             bonus:
-              "同理 -R 9000:localhost:3000 的 localhost 是「从谁登录的客户端视角」解析——回流最终到达你本机的 3000。两个方向的目标地址视角相反。",
+              "同理 -R 9000:localhost:3000 的 localhost 是「从发起登录的客户端视角」解析——回流最终到达你本机的 3000。两个方向的目标地址视角相反。",
             depth: 1,
           },
           {
-            q: "内网服务器上跑了个 Web 服务，你在本地浏览器直接转发访问了。现在外网同事也要看，为什么 -R 转发后他访问不了？",
+            q: "内网服务器上跑了个 Web 服务，你转发着访问没问题。现在外网同事也要看，为什么 -R 转发后他访问不了？",
             intent:
               "考察对 sshd 安全默认值（GatewayPorts / bind 地址）的理解，-R 最常见的「不生效」。",
-            a: "sshd 出于安全默认只把 -R 请求的端口绑定在服务器的 localhost（回环地址）上——同事从外网访问服务器的公网 IP 根本到不了那个端口，它只对服务器本机可见。解法是在服务器 sshd_config 里设 GatewayPorts yes（或 clientspecified）并重启 sshd，让远程端口绑定在 0.0.0.0 对外监听；更稳妥的替代是不开这个选项，在服务器上再用一层 -L 或反向 nginx 转发出去。",
+            a: "sshd 出于安全默认只把 -R 请求的端口绑定在服务器的 localhost（回环地址）上——同事从外网访问服务器的公网 IP 根本到不了那个端口，它只对服务器本机可见。解法是在服务器 sshd_config 里设 GatewayPorts yes（或 clientspecified）并重启 sshd，让远程端口绑定在 0.0.0.0 对外监听；更稳妥的替代是不开这个选项，在服务器上再用一层 -L 或 nginx 反代转出去。",
             bonus:
               "GatewayPorts 全局打开有风险：任何能登录的用户都能把内网服务暴露到公网。生产服务器更推荐 clientspecified + 防火墙白名单精确控制哪些端口可对外。",
             depth: 2,
           },
           {
-            q: "ProxyJump 和在跳板机上手动再 ssh 一次，对跳板机而言看到的流量有什么本质区别？为什么说这是「两种信任模型」？",
+            q: "ssh -D 的 SOCKS 代理和公司 VPN 有什么本质区别？为什么浏览器配了 -D，只有浏览器流量走隧道？",
             intent:
-              "区分「TCP 转发」与「会话终结」两个层次——这也是理解下一讲堡垒机录像原理的伏笔。",
-            a: "两跳手动时，你的第二段连接由跳板机发起，明文在跳板机内存里组装——root 可以看到你的全部命令与数据，跳板机是流量的「终点和起点」。ProxyJump 是纯 TCP 层转发：跳板机只负责把两条 TCP 连接拼成管道，你的认证与数据端到端加密穿透，跳板机只见加密字节流。这是「可见的中转」与「透明的通路」两种信任模型：堡垒机产品为了审计录像必须选前者，个人跳板为了体验和安全选后者。",
+              "技术对照题：检验能否区分「应用层按请求代理」与「网络层接管全部流量」两种隧道形态——这是选型 VPN 还是 -D 的分界线。",
+            a: "两层机制不同。-D 是 SOCKS 层的动态代理：只有「显式配置了代理设置」的程序（浏览器、curl --socks5）把请求交给本机 1080 端口，每个请求自带目标地址，出隧道后由服务器代为访问——粒度按应用、按请求，其他程序毫无感知。VPN 在网络层接管：虚拟网卡 + 路由表把整机的（或全网的）IP 包收进隧道，应用无感、无法按应用分流。所以 -D 适合「我要精确控制哪些流量回家」，VPN 适合「这台机器的所有流量都要走内网」。",
             bonus:
-              "ProxyJump（OpenSSH 7.3+）等价于旧的 ProxyCommand ssh -W %h:%p jump，但更简洁且自动处理好密钥代理问题——看到老文档里的 ProxyCommand 写法知道它们同源即可。",
+              "-D 只代理 TCP（SOCKS5 的 UDP ASSOCIATE 多数 SSH 实现不支持），所以浏览器配 -D 时 DNS 解析要走代理的远端解析（SOCKS5h）才不漏——细节没配对会出现「网页开了但 DNS 查询走本地」的半加密状态。",
             depth: 3,
           },
           {
@@ -286,23 +268,25 @@ AllowUsers jumpuser            # 只留一个受限账号`,
 
       <Heading level={2} title="下一步去哪" />
       <Paragraph>
-        到这里你已经能借隧道到达任何「够得着一台跳板」的机器。但换个视角：跳板机知道你连了哪台机器
-        （ProxyJump）甚至看到了你的一切（两跳手动），而公司需要的是<strong>反过来</strong>
-        ——让机器
-        的每一次访问都受控、留痕、可追责。把「跳板」从一个人的工具变成一个组织的安全设施，就是{" "}
-        <strong>堡垒机</strong>；再把「进门查一次」升级成「每次访问都验证身份与设备」，就是{" "}
-        <strong>零信任</strong>——沿这条线继续走。
+        三种转发都建立在一个前提上：你至少能 SSH 到一台「两头够得着」的服务器。当目标机器连 SSH
+        都路由不到、必须借道中转时，「跳板机」登场——它的本质也是转发的一种特例，但信任模型和访问控制
+        是全新的一层。延伸阅读见下。
       </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "跳板机是怎么控制访问的？",
+            to: "/note/devtools/ssh/tunneling/jump-host",
+            description: "ssh -J 与 ProxyJump 的端到端穿透、跳板只见密文的信任模型与自建加固清单。",
+          },
+          {
+            title: "SSH 是怎么保证远程登录安全的？",
+            to: "/note/devtools/ssh/fundamentals/remote-access",
+            description:
+              "转发的地基：SSH 连接七步与 channel 所在的协议分层，加密为什么只发生在连接两端。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }

@@ -23,6 +23,14 @@ function validateMetaFile(filePath: string): string[] {
     const re = new RegExp(`\\b${key}\\s*:`);
     if (!re.test(src)) errors.push(`缺少必填字段 "${key}"`);
   }
+  // title 必须是问句（疑问主干，可带冒号副题）且 ≤25 字符
+  const titleMatch = src.match(/title:\s*(?:"([^"]+)"|'([^']+)')/);
+  const title = titleMatch?.[1] ?? titleMatch?.[2];
+  if (title) {
+    if ([...title].length > 25) errors.push(`title 超过 25 字符（当前 ${[...title].length}）`);
+    const interrogative = /[？？?]|怎么|怎样|如何|为什么|为何|什么|是不是|能否|还是|哪|多少|几|吗/;
+    if (!interrogative.test(title)) errors.push(`title 必须是问句（含 ？/怎么/为什么 等疑问主干）`);
+  }
   return errors;
 }
 

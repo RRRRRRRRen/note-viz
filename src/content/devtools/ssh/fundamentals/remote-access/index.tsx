@@ -1,23 +1,22 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { FlowChart } from "@/components/demo/FlowChart";
-import { CompareTable, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline } from "@/components/viz";
+import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
     <NoteShell>
       <Conclusion>
         SSH（Secure Shell）是在不安全网络上安全操作远程机器的加密协议，默认端口
-        22，客户端-服务器模型：你本机跑 <code>ssh</code> 客户端发起连接，目标机器跑{" "}
-        <code>sshd</code> 服务端接受连接——
+        22，客户端-服务器模型：<code>ssh</code> 与 <code>sshd</code> 的分工 ≈{" "}
+        <strong>curl 与 nginx：一个发起请求，一个常驻应答</strong>——所以
         <strong>只有「被别人连」的机器才需要装 sshd</strong>
-        ，服务器系统通常装好即开机自启，桌面系统默认关闭。 日常四件套：<code>
-          ssh user@host
-        </code>{" "}
-        登录、<code>ssh host '命令'</code> 远程执行、
-        <code>scp/rsync</code> 传文件（反复同步选 rsync，它只传差异部分）、
-        <code>~/.ssh/config</code> 把参数固化成别名。安全上记住一条主线：
+        ，服务器系统通常装好即开机自启，桌面系统默认关闭。安全主线一条：
         <strong>非对称密钥做认证（私钥不出门），对称加密做传输</strong>
-        ，认证通过后的登录状态就是那条活的 TCP 连接本身，不需要「重新验证」直到连接断开。
+        ；用户认证发生在加密通道建立之后，密码与密钥签名都不走明文。认证通过后的登录状态就是那条活的
+        TCP 连接本身，不需要「重新验证」直到连接断开。日常两件套：<code>ssh user@host</code> 登录、
+        <code>ssh host '命令'</code> 远程执行；传文件与 <code>~/.ssh/config</code>{" "}
+        是独立的工具话题（见文末延伸阅读）。
       </Conclusion>
 
       <Heading level={2} title="ssh 与 sshd：一个协议的两个角色" />
@@ -25,12 +24,13 @@ export default function Note() {
         SSH 是协议标准，落地实现是两个不同的程序。最容易混淆的就是名字只差一个字母的这一对：
         <code>ssh</code> 是<strong>客户端</strong>——你想连别人时敲的命令；<code>sshd</code> 是
         <strong>服务端</strong>（结尾的 d 是 daemon，守护进程）——常驻后台监听 22
-        端口，等别人来连，负责验证身份、给你开 shell。一个类比：<code>ssh</code>{" "}
-        是你手里的电话听筒，<code>sshd</code> 是对方家的座机（=电话机，一直插着线等来电）。
+        端口，等别人来连，负责验证身份、给你开 shell。一个技术对照：
+        <strong>ssh 与 sshd 的关系 ≈ curl 与 nginx——一个按需发起请求，一个常驻进程应答</strong>
+        。curl 不需要开机自启，nginx 不关心谁来请求；同样，ssh 用时才跑，sshd 一直守着端口。
       </Paragraph>
       <Paragraph>
-        分工决定了安装需求的不对称：<strong>你的笔记本永远只需要客户端</strong>（macOS/Linux
-        自带），哪怕它一辈子不监听任何端口；只有当一台机器要「被别人连」时才需要装
+        分工决定了安装需求的不对称：<strong>你的笔记本永远只需要客户端</strong>
+        （macOS/Linux 自带），哪怕它一辈子不监听任何端口；只有当一台机器要「被别人连」时才需要装
         sshd。最主流的实现叫 OpenSSH，两个角色都包含在内。
       </Paragraph>
 
@@ -63,7 +63,7 @@ export default function Note() {
         所以「SSH 软件是不是系统自带、是不是开机自启」这个问题要拆开答：
         <strong>客户端永远自带且无需启动</strong>（它是用时才跑的普通程序，不是服务）；服务端在
         <strong>服务器上是装好即自启</strong>（<code>systemctl status ssh</code> 可查看状态），在
-        <strong>桌面系统上默认不开启</strong>——你的 Mac 没开「远程登录」共享时，就 没有 sshd
+        <strong>桌面系统上默认不开启</strong>——你的 Mac 没开「远程登录」共享时就没有 sshd
         在跑，别人连不进来，这是刻意的安全默认。
       </Paragraph>
 
@@ -87,13 +87,12 @@ export default function Note() {
       />
       <Paragraph>
         前三步是例行公事：建立 TCP
-        连接、交换协议版本字符串、各自亮出支持的加密算法列表取交集。真正的主 戏在中间两步——
+        连接、交换协议版本字符串、各自亮出支持的加密算法列表取交集。真正的重头戏在中间两步——
       </Paragraph>
       <Paragraph>
         <strong>第 4 步 Diffie-Hellman 密钥交换</strong>
-        解决的问题是：双方在完全公开的信道上，怎么
-        协商出只有他俩知道的会话密钥？双方公开交换一些数字，各自计算出<strong>相同的</strong>
-        共享密钥
+        解决的问题是：双方在完全公开的信道上，怎么协商出只有他俩知道的会话密钥？双方公开交换一些数字，各自计算出
+        <strong>相同的</strong>共享密钥
         ，而窃听者虽然看到了全部交换过程，面对离散对数难题也算不出来。且这对密钥是每次连接临时生成的，
         即使服务器私钥日后泄露，过去的会话记录也解不开——这叫前向保密（PFS）。
       </Paragraph>
@@ -110,7 +109,7 @@ export default function Note() {
           非对称加密只用在认证和密钥交换这些「一次性」环节
           （慢但安全），真正搬运数据的加密是对称的（快）
         </strong>
-        ——用完即弃的临时密钥 + 高速对称传输， 兼得安全与性能。
+        ——用完即弃的临时密钥 + 高速对称传输，兼得安全与性能。
       </Paragraph>
 
       <FlowChart
@@ -134,9 +133,15 @@ export default function Note() {
 
       <Heading level={2} title="密钥认证：不传秘密的身份证明" />
       <Paragraph>
-        密码认证的问题不在密码弱，而在<strong>密码本身要经过网络</strong>
-        ——服务端那头永远收得到你的
-        秘密，网络抓包、服务端泄露、钓鱼页面全都威胁它。密钥认证换了一套模型：
+        先纠正一个流传很广的说法——「密码认证会把密码暴露给抓包的人」。回看上面的流程：
+        <strong>用户认证（第 6 步）发生在加密通道建立（第 4 步）之后</strong>
+        ，密码是在对称加密通道内传输的，被动抓包只能看到密文，拿不到密码。密码认证的真实弱点在别处：
+        其一，<strong>服务端必须保管「能验证密码的秘密」</strong>
+        ，服务器数据库一泄露，你在这台机器上
+        的身份就被人接管（密钥认证下服务端只有公钥，泄露无害）；其二，
+        <strong>你把密码交给「你以为是真服务器」的通道终点</strong>
+        ——host key 首连麻痹（指纹不对也随手 yes）等于给中间人递刀，钓鱼登录页则是让人主动把密码送给
+        假端点。密钥认证换了一套模型，把这三个弱点一起拆掉：
       </Paragraph>
 
       <FlowChart
@@ -183,7 +188,7 @@ ssh-copy-id user@host`}</ShellBlock>
         <p>
           密钥对认证的全部安全模型一句话：公钥是锁、私钥是钥匙——锁可以公开挂在网上，钥匙只在你机器里。
           判断文件：「.pub」结尾的是公钥可外传；不带后缀的是私钥，泄露 =
-          身份被盗，立刻在所有装过它公钥 的机器上删除对应行。权限是硬约束：<code>~/.ssh</code> 要
+          身份被盗，立刻在所有装过它公钥的机器上删除对应行。权限是硬约束：<code>~/.ssh</code> 要
           700，私钥和 authorized_keys 要 600，权限不对 SSH 会直接拒绝工作。
         </p>
       </MemoryCard>
@@ -232,11 +237,10 @@ Host *
   ServerAliveInterval 60
   ServerAliveCountMax 3`}</ShellBlock>
 
-      <Heading level={2} title="日常操作四件套" />
-      <Heading level={3} title="远程执行命令：不进 shell 也能干活" />
+      <Heading level={2} title="远程执行命令：不进 shell 也能干活" />
       <Paragraph>
         <code>ssh host</code> 拿交互式 shell；引号里带命令则是
-        <strong>远程执行、输出发回、立刻退 出</strong>——本机不会进入远程
+        <strong>远程执行、输出发回、立刻退出</strong>——本机不会进入远程
         shell。这是脚本化运维的基石：
       </Paragraph>
 
@@ -251,56 +255,10 @@ ssh -t host 'sudo systemctl restart nginx'
 # 引号陷阱：双引号里 $HOME 被本机先展开，单引号才用远程的值
 ssh host "echo $HOME"    # 打印你本机的 HOME
 ssh host 'echo $HOME'    # 打印服务器上的 HOME`}</ShellBlock>
-      <Heading level={3} title="scp 与 rsync：一次性拷贝与增量同步" />
       <Paragraph>
-        <code>scp</code> 是「ssh 加持的 cp」，语法几乎一样，把文件整个传一遍，适合一次性拷文件。
-        <code>rsync</code> 是智能同步工具，核心优势是{" "}
-        <strong>delta 算法：只传两边有差异的部 分</strong>
-        ，第二次执行几乎瞬间完成，且传输中断可续传。
-      </Paragraph>
-
-      <ShellBlock>{`# scp：像 cp 一样直觉
-scp 本地文件 user@host:/远程路径     # 上传
-scp user@host:/远程文件 ./          # 下载
-scp -r 目录 user@host:/path         # 递归传目录
-
-# rsync：反复执行的场景用这个
-rsync -avz project/ user@host:~/project
-# -a 归档（保留权限/时间戳/软链） -v 显示过程 -z 压缩传输
-rsync -avz --exclude node_modules project/ user@host:~/project
-rsync -avz --delete project/ user@host:~/project   # 目标端与源端完全一致`}</ShellBlock>
-      <Paragraph>
-        选型一句话：<strong>拷一个文件用 scp，同步一个目录用 rsync</strong>
-        ——凡是会反复执行的传输（部署、备份），rsync 的增量特性都是碾压性优势。顺带一提：新版 OpenSSH
-        的 scp 底层已改用 SFTP 协议，官方也在引导逐步转向 sftp/rsync。
-      </Paragraph>
-
-      <Heading level={3} title="~/.ssh/config：把参数固化成别名" />
-      <Paragraph>
-        裸连 <code>ssh user@203.0.113.10 -p 2222 -i ~/.ssh/work_key</code>{" "}
-        一次可以，天天敲是灾难。config 文件就是<strong>主机通讯录</strong>
-        ：把每台机器的地址、端口、 密钥固化成一个短别名，之后 <code>ssh 别名</code> 走天下，而且
-        scp、rsync、git 全部自动遵守这份配置：
-      </Paragraph>
-
-      <ShellBlock>{`# ~/.ssh/config
-# --- 单机别名：以后就敲 ssh gpu ---
-Host gpu
-  HostName 203.0.113.10
-  User ren
-  Port 2222
-  IdentityFile ~/.ssh/id_ed25519
-  ServerAliveInterval 60
-
-# --- 全局默认：对所有主机生效 ---
-Host *
-  ServerAliveInterval 60       # 心跳保活（见上一节）
-  ServerAliveCountMax 3`}</ShellBlock>
-      <Paragraph>
-        命令行里每个 <code>-X</code> 参数几乎都在 config 里有对应拼写（<code>-p</code> ↔{" "}
-        <code>Port</code>、<code>-i</code> ↔ <code>IdentityFile</code>
-        ）。配一次，受益所有工具。 站内 Git 系列的「SSH 配置与多远程」一篇里有它在 Git
-        多账号场景的完整应用，可交叉阅读。
+        这条能力与登录共用同一条加密通道与认证体系——脚本里没有任何「第二次登录」，只是在那条连接上多开
+        一个会话。传文件（scp/rsync）、把连接参数固化成别名（<code>~/.ssh/config</code>
+        ）这些日常工具话题已拆成独立一篇，见文末延伸阅读。
       </Paragraph>
 
       <Heading level={2} title="边界与陷阱" />
@@ -374,8 +332,17 @@ Ctrl+C 后怀疑是服务器坏了`,
             intent: "考察 host key 机制与 TOFU 模型，判断是否理解 SSH 如何防中间人攻击。",
             a: "防中间人攻击（MITM）：你第一次连的「服务器」可能根本不是真服务器，而是劫持流量的攻击者。SSH 让服务器的 host key 对密钥交换过程签名，你首次确认的指纹会记进 ~/.ssh/known_hosts，此后每次连接都自动比对——一旦指纹突变（被劫持或服务器重装），SSH 直接报警拒绝连接，而不是默默继续。首次询问、之后信任的模式叫 TOFU（Trust On First Use）。",
             bonus:
-              "安全性依赖你首次比对指纹的认真程度：管理严格的机房会带外公布 host key 指纹供人工核对；known_hosts 里以 |1| 开头的条目是哈希过的主机名，防泄露你连过哪些机器。",
+              "安全性依赖你首次比对指纹的认真程度：管理严格的机房会带外公布 host key 指纹供人工核对；known_hosts 里以 |1| 开头的条目是哈希过的主机名，防泄露你连过哪些机器。彻底消掉这个首连提示的办法是 host 证书（见延伸阅读的 SSH 证书一篇）。",
             depth: 2,
+          },
+          {
+            q: "密码认证的密码到底经不经过网络？既然加密了，为什么还推荐密钥认证？",
+            intent:
+              "递进题：检验是否真正理解「认证发生在加密通道之后」这个时序，能否把威胁精确到服务端泄露与 MITM，而不是笼统说「抓包偷密码」。",
+            a: "经过网络，但不是明文：用户认证排在密钥交换与服务器认证之后，密码在协商好的对称加密通道内传输，被动抓包只能看到密文。推荐密钥认证是因为密码模型有三个结构性弱点：①服务端必须保管可验证密码的秘密，库泄露即身份被盗，而密钥模型下服务端只有公钥，泄露无害；②密码把「你是谁」绑定在通道终点上，host key 首连麻痹时中间人能在自己的加密通道里收走你的密码；③钓鱼登录页直接骗人交密码。密钥认证的签名挑战模型让网络里只出现「签名结果」，以上三条一起消解。",
+            bonus:
+              "挑个反例加深理解：密码认证并非一无是处——磁盘加密、开机登录仍是密码形态，因为那些场景没有「本机私钥」可用；SSH 的优势在于它有天然的客户端存储可放私钥。",
+            depth: 3,
           },
           {
             q: "为什么 DH 密钥交换能在窃听者眼皮底下协商出秘密？以及有了它为什么还需要 host key？",
@@ -384,40 +351,46 @@ Ctrl+C 后怀疑是服务器坏了`,
             a: "DH 的数学魔力在于：双方公开交换一些数字后各自计算出相同的共享密钥，而窃听者虽然看到全部交换数据，面对离散对数难题无法算出这个密钥——这解决的是「防窃听」。但它防不了「冒充」：中间人可以对双方各演一场独立的 DH 交换（各自达成秘密），神不知鬼不觉。所以需要 host key 对交换过程签名，确认「和我交换的人确实是那台服务器」。两者合起来才完整：DH 管保密，host key 管身份。",
             bonus:
               "会话密钥每次连接临时生成且用后即弃，意味着即使服务器 host key 日后泄露，攻击者拿历史抓包也解不开过去任何一次会话——前向保密（PFS）。这也是老协议（如早期 TLS 静态 RSA 密钥交换）被淘汰的原因。",
-            depth: 3,
+            depth: 4,
           },
           {
-            q: "私钥认证比密码安全在哪里？既然如此，为什么生产环境还要禁用 root 直接登录、禁用密码认证？",
+            q: "既然密钥认证更强，为什么生产环境还要禁用 root 直接登录、禁用密码认证？",
             intent:
               "收束题：考察能否从「单次认证的强度」上升到「系统性的攻击面收敛」，这是运维安全的基本功。",
             a: "密钥认证的安全在于：网络上只传签名不传秘密（不可重放）、服务端只存公钥（库泄露不伤及用户）、私钥可以设 passphrase 且不经过任何中间环节。而生产环境禁 root 直登 + 禁密码，是把这层逻辑再往外推：root 是所有攻击者都内置的默认用户名，禁掉后攻击者要同时猜对「用户名+密码」才能爆破；密码认证一开，整个密钥体系的强度就被最弱的一个密码拉平——攻击面由木桶最短板决定。sshd_config 里 PasswordAuthentication no + PermitRootLogin no 是任何暴露公网的服务器的第一课。",
             bonus:
               "禁密码后配合 fail2ban 自动封爆破 IP；改默认 22 端口只能减少扫描噪音（脚本小子级），对定向攻击无效——真安全靠密钥 + 防火墙白名单，不靠藏端口。",
-            depth: 4,
+            depth: 5,
           },
         ]}
       />
 
       <Heading level={2} title="下一步去哪" />
       <Paragraph>
-        本篇解决了「安全地登录一台机器」。但真实工作里经常要访问的是
-        <strong>机器后面的服务</strong>
-        ——内网数据库、只能服务器本机访问的管理后台，或者反过来把本地服务临时暴露出去：这是{" "}
-        <strong>端口转发与隧道</strong>
-        的故事；当目标机器还要再跳一层才能到达（跳板机），以及公司级
-        的入口管控与审计（堡垒机、零信任），沿着本篇的认证模型往外长。另外，本篇的密钥与 config 在
-        Git 远程仓库场景的完整应用，见站内「SSH 配置与多远程」——同一套机制，另一个战场。
+        本篇解决了「安全地登录一台机器」与「不进 shell 远程执行」。但真实工作里经常要访问的是
+        <strong>机器后面的服务</strong>——内网数据库、只能服务器本机访问的管理后台，或者反过来把本地
+        服务临时暴露出去：这是<strong>端口转发与隧道</strong>
+        的故事；目标机器还要再跳一层时，跳板机的 信任模型是下一站。延伸阅读按学习顺序列在下面。
       </Paragraph>
+      <CrossRef
+        notes={[
+          {
+            title: "scp 和 rsync 怎么选？",
+            to: "/note/devtools/ssh/fundamentals/file-transfer",
+            description: "传文件的工具谱系：共用 ssh 底座、增量同步的 delta 算法与选型场景。",
+          },
+          {
+            title: "ssh -L 的两个端口号分别是谁的？",
+            to: "/note/devtools/ssh/tunneling/port-forwarding",
+            description: "本篇加密通道的进阶用法：把够不着的服务拉到本地端口。",
+          },
+          {
+            title: "堡垒机为什么看得到加密流量？",
+            to: "/note/devtools/ssh/security/bastion-audit",
+            description: "组织级入口管控：会话终结代理与审计回放的机制。",
+          },
+        ]}
+      />
     </NoteShell>
-  );
-}
-
-function ShellBlock({ children }: { children: string }) {
-  return (
-    <div className="my-4 overflow-x-auto rounded-lg bg-[#0d1117] p-4">
-      <pre className="font-mono text-xs leading-relaxed whitespace-pre text-[#e6edf3]">
-        {children.trim()}
-      </pre>
-    </div>
   );
 }
