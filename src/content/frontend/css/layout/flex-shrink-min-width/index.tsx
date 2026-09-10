@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
+import { CodeBlock } from "@/components/demo";
 import { CrossRef, DoDont, MemoryCard, Prerequisite, SpecQuote, Table } from "@/components/viz";
 import FlexShrinkSimulator from "./FlexShrinkSimulator";
 

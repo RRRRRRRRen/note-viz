@@ -1,4 +1,4 @@
-import CodeBlock from "@/components/demo/CodeBlock";
+import { CodeBlock } from "@/components/demo";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import {
   Callout,

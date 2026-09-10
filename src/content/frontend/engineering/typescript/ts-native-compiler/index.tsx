@@ -1,4 +1,4 @@
-import { FlowChart } from "@/components/demo/FlowChart";
+import { FlowChart } from "@/components/demo";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, VersionNote } from "@/components/viz";
 
@@ -53,7 +53,11 @@ export default function Note() {
           direction: "LR",
           nodes: [
             { id: "bin", label: "node_modules/.bin/tsc（shell 脚本）", color: "#9ca3af" },
-            { id: "launcher", label: "typescript/bin/tsc（一行 node 启动器）", color: "#1677ff" },
+            {
+              id: "launcher",
+              label: "typescript/bin/tsc（一行 node 启动器）",
+              color: "#1677ff",
+            },
             { id: "exe", label: "lib/tsc.js（getExePath + execve）", color: "#f59e0b" },
             { id: "native", label: "平台二进制 Mach-O 原生进程", color: "#3fb950" },
           ],

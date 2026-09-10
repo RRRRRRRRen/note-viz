@@ -1,8 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { CodeAnnotate } from "@/components/demo/CodeAnnotate";
-import { Exercise } from "@/components/demo/Exercise";
+import { CodeAnnotate, Exercise, ShellBlock } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, OutputTimeline, Table } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
 
 /** deploy.sh 逻辑骨架（单引号数组拼接，避免模板字符串与 shell 变量语法冲突） */
 const SCRIPT = [

@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { FlowChart, ShellBlock } from "@/components/demo";
 import {
   Callout,
   CompareTable,
@@ -8,7 +8,6 @@ import {
   MemoryCard,
   Prerequisite,
 } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -84,7 +83,11 @@ TrustedUserCAKeys /etc/ssh/team_user_ca.pub`}</ShellBlock>
           nodes: [
             { id: "ca", label: "团队 CA（私钥签发，公钥给服务器）", color: "#f59e0b" },
             { id: "cert", label: "证书 = 用户公钥 + 元数据 + CA 签名", color: "#8b5cf6" },
-            { id: "meta", label: "元数据：principal 账号 / 有效期 / 序列号", color: "#8b5cf6" },
+            {
+              id: "meta",
+              label: "元数据：principal 账号 / 有效期 / 序列号",
+              color: "#8b5cf6",
+            },
             { id: "server", label: "服务器：只存一把 CA 公钥", color: "#1677ff" },
             { id: "verify", label: "登录时三查：验签 / principal / 时间窗", color: "#3fb950" },
           ],

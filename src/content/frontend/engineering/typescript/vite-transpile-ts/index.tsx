@@ -1,4 +1,4 @@
-import { StepThrough } from "@/components/demo/StepThrough";
+import { StepThrough } from "@/components/demo";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
 import {
   CompareTable,

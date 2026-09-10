@@ -7,8 +7,7 @@ import {
   MemoryCard,
   OutputTimeline,
 } from "@/components/viz";
-import { PlayGround } from "@/components/demo/PlayGround";
-import { StepThrough } from "@/components/demo/StepThrough";
+import { PlayGround, StepThrough } from "@/components/demo";
 import EventLoopDiagram from "./EventLoopDiagram";
 
 export default function Note() {

@@ -1,7 +1,6 @@
+import { CodeBlock, DemoButton, LogPanel, ResetButton } from "@/components/demo";
 import { useState } from "react";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
-import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
 import {
   CrossRef,
   DoDont,

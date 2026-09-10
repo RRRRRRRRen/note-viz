@@ -209,8 +209,10 @@ export function Timeline(props: {
 export function OutputTimeline(props: {
   label?: string;
   steps: { output: string; phase: string; why: string; color?: string }[];
+  /** 阶段→颜色映射；默认为 JS 运行时语义（同步/微任务/宏任务），讲其他运行时时可覆盖 */
+  phaseColors?: Record<string, string>;
 }) {
-  const phaseColor: Record<string, string> = {
+  const phaseColor: Record<string, string> = props.phaseColors ?? {
     同步: PALETTE.orange,
     微任务: PALETTE.purple,
     宏任务: PALETTE.blueSoft,

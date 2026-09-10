@@ -1,8 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { Exercise } from "@/components/demo/Exercise";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { Exercise, FlowChart, ShellBlock } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote, Table } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (

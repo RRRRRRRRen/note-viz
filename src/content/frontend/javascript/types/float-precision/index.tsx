@@ -1,6 +1,5 @@
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
-import { PlayGround } from "@/components/demo/PlayGround";
+import { CodeBlock, PlayGround } from "@/components/demo";
 import { DoDont, MemoryCard, OutputTimeline, Prerequisite, CrossRef } from "@/components/viz";
 
 export default function Note() {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { flashHeading } from "@/components/note";
+import { flashHeading, TOC_HEADING_SELECTOR } from "@/components/note";
 
 export interface TocItem {
   id: string;
@@ -32,7 +32,7 @@ function slugify(text: string, used: Set<string>): string {
 export function extractHeadings(container: HTMLElement): TocItem[] {
   const used = new Set<string>();
   const items: TocItem[] = [];
-  container.querySelectorAll("h2[data-toc], h3[data-toc], [data-toc-item] > h3").forEach((el) => {
+  container.querySelectorAll(TOC_HEADING_SELECTOR).forEach((el) => {
     const title = el.textContent?.trim();
     if (!title) return;
     let id = el.id;

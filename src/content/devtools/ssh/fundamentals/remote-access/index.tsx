@@ -1,7 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { FlowChart, ShellBlock } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
@@ -151,7 +150,11 @@ export default function Note() {
           direction: "TB",
           nodes: [
             { id: "pair", label: "本机生成密钥对：私钥 + 公钥", color: "#1677ff" },
-            { id: "upload", label: "公钥追加到服务器 ~/.ssh/authorized_keys", color: "#8b5cf6" },
+            {
+              id: "upload",
+              label: "公钥追加到服务器 ~/.ssh/authorized_keys",
+              color: "#8b5cf6",
+            },
             { id: "challenge", label: "登录时：服务器发随机挑战串", color: "#f59e0b" },
             { id: "sign", label: "本机私钥签名挑战（私钥不出门）", color: "#1677ff" },
             { id: "verify", label: "服务器用公钥验签 → 放行", color: "#3fb950" },

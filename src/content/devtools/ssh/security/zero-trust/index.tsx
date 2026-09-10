@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { FlowChart } from "@/components/demo";
 import {
   CompareTable,
   CrossRef,

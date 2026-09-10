@@ -1,6 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { CodeBlock, FlowChart } from "@/components/demo";
 import { CrossRef, DoDont, MemoryCard, Prerequisite, Timeline } from "@/components/viz";
 import LayoutThrashingSimulator from "./LayoutThrashingSimulator";
 

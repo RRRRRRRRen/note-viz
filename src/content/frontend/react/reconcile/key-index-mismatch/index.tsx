@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { StepThrough } from "@/components/demo/StepThrough";
+import { StepThrough } from "@/components/demo";
 import { CrossRef, DoDont, Prerequisite } from "@/components/viz";
 
 export default function Note() {

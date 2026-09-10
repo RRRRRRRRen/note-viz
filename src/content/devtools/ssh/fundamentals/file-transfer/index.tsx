@@ -7,7 +7,7 @@ import {
   Prerequisite,
   VersionNote,
 } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
+import { ShellBlock } from "@/components/demo";
 
 export default function Note() {
   return (

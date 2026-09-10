@@ -1,7 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { CodeAnnotate } from "@/components/demo/CodeAnnotate";
-import { StepThrough } from "@/components/demo/StepThrough";
-import { Exercise } from "@/components/demo/Exercise";
+import { CodeAnnotate, Exercise, ShellBlock, StepThrough } from "@/components/demo";
 import {
   Callout,
   CrossRef,
@@ -10,7 +8,6 @@ import {
   SequenceDiagram,
   SpecQuote,
 } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (

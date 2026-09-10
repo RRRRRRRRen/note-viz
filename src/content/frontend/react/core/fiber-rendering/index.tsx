@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { FlowChart } from "@/components/demo";
 import {
   CrossRef,
   DoDont,
@@ -153,7 +153,12 @@ export default function Note() {
         direction="LR"
         states={[
           { id: "trigger", label: "触发更新", kind: "start", color: "#f59e0b" },
-          { id: "rendering", label: "render 进行中", color: "#1677ff", desc: "纯计算 · 不碰 DOM" },
+          {
+            id: "rendering",
+            label: "render 进行中",
+            color: "#1677ff",
+            desc: "纯计算 · 不碰 DOM",
+          },
           { id: "yield", label: "让出（时间片用尽）", color: "#9ca3af" },
           { id: "discard", label: "作废重来", color: "#f85149", desc: "高优先级插入" },
           { id: "commit", label: "commit", kind: "terminal", color: "#3fb950" },

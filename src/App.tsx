@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
-import { motion } from "framer-motion";
 import { TopBar } from "./components/layout/TopBar";
 import Sidebar from "./components/layout/Sidebar";
 import { SearchPalette } from "./components/layout/SearchPalette";
@@ -55,15 +54,14 @@ function Chrome() {
       </div>
       {/* 层 3+4：剩余高度，各自内部滚动 */}
       <div className="flex min-h-0 flex-1">
-        <motion.div
-          initial={false}
-          animate={{ width: showSidebar ? 288 : 0, opacity: showSidebar ? 1 : 0 }}
-          transition={{ duration: 0.22, ease: "easeOut" }}
-          className="min-h-0 shrink-0 overflow-hidden"
+        {/* CSS transition 驱动收展（framer-motion 已移出入口 chunk，动画能力留给笔记层） */}
+        <div
+          className="min-h-0 shrink-0 overflow-hidden transition-[width,opacity] duration-200 ease-out"
+          style={{ width: showSidebar ? 288 : 0, opacity: showSidebar ? 1 : 0 }}
         >
           {/* Sidebar 自身 h-full overflow-y-auto：在盒子内滚动，高度不随内容增长 */}
           {sidebarDomain && <Sidebar domainSlug={sidebarDomain} />}
-        </motion.div>
+        </div>
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
           <Outlet />
         </main>

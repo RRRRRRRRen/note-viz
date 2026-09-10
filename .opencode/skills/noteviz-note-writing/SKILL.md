@@ -24,6 +24,7 @@ import {
   Heading, // { level: 2 | 3, title } 标题块——只有标题，内容块是它的兄弟节点
   Kbd, // 行级：按键胶囊 <Kbd>Ctrl</Kbd>
   List, // { items: ReactNode[], ordered? } 列表块
+  Figure, // { src, alt, caption?, width?, height? } 图片块——图片放 public/images/<tech>/，src 写 "/images/..."
   NoteShell, // 唯一容器：块流垂直布局器
   Paragraph, // 正文段落块：恰好一段；children 内用原生 strong/em/code
   QAChain, // { items: QAItem[] { q, a, intent?, bonus?, depth? 1-5 }[], reveal?: "click"|"always", intro? }
@@ -31,19 +32,15 @@ import {
 } from "@/components/note";
 // 已删除：Section/Subsection → Heading；Prose → 多个 Paragraph（存量已全量迁移）
 
-// 代码块  属性: code, lang?: "javascript" | "typescript"
-import CodeBlock from "@/components/demo/CodeBlock";
-
-// ★ 在线代码游乐场：可编辑代码 + 真实执行 + 控制台（本地 iframe 沙箱，离线可用）
-//   props: code（初始代码，浏览器端 JS）, label?, height?
-import { PlayGround } from "@/components/demo/PlayGround";
-
-// 流程图/拓扑图：React Flow + dagre 自动布局，自带缩放/适应/Controls；高度自适应图的自然尺寸（封顶 720）
-//   props: data {direction?, nodes[{id,label,color}], edges[{source,target,label?,dashed?}]}, label?, height?（最小高度保底，默认 320）
-import { FlowChart } from "@/components/demo/FlowChart";
-
-// 演示通用件：日志面板 / 按钮（轻量交互演示用）
-import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
+// ★ 演示层统一桶导入（与 viz/ 桶惯例对齐）：
+import {
+  CodeBlock, // 代码块：{ code, lang?: "javascript" | "typescript" }，shiki 高亮 + 复制按钮
+  PlayGround, // 在线游乐场：{ code, label?, height? } 可编辑 + 真实执行 + 控制台（本地 iframe 沙箱，离线可用）
+  FlowChart, // 流程图/拓扑：React Flow + dagre 自动布局；{ data {direction?, nodes, edges}, label?, height? }（封顶 720）
+  DemoButton, // 演示通用件三件套（日志面板 + 控制/重置按钮）
+  LogPanel,
+  ResetButton,
+} from "@/components/demo";
 
 // ★ 可视化组件（均自带 VizBlock 包壳）——完整目录与选型条件见同目录 COMPONENTS.md
 import {
@@ -67,15 +64,18 @@ import {
   CrossRef, // { title?, notes: { title, to, description? }[] } 延伸阅读
 } from "@/components/viz";
 
-// ★ 演示层：步进推演 / 代码呈现 / 自测
-import { StepThrough } from "@/components/demo/StepThrough";
-import { DiffBlock } from "@/components/demo/DiffBlock"; // { label?, caption?, lines: { type: "add"|"del"|"keep", code }[] }
-import { CodeTabs } from "@/components/demo/CodeTabs"; // { tabs: { name, code, lang? }[] }
-import { CodeAnnotate } from "@/components/demo/CodeAnnotate"; // { code, lang?, annotations: { line, text }[] }
-import { ShellBlock } from "@/components/demo/ShellBlock"; // { children: string } 终端输出块（shell/配置类无高亮代码）
-import { Collapsible } from "@/components/demo/Collapsible"; // { title, children, defaultOpen? }
-import { Exercise } from "@/components/demo/Exercise"; // { question, answer, tags?, hint? }
-import { Quiz } from "@/components/demo/Quiz"; // { question, options, answer, explain? }
+// ★ 演示层：步进推演 / 代码呈现 / 自测（统一从 "@/components/demo" 桶导入）
+import {
+  StepThrough, // 步进推演：{ steps: { title, desc?, render? }[], autoMs?, height? }
+  DiffBlock, // { label?, caption?, lines: { type: "add"|"del"|"keep", code }[] }
+  CodeTabs, // { tabs: { name, code, lang? }[] }
+  CodeAnnotate, // { code, lang?, annotations: { line, text }[] }
+  ShellBlock, // { children: string } 终端输出块（shell/配置类无高亮代码）
+  Collapsible, // { title, children, defaultOpen? }
+  Exercise, // { question, answer, tags?, hint? }
+  Quiz, // { question, options, answer, explain? }
+  Checklist, // 自查清单：{ title?, items: { text, note? }[] } 勾选 + 进度 + 按篇 localStorage 持久化
+} from "@/components/demo";
 ```
 
 **可视化设计前置分析（强制）**：动笔前（大纲提案阶段）逐个分析本次的重点知识点——它属于哪种认知类型（见下方枚举），应该用什么视觉形式最有效地提升学习效果，而不是拿现成组件硬套内容。分析结果写入大纲提案（每个重点知识点 → 拟用的视觉形式）。**每个拟用组件都必须经过下方四步决策流程**。

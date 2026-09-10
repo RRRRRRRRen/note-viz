@@ -8,7 +8,7 @@ import {
   VersionNote,
 } from "@/components/viz";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
+import { CodeBlock } from "@/components/demo";
 
 export default function Note() {
   return (

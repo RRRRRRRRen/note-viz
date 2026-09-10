@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { Exercise } from "@/components/demo/Exercise";
+import { Exercise } from "@/components/demo";
 import { BarChart, CrossRef, DoDont, MemoryCard, Table, Timeline } from "@/components/viz";
 
 export default function Note() {

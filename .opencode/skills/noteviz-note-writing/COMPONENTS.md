@@ -193,6 +193,8 @@
 
 ## 二、演示层 `src/components/demo/`
 
+统一具名导入：`import { X } from "@/components/demo"`（桶文件 `index.ts`，CodeBlock 默认导出已转具名）。
+
 ### `<StepThrough>` —— 步进推演
 
 - **签名**：`{ label?, steps: { title, desc?, render?, color? }[], autoMs?, height? }`（控制条：上一步/下一步/重置 + 步骤圆点可跳转；传 `autoMs` 出现自动播放）
@@ -236,7 +238,7 @@
 
 ### `ShellBlock` —— 终端输出块
 
-- **签名**：`{ children: string }`（`import { ShellBlock } from "@/components/demo/ShellBlock"`；黑底等宽 pre，无语法高亮）
+- **签名**：`{ children: string }`（黑底等宽 pre，无语法高亮）
 - **适用**：shell 命令与真实输出、配置文件（nginx.conf/Dockerfile/tsconfig）、JSON 等无高亮语言的代码呈现（git/ssh/docker 系列标配）
 - **不适用**：JS/TS 代码（→ `CodeBlock`，有 shiki 高亮与复制按钮）；对输出题的逐条解读（CodeBlock/ShellBlock 之后接 `OutputTimeline`）
 - **示例**：`daily-commands`、`nginx-conf-anatomy` 等
@@ -260,6 +262,13 @@
 - **签名**：`{ question, options: ReactNode[], answer: number, explain? }`（answer 为正确项下标；点选即时判对错并显示解析，可重试）
 - **适用**：概念辨析的快速自测（输出顺序、概念归属、true/false 判断）
 - **不适用**：需要动手的题（→ `Exercise`）；追问链（→ `QAChain`）
+- **示例**：（新建后回填）
+
+### `<Checklist>` —— 自查清单
+
+- **签名**：`{ title?, items: { text, note? }[] }`
+- **适用**：「跟着做一遍」的操作验证清单——发布前检查、部署后验证、安全自查。勾选状态按笔记 path 持久化（localStorage），隔天回来还在；头部显示 x/y 进度与重置按钮，全部勾完徽章变绿
+- **不适用**：阅读型要点罗列（→ `List`）；问答自测（→ `QAChain`/`Exercise`/`Quiz`）
 - **示例**：（新建后回填）
 
 ### `LogPanel` / `DemoButton` / `ResetButton`
@@ -290,6 +299,13 @@
 
 - **签名**：`{ items: ReactNode[], ordered? }`
 - **要点**：内部渲染原生 `<ol>/<ul>`；列表标记不自绘
+
+### `<Figure>` —— 图片块
+
+- **签名**：`{ src, alt, caption?, width?, height? }`
+- **要点**：显式宽高防 CLS、lazy 加载、题注居中；图片统一放 `public/images/<技术>/`，src 写 `"/images/<技术>/<文件名>"`
+- **适用**：截图、DevTools 抓图等无法用组件表达的真实界面素材
+- **不适用**：能用可视化组件画的示意图（优先组件——缩放与暗色适配更好）
 
 ### `<NoteShell>` —— 唯一容器
 
@@ -341,7 +357,6 @@
 | `Term`                   | 术语悬浮    | 站内术语 hover 显示定义并链接笔记，形成知识图谱黏合                                                | 需术语索引数据                      |
 | `GlossaryCard`           | 术语卡      | 入门篇的一句话定义 + 类比卡片                                                                      |                                     |
 | `Objectives`             | 学习目标    | 笔记开头的「学完你会…」清单                                                                        |                                     |
-| `Checklist`              | 实践清单    | 带勾选框的最佳实践清单                                                                             |                                     |
 | `Footnote`               | 脚注        | 出处过多需要脚注区                                                                                 |                                     |
 | `H4`                     | 四级标题    | 小节内还需要一级细分标题                                                                           | 带大纲锚点                          |
 | `Breadcrumb`             | 路径导航    | 页面级 taxonomy 路径组件化                                                                         |                                     |

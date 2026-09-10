@@ -1,4 +1,4 @@
-import { FlowChart } from "@/components/demo/FlowChart";
+import { CodeBlock, FlowChart } from "@/components/demo";
 import {
   Callout,
   CrossRef,
@@ -9,7 +9,6 @@ import {
   VersionNote,
 } from "@/components/viz";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
 
 export default function Note() {
   return (

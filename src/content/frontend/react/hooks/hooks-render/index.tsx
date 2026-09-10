@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
-import { DemoButton, LogPanel, ResetButton } from "@/components/demo/LogPanel";
+import { CodeBlock, DemoButton, LogPanel, ResetButton } from "@/components/demo";
 import { CrossRef, DoDont, Prerequisite, Timeline, VersionNote } from "@/components/viz";
 
 export default function Note() {

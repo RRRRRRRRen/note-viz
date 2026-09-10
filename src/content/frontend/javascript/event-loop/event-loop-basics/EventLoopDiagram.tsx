@@ -2,7 +2,12 @@ import { motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCw } from "lucide-react";
 import { VizBlock } from "@/components/viz";
 
-const C = { stack: "#f59e0b", micro: "#8b5cf6", macro: "#3b82f6", render: "#3fb950" };
+const C = {
+  stack: "#f59e0b",
+  micro: "#8b5cf6",
+  macro: "#3b82f6",
+  render: "#3fb950",
+};
 
 function Box(props: {
   step: number;

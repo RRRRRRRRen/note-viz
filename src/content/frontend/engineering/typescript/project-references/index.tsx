@@ -1,5 +1,4 @@
-import { CodeTabs } from "@/components/demo/CodeTabs";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { CodeTabs, FlowChart } from "@/components/demo";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
 

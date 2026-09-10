@@ -1,6 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { CodeBlock, FlowChart } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, Timeline } from "@/components/viz";
 
 export default function Note() {
@@ -249,7 +248,11 @@ export default function Note() {
           nodes: [
             { id: "start", label: "需要同时约束行和列吗？", color: "#f59e0b" },
             { id: "grid", label: "页面骨架 / 卡片网格 / 跨行对齐 → Grid", color: "#1677ff" },
-            { id: "flex", label: "组件内一维排列（工具条/导航/表单行）→ Flex", color: "#8b5cf6" },
+            {
+              id: "flex",
+              label: "组件内一维排列（工具条/导航/表单行）→ Flex",
+              color: "#8b5cf6",
+            },
             { id: "both", label: "外 Grid 定骨架，内 Flex 排细节", color: "#3fb950" },
           ],
           edges: [

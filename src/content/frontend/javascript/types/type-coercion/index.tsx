@@ -1,5 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
+import { CodeBlock } from "@/components/demo";
 import { DoDont, MemoryCard, OutputTimeline, Prerequisite, CrossRef } from "@/components/viz";
 
 export default function Note() {

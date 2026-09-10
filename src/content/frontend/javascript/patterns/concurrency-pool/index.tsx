@@ -1,6 +1,5 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { PlayGround } from "@/components/demo/PlayGround";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { FlowChart, PlayGround } from "@/components/demo";
 import { CrossRef, DoDont, Prerequisite } from "@/components/viz";
 
 export default function Note() {

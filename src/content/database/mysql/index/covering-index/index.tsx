@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
+import { CodeBlock } from "@/components/demo";
 import { DoDont, MemoryCard, VizBlock } from "@/components/viz";
 
 export default function Note() {

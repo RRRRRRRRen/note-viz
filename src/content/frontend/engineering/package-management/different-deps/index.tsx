@@ -104,7 +104,11 @@ export default function Note() {
             desc: "npm ci · pnpm install --frozen-lockfile · yarn --immutable：只读消费，禁止顺手改锁文件",
             color: "#1677ff",
           },
-          { name: "依赖树", desc: "lockfile 提交入库，作为解析结果的唯一事实源", color: "#1677ff" },
+          {
+            name: "依赖树",
+            desc: "lockfile 提交入库，作为解析结果的唯一事实源",
+            color: "#1677ff",
+          },
           {
             name: "包管理器",
             desc: "packageManager 字段精确到小版本 + 装错即报错",

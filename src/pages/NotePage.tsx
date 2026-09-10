@@ -1,5 +1,6 @@
 import { Component, Suspense, lazy, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 import { breadcrumbParts, noteByPath } from "@/lib/registry";
 import { openTab } from "@/lib/tabs";
 import { difficultyBadgeClass } from "@/components/difficulty";
@@ -95,12 +96,14 @@ export default function NotePage() {
           </div>
         </header>
 
-        {/* key 随笔记切换，错误边界状态随之重置 */}
-        <NoteLoadErrorBoundary key={note.path}>
-          <Suspense fallback={<div className="text-muted">加载中…</div>}>
-            {LazyNote ? <LazyNote /> : null}
-          </Suspense>
-        </NoteLoadErrorBoundary>
+        {/* MotionConfig 挂在笔记层而非应用根：framer-motion 不进首屏，笔记动效仍尊重系统"减少动态效果" */}
+        <MotionConfig reducedMotion="user">
+          <NoteLoadErrorBoundary key={note.path}>
+            <Suspense fallback={<div className="text-muted">加载中…</div>}>
+              {LazyNote ? <LazyNote /> : null}
+            </Suspense>
+          </NoteLoadErrorBoundary>
+        </MotionConfig>
 
         {refSources.length > 0 && (
           <section className="mt-12 border-t border-border pt-4">

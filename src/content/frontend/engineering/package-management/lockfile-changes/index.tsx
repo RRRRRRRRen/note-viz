@@ -1,7 +1,6 @@
-import { FlowChart } from "@/components/demo/FlowChart";
+import { CodeBlock, FlowChart } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, Prerequisite, Table } from "@/components/viz";
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
-import CodeBlock from "@/components/demo/CodeBlock";
 
 export default function Note() {
   return (
@@ -45,7 +44,11 @@ export default function Note() {
           direction: "TB",
           nodes: [
             { id: "install", label: "pnpm install", color: "#1677ff" },
-            { id: "check", label: "对照 lockfile 的 specifier\n与 package.json", color: "#f59e0b" },
+            {
+              id: "check",
+              label: "对照 lockfile 的 specifier\n与 package.json",
+              color: "#f59e0b",
+            },
             { id: "sync", label: "一致：纯物化\nlockfile 一字节不动", color: "#3fb950" },
             {
               id: "desync",

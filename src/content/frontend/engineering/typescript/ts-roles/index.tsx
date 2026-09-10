@@ -1,5 +1,4 @@
-import { FlowChart } from "@/components/demo/FlowChart";
-import { CodeAnnotate } from "@/components/demo/CodeAnnotate";
+import { CodeAnnotate, FlowChart } from "@/components/demo";
 import {
   Callout,
   CompareTable,

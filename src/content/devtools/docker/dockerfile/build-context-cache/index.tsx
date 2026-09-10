@@ -1,8 +1,6 @@
 import { Conclusion, Heading, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { StepThrough } from "@/components/demo/StepThrough";
-import { Exercise } from "@/components/demo/Exercise";
+import { Exercise, ShellBlock, StepThrough } from "@/components/demo";
 import { CompareTable, CrossRef, DoDont, MemoryCard, SpecQuote, Timeline } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (

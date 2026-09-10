@@ -1,5 +1,5 @@
 import { Conclusion, Heading, List, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { FlowChart } from "@/components/demo/FlowChart";
+import { FlowChart } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote } from "@/components/viz";
 
 export default function Note() {

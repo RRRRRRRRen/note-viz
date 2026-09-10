@@ -2,6 +2,9 @@ import { Eye, Target } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { PALETTE } from "./palette";
 
+/** 大纲标题选择器（DOM 契约的单一来源）：Heading 的 data-toc + 追问链 data-toc-item 内的 sr-only h3。Toc 侧必须引用本常量，禁止手写选择器字符串 */
+export const TOC_HEADING_SELECTOR = "h2[data-toc], h3[data-toc], [data-toc-item] > h3";
+
 export function NoteShell({ children }: { children: ReactNode }) {
   // 块流布局器：不做垂直间距，间距完全由各块自身的 my-* 驱动（BLOCK-SYSTEM.md）
   return <div>{children}</div>;
@@ -244,5 +247,32 @@ export function Tag({ children }: { children: ReactNode }) {
     <span className="mx-0.5 inline-block rounded bg-surface px-1.5 py-0 align-middle font-mono text-[10px] leading-4 text-muted">
       {children}
     </span>
+  );
+}
+
+/** 图片块：显式宽高防 CLS、lazy 加载、居中题注。图片统一放 public/images/<tech>/，src 写 "/images/..." */
+export function Figure(props: {
+  src: string;
+  alt: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+}) {
+  return (
+    <figure className="my-5">
+      <img
+        src={props.src}
+        alt={props.alt}
+        {...(props.width !== undefined ? { width: props.width } : {})}
+        {...(props.height !== undefined ? { height: props.height } : {})}
+        loading="lazy"
+        className="mx-auto rounded-lg border border-border"
+      />
+      {props.caption && (
+        <figcaption className="mt-2 text-center text-xs leading-relaxed text-muted">
+          {props.caption}
+        </figcaption>
+      )}
+    </figure>
   );
 }

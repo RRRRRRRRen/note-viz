@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
 import { Conclusion, Heading, Kbd, NoteShell, Paragraph, QAChain } from "@/components/note";
-import { Exercise } from "@/components/demo/Exercise";
-import { StepThrough } from "@/components/demo/StepThrough";
+import { Exercise, ShellBlock, StepThrough } from "@/components/demo";
 import { Callout, CrossRef, DoDont, MemoryCard, SpecQuote, Table } from "@/components/viz";
-import { ShellBlock } from "@/components/demo/ShellBlock";
 
 export default function Note() {
   return (
