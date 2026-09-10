@@ -392,7 +392,7 @@ export const taxonomy: Record<string, TaxonomyNode> = {
           },
           "file-basics": {
             label: "文件与压缩",
-            order: ["file-type-magic", "gzip-cli"],
+            order: ["file-type-magic", "gzip-cli", "tar-vs-gzip", "tar-cli"],
           },
         },
       },

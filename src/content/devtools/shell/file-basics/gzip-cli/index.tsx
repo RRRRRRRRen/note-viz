@@ -109,27 +109,32 @@ $ gzcat big.txt.gz | head -1          # gzcat 才是 macOS 上读 .gz 的 zcat
         .Z。跨平台 脚本里别依赖 zcat，用 <strong>gunzip -c</strong> 才是全平台一致的写法。
       </Callout>
 
-      <Heading level={2} title="打包是 tar 的活：tar -czf 三件套" />
+      <Heading level={2} title="打包是 tar 的活：分工与边界" />
       <Paragraph>
-        gzip 只会压「一串字节」，<strong>不会打包</strong>。想把整个目录变成一个文件，先 tar
-        把文件树串成一串，再交给 gzip 压缩——tar 的 <code>-z</code> 旗子会自动替你调用 gzip，
-        一条命令完成两步。三个动词记住：<code>-c</code> 创建、<code>-t</code> 看清单、
-        <code>-x</code> 解开，全都配 <code>-z</code> 和 <code>-f 文件名</code>：
+        gzip 只会压「一串字节」，<strong>不会打包</strong>。想把整个目录变成一个文件，那是 tar
+        的职责——tar 负责把目录树装订成一条流，gzip 只负责压缩，<code>tar -czf</code> 的{" "}
+        <code>-z</code> 只是顺手调用 gzip 的糖衣。两个容易混淆的点。<strong>其一</strong>：
+        <code>gzip -r 目录</code>不是打包——它把目录里每个文件<strong>各自</strong>压成各自的
+        .gz，文件数量不变，只是每个都瘦了身，想要「一个文件装下整个目录」只能走 tar。
+        <strong>其二</strong>：小文件打包压缩反而变大——两个 2 字节文本打成 tar.gz 是 568 字节，tar
+        的块结构头部加 gzip 的固定开销（约 18 字节起）远超压缩收益， 这正是 web 服务器对 1KB
+        以下文件不压缩的同一个道理。
       </Paragraph>
-      <ShellBlock>{`$ tar -czf demo.tar.gz demo/          # 打包 + 压缩
-$ tar -tzf demo.tar.gz                # 只看清单不解压
-demo/
-demo/sub/
-demo/a.txt
-demo/sub/b.txt
-$ tar -xzf demo.tar.gz                # 解开`}</ShellBlock>
-      <Paragraph>
-        两个容易混淆的点。<strong>其一</strong>：<code>gzip -r 目录</code>不是打包——它把目录里每个
-        文件<strong>各自</strong>压成各自的 .gz，文件数量不变，只是每个都瘦了身；想要「一个文件装下
-        整个目录」只能走 tar。<strong>其二</strong>：小文件打包压缩反而变大——两个 2 字节文本打成
-        tar.gz 是 568 字节，tar 的块结构头部加 gzip 的固定开销（约 18 字节起）远超压缩收益， 这正是
-        web 服务器对 1KB 以下文件不压缩的同一个道理。
-      </Paragraph>
+      <CrossRef
+        title="tar 的分工与用法"
+        notes={[
+          {
+            title: "为什么有了 gzip 还需要 tar？",
+            to: "/note/devtools/shell/file-basics/tar-vs-gzip",
+            description: "装订与压缩的两层套娃：tar 管目录树，gzip 管一条流。",
+          },
+          {
+            title: "tar 命令行怎么用？",
+            to: "/note/devtools/shell/file-basics/tar-cli",
+            description: "c/t/x 三动词、-f 铁律与解包安检三步。",
+          },
+        ]}
+      />
       <StepThrough
         label="往 .gz 追加内容 / append"
         steps={[
