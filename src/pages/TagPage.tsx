@@ -1,7 +1,8 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Tag } from "lucide-react";
 import { notesByTag } from "@/lib/registry";
-import { NoteRow } from "@/components/NoteRow";
+import { NoteRow } from "@/components/note-row";
+import { PageHeader } from "@/components/page-header";
 
 /** 标签聚合页：跨领域列出携带同一标签的全部笔记（按更新时间倒序） */
 export default function TagPage() {
@@ -32,16 +33,12 @@ export default function TagPage() {
         <span className="text-foreground">{label}</span>
       </nav>
 
-      <header className="mb-6">
-        <p className="eyebrow">标签聚合</p>
-        <h1 className="flex items-center gap-3 text-3xl leading-tight font-semibold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-accent/15 text-accent">
-            <Tag size={18} />
-          </span>
-          {label}
-        </h1>
-        <p className="mt-2 text-[13px] text-muted">{notes.length} 篇笔记 · 按更新时间排序</p>
-      </header>
+      <PageHeader
+        eyebrow="标签聚合"
+        title={label}
+        icon={Tag}
+        meta={`${notes.length} 篇笔记 · 按更新时间排序`}
+      />
 
       {notes.length === 0 ? (
         <div className="p-8 text-muted">没有携带该标签的笔记</div>

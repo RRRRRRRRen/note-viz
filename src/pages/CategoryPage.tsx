@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { breadcrumbParts, categoryContext } from "@/lib/registry";
 import { taxonomyIcon } from "@/lib/icons";
-import { NoteRow } from "@/components/NoteRow";
+import { NoteRow } from "@/components/note-row";
+import { PageHeader } from "@/components/page-header";
+import { PALETTE } from "@/components/palette";
 
 export default function CategoryPage() {
   const location = useLocation();
@@ -18,7 +20,7 @@ export default function CategoryPage() {
   }
 
   const Icon = taxonomyIcon(ctx.icon);
-  const color = ctx.color ?? "#1677ff";
+  const color = ctx.color ?? PALETTE.blue;
   const crumbs = breadcrumbParts(slugParts);
 
   return (
@@ -40,23 +42,13 @@ export default function CategoryPage() {
         ))}
       </nav>
 
-      <header className="mb-6 flex items-end justify-between gap-5">
-        <div>
-          <p className="eyebrow">知识模块</p>
-          <h1 className="flex items-center gap-3 text-3xl leading-tight font-semibold">
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-md"
-              style={{ backgroundColor: `${color}22`, color }}
-            >
-              <Icon size={18} />
-            </span>
-            {ctx.label}
-          </h1>
-          <p className="mt-2 text-[13px] text-muted">
-            {ctx.childCategories.length} 个子分类 · {ctx.notes.length} 篇笔记
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="知识模块"
+        title={ctx.label}
+        icon={Icon}
+        color={color}
+        meta={`${ctx.childCategories.length} 个子分类 · ${ctx.notes.length} 篇笔记`}
+      />
 
       {ctx.childCategories.length > 0 && (
         <div className="mb-6 grid grid-cols-3 gap-3">

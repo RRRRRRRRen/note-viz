@@ -17,7 +17,7 @@ export function CodeAnnotate(props: {
 }) {
   const lang = props.lang ?? "javascript";
   const [html, setHtml] = useState<string>("");
-  const annotations = [...props.annotations].sort((a, b) => a.line - b.line);
+  const annotations = props.annotations.toSorted((a, b) => a.line - b.line);
 
   useEffect(() => {
     let alive = true;

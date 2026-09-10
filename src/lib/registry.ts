@@ -40,11 +40,11 @@ function notesUnder(prefix: string[], exact: boolean): NoteEntry[] {
 }
 
 /** 按 taxonomy 的 order 声明排序笔记：已声明的按声明序在前，未声明的按 slug 排在后 */
-function sortByOrder(notes: NoteEntry[], order?: string[]): NoteEntry[] {
-  if (!order || order.length === 0) return notes;
+function sortByOrder(list: NoteEntry[], order?: string[]): NoteEntry[] {
+  if (!order || order.length === 0) return list;
   const rank = new Map(order.map((slug, i) => [slug, i] as const));
   const key = (n: NoteEntry) => n.slug[n.slug.length - 1] ?? "";
-  return [...notes].sort((a, b) => {
+  return list.toSorted((a, b) => {
     const ra = rank.get(key(a));
     const rb = rank.get(key(b));
     if (ra !== undefined && rb !== undefined) return ra - rb;
@@ -81,7 +81,7 @@ export function domainTree(slug: string): DomainTree | undefined {
 export function latestNotes(count: number): NoteEntry[] {
   return notes
     .filter((n) => n.meta.type !== "draft")
-    .sort((a, b) => b.meta.updated.localeCompare(a.meta.updated))
+    .toSorted((a, b) => b.meta.updated.localeCompare(a.meta.updated))
     .slice(0, count);
 }
 
@@ -89,7 +89,7 @@ export function latestNotes(count: number): NoteEntry[] {
 export function notesByTag(tag: string): NoteEntry[] {
   return notes
     .filter((n) => n.meta.type !== "draft" && n.meta.tags.includes(tag))
-    .sort((a, b) => b.meta.updated.localeCompare(a.meta.updated));
+    .toSorted((a, b) => b.meta.updated.localeCompare(a.meta.updated));
 }
 
 export interface CategoryChild {

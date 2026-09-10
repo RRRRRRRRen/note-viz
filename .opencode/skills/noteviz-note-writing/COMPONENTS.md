@@ -172,7 +172,7 @@
 ### `<Prerequisite>` —— 前置知识
 
 - **签名**：`{ notes: { title, to }[], children? }`（to 为站内笔记路径）
-- **适用**：笔记开头声明学习本篇前应掌握/应读的站内笔记，建立知识图谱入口
+- **适用**：紧随 Conclusion 之后声明学习本篇前应掌握/应读的站内笔记（块序固定 Conclusion → Prerequisite → 正文），建立知识图谱入口；领域/知识面入口篇无真实前置时豁免
 - **不适用**：结尾的延伸阅读（→ `CrossRef`）；一两处行内提及（正文链接即可）
 - **示例**：auto-fill-auto-fit、registry-selection
 
@@ -269,7 +269,7 @@
 - **签名**：`{ title?, items: { text, note? }[] }`
 - **适用**：「跟着做一遍」的操作验证清单——发布前检查、部署后验证、安全自查。勾选状态按笔记 path 持久化（localStorage），隔天回来还在；头部显示 x/y 进度与重置按钮，全部勾完徽章变绿
 - **不适用**：阅读型要点罗列（→ `List`）；问答自测（→ `QAChain`/`Exercise`/`Quiz`）
-- **示例**：（新建后回填）
+- **示例**：undo-commands、ssh-setup、container-debug-502 等 6 篇 practice 笔记
 
 ### `LogPanel` / `DemoButton` / `ResetButton`
 
@@ -279,7 +279,7 @@
 
 ---
 
-## 三、块流结构组件 `src/components/note.tsx`
+## 三、块流结构组件 `src/components/note/`
 
 架构见 BLOCK-SYSTEM.md：`NoteShell` 是唯一容器，内部平铺块流；**标题与内容平级**，禁止 Section/Prose 类结构容器。
 

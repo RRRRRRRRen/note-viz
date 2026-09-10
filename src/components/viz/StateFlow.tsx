@@ -84,7 +84,7 @@ export function StateFlow(props: {
     arr.push(s.id);
     columns.set(l, arr);
   }
-  const layerKeys = [...columns.keys()].sort((a, b) => a - b);
+  const layerKeys = [...columns.keys()].toSorted((a, b) => a - b);
   const colIds = layerKeys.map((k) => columns.get(k) ?? []);
   const nodeById = new Map(props.states.map((s) => [s.id, s] as const));
 

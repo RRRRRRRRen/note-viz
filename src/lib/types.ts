@@ -23,6 +23,16 @@ export interface NoteEntry {
   load: () => Promise<{ default: NoteComponent }>;
 }
 
+/** 搜索索引条目（virtual:search-index 的元素类型；draft 已在生成端排除） */
+export interface SearchEntryLite {
+  path: string;
+  title: string;
+  description: string;
+  tags: string[];
+  updated: string;
+  text: string;
+}
+
 export interface TaxonomyNode {
   label: string;
   color?: string;

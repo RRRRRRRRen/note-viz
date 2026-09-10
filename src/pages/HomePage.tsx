@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { domainTrees, latestNotes } from "@/lib/registry";
 import { taxonomyIcon } from "@/lib/icons";
-import { NoteRow } from "@/components/NoteRow";
+import { NoteRow } from "@/components/note-row";
 
 export default function HomePage() {
   return (

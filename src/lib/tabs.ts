@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { createStore } from "./store";
 
 export interface Tab {
   path: string;
@@ -33,36 +34,15 @@ function load(): TabsState {
   }
 }
 
-let state: TabsState = EMPTY;
-const listeners = new Set<() => void>();
+const store = createStore<TabsState>(load());
 
 function setState(next: TabsState): void {
-  state = next;
+  store.set(next);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch {
-    // ignore
+    // 隐私模式等存储不可用时静默降级为会话内状态
   }
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
-function getSnapshot(): TabsState {
-  return state;
-}
-
-/** 首帧同步从 localStorage 恢复（仅在模块首次被使用时执行一次） */
-let restored = false;
-function ensureRestored(): void {
-  if (restored) return;
-  restored = true;
-  state = load();
 }
 
 function activate(state: TabsState, index: number): TabsState {
@@ -74,7 +54,7 @@ function activate(state: TabsState, index: number): TabsState {
 }
 
 export function openTab(path: string, title: string): void {
-  ensureRestored();
+  const state = store.get();
   const existing = state.tabs.findIndex((t) => t.path === path);
   if (existing >= 0) {
     setState(activate(state, existing));
@@ -89,7 +69,7 @@ export function openTab(path: string, title: string): void {
 }
 
 export function closeTab(index: number): void {
-  ensureRestored();
+  const state = store.get();
   if (index < 0 || index >= state.tabs.length) return;
   const closingWasActive = state.activeIndex === index;
 
@@ -99,7 +79,7 @@ export function closeTab(index: number): void {
   let activeIndex = state.activeIndex;
   if (closingWasActive) {
     // 回到上一个活跃标签；没有记录时取相邻标签
-    const prev = [...history].reverse().find((i) => i < tabs.length);
+    const prev = history.toReversed().find((i) => i < tabs.length);
     activeIndex =
       prev !== undefined ? prev : tabs.length > 0 ? Math.min(index, tabs.length - 1) : -1;
   } else if (state.activeIndex > index) {
@@ -110,7 +90,7 @@ export function closeTab(index: number): void {
 }
 
 export function activateTab(index: number): void {
-  ensureRestored();
+  const state = store.get();
   if (index < 0 || index >= state.tabs.length) return;
   setState(activate(state, index));
 }
@@ -135,14 +115,13 @@ function normalizeAfterClose(tabs: Tab[], history: number[]): TabsState {
 
 /** 关闭全部标签 */
 export function closeAllTabs(): void {
-  ensureRestored();
-  if (state.tabs.length === 0) return;
+  if (store.get().tabs.length === 0) return;
   setState({ tabs: [], activeIndex: -1, history: [] });
 }
 
 /** 关闭其他标签（保留指定索引） */
 export function closeOtherTabs(index: number): void {
-  ensureRestored();
+  const state = store.get();
   if (index < 0 || index >= state.tabs.length) return;
   const tabs = [state.tabs[index]!];
   setState(normalizeAfterClose(tabs, [0]));
@@ -150,7 +129,7 @@ export function closeOtherTabs(index: number): void {
 
 /** 关闭右侧所有标签 */
 export function closeTabsToRight(index: number): void {
-  ensureRestored();
+  const state = store.get();
   if (index < 0 || index >= state.tabs.length - 1) return;
   const tabs = state.tabs.slice(0, index + 1);
   setState(
@@ -163,7 +142,7 @@ export function closeTabsToRight(index: number): void {
 
 /** 关闭与指定标签不同领域的标签（笔记按 /note/<domain>/ 分组，分类页按一级路径） */
 export function closeOtherDomains(index: number): void {
-  ensureRestored();
+  const state = store.get();
   if (index < 0 || index >= state.tabs.length) return;
   // /note/frontend/... 取 [2]，/frontend 取 [1]；首页 "/" 无领域
   const domainOf = (p: string) => {
@@ -189,11 +168,9 @@ export function closeOtherDomains(index: number): void {
 }
 
 export function tabsSnapshot(): TabsState {
-  ensureRestored();
-  return state;
+  return store.get();
 }
 
 export function useTabs(): TabsState {
-  ensureRestored();
-  return useSyncExternalStore(subscribe, getSnapshot, () => EMPTY);
+  return useSyncExternalStore(store.subscribe, store.get, () => EMPTY);
 }

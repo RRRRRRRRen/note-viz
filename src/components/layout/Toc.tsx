@@ -15,7 +15,7 @@ interface TocProps {
   resetKey: string;
 }
 
-function slugify(text: string, used: Set<string>): string {
+export function slugify(text: string, used: Set<string>): string {
   const base = text
     .trim()
     .toLowerCase()

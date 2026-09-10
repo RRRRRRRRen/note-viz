@@ -2,56 +2,22 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { useNavigate } from "react-router-dom";
 import { CornerDownLeft, Search } from "lucide-react";
 import { closeSearch, toggleSearch, useSearchOpen } from "@/lib/search";
+import { runSearch } from "@/lib/search-query";
 import { MarkText } from "@/components/mark";
-import type { SearchEntryLite } from "virtual:search-index";
+import type { SearchEntryLite } from "@/lib/types";
 
-// 模块级缓存：首次打开才动态拉取索引 chunk（不进首屏）
+// 模块级缓存：首次打开才动态拉取索引 chunk（不进首屏）；失败时清空缓存供重试
 let entriesPromise: Promise<SearchEntryLite[]> | null = null;
 
 function loadEntries(): Promise<SearchEntryLite[]> {
-  entriesPromise ??= import("virtual:search-index").then((m) => m.searchEntries);
+  entriesPromise ??= import("virtual:search-index").then(
+    (m) => m.searchEntries,
+    (err: unknown) => {
+      entriesPromise = null;
+      throw err;
+    },
+  );
   return entriesPromise;
-}
-
-interface Scored {
-  entry: SearchEntryLite;
-  score: number;
-  snippet: string;
-}
-
-/** 打分检索：所有 token 需至少命中一个字段，命中权重 标题 > 标签 > 描述 > 正文 */
-function runSearch(entries: SearchEntryLite[], query: string): Scored[] {
-  const tokens = query.split(/\s+/).filter(Boolean);
-  if (tokens.length === 0) return [];
-  const out: Scored[] = [];
-  for (const e of entries) {
-    const title = e.title.toLowerCase();
-    const tags = e.tags.join(" ").toLowerCase();
-    const desc = e.description.toLowerCase();
-    const text = e.text.toLowerCase();
-    let score = 0;
-    let matched = true;
-    for (const t of tokens) {
-      if (title.includes(t)) score += 10;
-      else if (tags.includes(t)) score += 6;
-      else if (desc.includes(t)) score += 3;
-      else if (text.includes(t)) score += 1;
-      else {
-        matched = false;
-        break;
-      }
-    }
-    if (!matched) continue;
-    let snippet = e.description;
-    const hit = tokens.find((t) => text.includes(t));
-    if (hit) {
-      const i = text.indexOf(hit);
-      const start = Math.max(0, i - 36);
-      snippet = `${start > 0 ? "…" : ""}${e.text.slice(start, i + hit.length + 36)}…`;
-    }
-    out.push({ entry: e, score, snippet });
-  }
-  return out.sort((a, b) => b.score - a.score).slice(0, 12);
 }
 
 /** 全局搜索面板：Cmd/Ctrl+K 唤起，标题/标签/描述/正文全文检索 */
@@ -60,6 +26,8 @@ export function SearchPalette() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<SearchEntryLite[] | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retryTick, setRetryTick] = useState(0);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -75,14 +43,17 @@ export function SearchPalette() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // 打开时重置状态并按需拉取索引
+  // 打开时重置状态并按需拉取索引（retryTick 变化触发重试）
   useEffect(() => {
     if (!open) return;
     setQuery("");
     setActive(0);
-    loadEntries().then(setEntries);
+    setLoadFailed(false);
+    loadEntries()
+      .then((es) => setEntries(es))
+      .catch(() => setLoadFailed(true));
     inputRef.current?.focus();
-  }, [open]);
+  }, [open, retryTick]);
 
   const trimmed = query.trim().toLowerCase();
   const results = useMemo(() => (entries ? runSearch(entries, trimmed) : []), [entries, trimmed]);
@@ -141,7 +112,18 @@ export function SearchPalette() {
           </span>
         </div>
         <div className="max-h-[50vh] overflow-y-auto p-2">
-          {entries === null ? (
+          {loadFailed ? (
+            <div className="flex flex-col items-center gap-3 px-3 py-6 text-xs text-muted">
+              索引加载失败，可能是版本更新导致缓存失效
+              <button
+                type="button"
+                onClick={() => setRetryTick((t) => t + 1)}
+                className="rounded border border-border px-3 py-1.5 text-[11px] transition-colors hover:border-accent hover:text-accent"
+              >
+                重试
+              </button>
+            </div>
+          ) : entries === null ? (
             <div className="px-3 py-6 text-center text-xs text-muted">索引加载中…</div>
           ) : trimmed === "" ? (
             <div className="px-3 py-6 text-center text-xs text-muted">

@@ -7,7 +7,8 @@ NoteViz：纯前端程序员学习站（Vite + React + TS + Tailwind 4）。
 ```bash
 pnpm dev        # 开发服务器（用户自己启动，AI 禁止启动）
 pnpm build      # tsc 类型检查 + vite 构建（meta 校验在构建时强制执行）
-pnpm lint       # oxlint
+pnpm test       # vitest（闸门/检索/大纲契约）
+pnpm lint       # oxlint（.oxlintrc.json：correctness + suspicious）
 pnpm format     # oxfmt 格式化
 pnpm preview    # 预览 dist（AI 禁止启动）
 ```
@@ -35,9 +36,9 @@ pnpm preview    # 预览 dist（AI 禁止启动）
 1. **一篇一论 + 笔记类型**：笔记按知识点组织而非综合指南——一篇笔记 = 一个知识点；meta.type 四型（knowledge 知识 / question 问题 / practice 实战 / draft 草稿）决定标题规则——question 必须问句标题，knowledge/practice 允许陈述式，draft 免检且不进导航聚合；话题知识点多时先出拆分表格再逐篇写
 2. **禁止跳过大纲确认直接动笔**——先产出大纲提案（固定表格：标题 / 知识点 / 难度，每行一篇笔记）+ 询问熟悉程度，用户确认后才逐篇写正文
 3. 内容规范、组件 API、视觉规范、详略表全部在 skill 文件里（`.opencode/skills/noteviz-note-writing/SKILL.md`）
-4. 组件签名以源码为准：`src/components/note.tsx`（排版）、`src/components/viz/`（可视化目录）
+4. 组件签名以源码为准：`src/components/note/`（块流结构，桶导入 `@/components/note`）、`src/components/viz/` 与 `src/components/demo/`（各自桶导入）；工程侧约定（目录/闸门/状态管理/测试）见 `docs/engineering.md`
 5. 构建时自动扫描注册笔记并校验 meta 六字段（含 type 枚举与类型化标题规则），缺失/非法直接报错
 
 ## 验证
 
-任何代码改动后：`pnpm build && pnpm lint`，格式化用 `pnpm format`（写文件前跑，避免提交格式噪音）。
+任何代码改动后：`pnpm build && pnpm lint && pnpm test`，格式化用 `pnpm format`（写文件前跑，避免提交格式噪音）。

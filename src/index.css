@@ -3,6 +3,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  /* 应用 chrome 高度：顶栏 56px + 标签栏 36px（NotePage 大纲栏的 sticky 计算用） */
+  --chrome-h: 92px;
   --background: #ffffff;
   --surface: #f6f8fa;
   --surface-2: #eef1f4;

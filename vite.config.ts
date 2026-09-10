@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { contentScan } from "./plugins/contentScan.ts";
+import { contentScan } from "./plugins/contentScan/index.ts";
 
 export default defineConfig({
   resolve: {

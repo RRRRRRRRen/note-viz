@@ -1,39 +1,21 @@
 import { useSyncExternalStore } from "react";
+import { createStore } from "./store";
 
-/** 全局搜索面板开闭状态（external store，同 theme/tabs 模式） */
-let open = false;
-const listeners = new Set<() => void>();
-
-function emit() {
-  for (const l of listeners) l();
-}
+/** 全局搜索面板开闭状态 */
+const store = createStore(false);
 
 export function openSearch() {
-  if (!open) {
-    open = true;
-    emit();
-  }
+  if (!store.get()) store.set(true);
 }
 
 export function closeSearch() {
-  if (open) {
-    open = false;
-    emit();
-  }
+  if (store.get()) store.set(false);
 }
 
 export function toggleSearch() {
-  open = !open;
-  emit();
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  store.set(!store.get());
 }
 
 export function useSearchOpen(): boolean {
-  return useSyncExternalStore(subscribe, () => open);
+  return useSyncExternalStore(store.subscribe, store.get, () => false);
 }

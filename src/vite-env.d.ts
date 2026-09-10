@@ -4,14 +4,7 @@ declare module "virtual:content-registry" {
 }
 
 declare module "virtual:search-index" {
-  export interface SearchEntryLite {
-    path: string;
-    title: string;
-    description: string;
-    tags: string[];
-    updated: string;
-    text: string;
-  }
+  import type { SearchEntryLite } from "../lib/types";
   export const searchEntries: SearchEntryLite[];
 }
 

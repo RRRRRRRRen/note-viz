@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChevronRight, FileText } from "lucide-react";
 import type { NoteEntry } from "@/lib/types";
-import { DifficultyDots, difficultyLevel } from "@/components/difficulty";
-import { NoteTypeBadge } from "@/components/notetype";
+import { DifficultyDots, difficultyLevel, NoteTypeBadge } from "@/components/badges";
 
 /** 笔记行卡片：首页最新 / 分类页列表 / 标签聚合页的统一形态（类型徽章 + 难度 + 更新时间） */
 export function NoteRow({ note }: { note: NoteEntry }) {

@@ -58,8 +58,7 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
   };
 
   // console 劫持脚本：把 iframe 内的 console.* 转发到父页面
-  const hookScript =
-    `<script>
+  const hookScript = `<script>
     (function () {
       var send = function (kind, args) {
         parent.postMessage({ type: "noteviz-log", kind: kind, text: Array.from(args).map(fmt).join(" ") }, "*");
@@ -90,7 +89,7 @@ export function PlayGround({ label, code, height = 200 }: PlayGroundProps) {
       });
       parent.postMessage({ type: "noteviz-ready" }, "*");
     })();
-  </` + `script>`;
+  </script>`;
 
   // 父页面监听日志：仅接受本 Playground 沙箱 iframe 的消息
   useEffect(() => {

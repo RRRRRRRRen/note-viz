@@ -1,5 +1,5 @@
 // 可视化组件统一出口：import { CompareTable, ... } from "@/components/viz"
-// 新增静态可视化组件放本目录并在次处 re-export；签名文档见
+// 新增静态可视化组件放本目录并在此 re-export；签名文档见
 // .opencode/skills/noteviz-note-writing/COMPONENTS.md
 export {
   BarChart,

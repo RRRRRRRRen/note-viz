@@ -44,6 +44,7 @@ export function Exercise(props: {
             <button
               type="button"
               onClick={() => setOpen(false)}
+              aria-expanded="true"
               className="text-[11px] text-muted transition-colors hover:text-accent"
             >
               收起答案

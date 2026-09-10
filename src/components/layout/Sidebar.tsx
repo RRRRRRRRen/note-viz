@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Search, X } from "lucide-react";
 import { domainTree } from "@/lib/registry";
 import type { TechTree } from "@/lib/registry";
+import { SIDEBAR_W } from "@/lib/layout";
 import { MarkText } from "@/components/mark";
 
 export default function Sidebar({ domainSlug }: { domainSlug: string }) {
@@ -39,7 +40,8 @@ export default function Sidebar({ domainSlug }: { domainSlug: string }) {
   return (
     <aside
       ref={scrollRef}
-      className="h-full w-72 shrink-0 overflow-y-auto border-r border-border px-4 py-6"
+      style={{ width: SIDEBAR_W }}
+      className="h-full shrink-0 overflow-y-auto border-r border-border px-4 py-6"
     >
       <div className="mb-5 px-2 text-[10px] tracking-[0.1em] text-muted uppercase meta-mono">
         知识导航 / {domain.label}

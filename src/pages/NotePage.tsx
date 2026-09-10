@@ -3,8 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { MotionConfig } from "framer-motion";
 import { breadcrumbParts, noteByPath } from "@/lib/registry";
 import { openTab } from "@/lib/tabs";
-import { difficultyBadgeClass } from "@/components/difficulty";
-import { NoteTypeBadge } from "@/components/notetype";
+import { difficultyBadgeClass, NoteTypeBadge } from "@/components/badges";
 import { Toc } from "@/components/layout/Toc";
 import { backlinks } from "virtual:backlinks";
 
@@ -127,8 +126,8 @@ export default function NotePage() {
         )}
       </div>
 
-      {/* 右：大纲栏。sticky 钉在 main 可视区（顶栏+标签栏 92px 之外），自身内滚 */}
-      <aside className="sticky top-0 hidden h-[calc(100vh-92px)] w-64 shrink-0 self-start xl:block">
+      {/* 右：大纲栏。sticky 钉在 main 可视区（chrome 高度 --chrome-h 之外），自身内滚 */}
+      <aside className="sticky top-0 hidden h-[calc(100vh-var(--chrome-h))] w-64 shrink-0 self-start xl:block">
         <Toc containerRef={contentRef} resetKey={note.path} />
       </aside>
     </div>

@@ -1,9 +1,9 @@
 import { useCallback, useSyncExternalStore } from "react";
+import { createStore } from "./store";
 
 type Theme = "light" | "dark";
 
 const KEY = "noteviz-theme";
-const listeners = new Set<() => void>();
 
 function current(): Theme {
   const stored = localStorage.getItem(KEY);
@@ -11,34 +11,20 @@ function current(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-let snapshot: Theme | null = null;
-
-function getSnapshot(): Theme {
-  if (snapshot === null) snapshot = current();
-  return snapshot;
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  const mq = window.matchMedia("(prefers-color-scheme: dark)");
-  const onChange = () => {
-    if (!localStorage.getItem(KEY)) {
-      snapshot = null;
-      apply();
-      listener();
-    }
-  };
-  mq.addEventListener("change", onChange);
-  return () => {
-    listeners.delete(listener);
-    mq.removeEventListener("change", onChange);
-  };
-}
-
-function apply(): void {
-  const t = getSnapshot();
+function apply(t: Theme): void {
   document.documentElement.classList.toggle("dark", t === "dark");
 }
+
+const store = createStore<Theme>(current());
+
+// 无显式偏好时跟随系统主题
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  if (!localStorage.getItem(KEY)) {
+    const t = current();
+    store.set(t);
+    apply(t);
+  }
+});
 
 export function setTheme(t: Theme | "system"): void {
   if (t === "system") {
@@ -46,17 +32,17 @@ export function setTheme(t: Theme | "system"): void {
   } else {
     localStorage.setItem(KEY, t);
   }
-  snapshot = null;
-  apply();
-  for (const l of listeners) l();
+  const effective = current();
+  store.set(effective);
+  apply(effective);
 }
 
 export function useTheme(): { theme: Theme; toggle: () => void } {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, () => "light" as const);
+  const theme = useSyncExternalStore(store.subscribe, store.get, () => "light" as const);
   const toggle = useCallback(() => {
-    setTheme(getSnapshot() === "dark" ? "light" : "dark");
+    setTheme(store.get() === "dark" ? "light" : "dark");
   }, []);
   return { theme, toggle };
 }
 
-apply();
+apply(store.get());
