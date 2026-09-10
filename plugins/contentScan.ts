@@ -65,24 +65,84 @@ function toImportPath(contentDir: string, noteDir: string): string {
   return "/src/content/" + path.relative(contentDir, noteDir).split(path.sep).join("/");
 }
 
+/** 笔记目录规范路径：/note/<segs...>（与 registry 生成的 path 同构） */
+function notePathOf(contentDir: string, dir: string): string {
+  return `/note/${path.relative(contentDir, dir).split(path.sep).join("/")}`;
+}
+
+/** 笔记目录内的正文源文件（index.tsx + 同目录私有组件，不含 meta.ts） */
+function noteSourceFiles(dir: string): string[] {
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isFile() && /\.(ts|tsx)$/.test(e.name) && e.name !== "meta.ts")
+    .map((e) => path.join(dir, e.name));
+}
+
+/**
+ * 把笔记源码压成可搜索纯文本：去 import 与注释，JSX 标签替换为其字符串属性值
+ * （保留 title="…" 等正文语义属性），标签之间的文本节点自然保留。
+ */
+function extractText(files: string[]): string {
+  const raw = files
+    .map((f) =>
+      fs
+        .readFileSync(f, "utf-8")
+        .replace(/^import\s+[^\n]*$/gm, " ")
+        .replace(/\/\*[\s\S]*?\*\//g, " ")
+        .replace(/^\s*\/\/[^\n]*$/gm, " ")
+        .replace(/<[^>]*>/g, (tag) => (tag.match(/"[^"]*"/g) ?? []).join(" ")),
+    )
+    .join(" ");
+  return raw
+    .replace(/[{}()[\];:=`'"|\\<>]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** 每篇笔记的外链清单：notePath → 指向的 /note/ 路径（backlinks 数据源） */
+function scanOutgoingLinks(contentDir: string, noteDirs: string[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const dir of noteDirs) {
+    const links: string[] = [];
+    for (const file of noteSourceFiles(dir)) {
+      const src = fs.readFileSync(file, "utf-8");
+      for (const m of src.matchAll(LINK_RE)) {
+        const t = m[1] ?? "";
+        if (t && !links.includes(t)) links.push(t);
+      }
+    }
+    if (links.length > 0) out.set(notePathOf(contentDir, dir), links);
+  }
+  return out;
+}
+
 export function contentScan(): Plugin {
   const contentDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src/content");
   const virtualModuleId = "virtual:content-registry";
   const resolvedId = "\0" + virtualModuleId;
+  const virtualSearchId = "virtual:search-index";
+  const resolvedSearchId = "\0" + virtualSearchId;
+  const virtualBacklinksId = "virtual:backlinks";
+  const resolvedBacklinksId = "\0" + virtualBacklinksId;
+  const resolvedExtraIds = [resolvedId, resolvedSearchId, resolvedBacklinksId];
 
   return {
     name: "note-viz-content-scan",
     enforce: "pre",
     resolveId(id) {
       if (id === virtualModuleId) return resolvedId;
+      if (id === virtualSearchId) return resolvedSearchId;
+      if (id === virtualBacklinksId) return resolvedBacklinksId;
     },
-    // watch 内容目录：新增/删除笔记目录后 dev 自动重扫
+    // watch 内容目录：新增/删除笔记后 dev 自动重扫（三个虚拟模块一起失效）
     configureServer(server) {
       const rescan = (file: string) => {
         const abs = path.resolve(file);
         if (abs.startsWith(contentDir) && (abs.endsWith("meta.ts") || abs.endsWith("index.tsx"))) {
-          const mod = server.moduleGraph.getModuleById(resolvedId);
-          if (mod) server.moduleGraph.invalidateModule(mod);
+          for (const rid of resolvedExtraIds) {
+            const mod = server.moduleGraph.getModuleById(rid);
+            if (mod) server.moduleGraph.invalidateModule(mod);
+          }
         }
       };
       server.watcher.on("add", rescan);
@@ -142,6 +202,37 @@ export function contentScan(): Plugin {
       if (failed) process.exitCode = 1;
     },
     load(id) {
+      if (id === resolvedSearchId) {
+        if (!fs.existsSync(contentDir)) return `export const searchEntries = [];`;
+        const noteDirs = findNoteDirs(contentDir).sort();
+        const imports: string[] = [];
+        const rows: string[] = [];
+        noteDirs.forEach((dir, i) => {
+          imports.push(`import * as meta${i} from "${toImportPath(contentDir, dir)}/meta.ts";`);
+          const segs = path.relative(contentDir, dir).split(path.sep);
+          const notePath = `/note/${segs.map(encodeURIComponent).join("/")}`;
+          rows.push(
+            `  { path: ${JSON.stringify(notePath)}, title: meta${i}.meta.title, description: meta${i}.meta.description, tags: meta${i}.meta.tags, updated: meta${i}.meta.updated, text: ${JSON.stringify(extractText(noteSourceFiles(dir)))} },`,
+          );
+        });
+        return [...imports, `export const searchEntries = [`, ...rows, `];`].join("\n");
+      }
+      if (id === resolvedBacklinksId) {
+        if (!fs.existsSync(contentDir)) return `export const backlinks = {};`;
+        const noteDirs = findNoteDirs(contentDir);
+        const validPaths = new Set(noteDirs.map((d) => notePathOf(contentDir, d)));
+        const map: Record<string, string[]> = {};
+        for (const [source, targets] of scanOutgoingLinks(contentDir, noteDirs)) {
+          for (const t of targets) {
+            // 坏链接由 buildStart 闸门报错，这里只建有效边；兼容 encode 过的路径段
+            const key = validPaths.has(t) ? t : decodeURI(t);
+            if (!validPaths.has(key)) continue;
+            (map[key] ??= []).push(source);
+          }
+        }
+        for (const k of Object.keys(map)) map[k]?.sort();
+        return `export const backlinks = ${JSON.stringify(map)};`;
+      }
       if (id !== resolvedId) return;
       if (!fs.existsSync(contentDir)) return `export const notes = [];`;
       const noteDirs = findNoteDirs(contentDir).sort();

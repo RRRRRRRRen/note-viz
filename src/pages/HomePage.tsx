@@ -58,7 +58,7 @@ export default function HomePage() {
             <span className="text-[10px] text-muted meta-mono">从低成本动作开始</span>
           </div>
           <div className="flex flex-col gap-2">
-            <Suggestion text="按 Ctrl/Cmd + K 快速聚焦" />
+            <Suggestion text="Ctrl/Cmd + K 全局搜索笔记" />
             <Suggestion text="点击顶栏 Zen 进入沉浸阅读" />
             <Suggestion text="多开标签并行对比知识点" />
           </div>

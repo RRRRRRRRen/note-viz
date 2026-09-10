@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Moon, Sun, X } from "lucide-react";
+import { Moon, Search, Sun, X } from "lucide-react";
 import { domainTrees } from "@/lib/registry";
+import { openSearch } from "@/lib/search";
 import {
   activateTab,
   closeAllTabs,
@@ -69,6 +70,14 @@ function TopBar() {
             })}
           </nav>
           <div className="ml-auto flex h-14 items-center gap-3 border-l border-border pl-4">
+            <button
+              type="button"
+              onClick={openSearch}
+              aria-label="搜索笔记（Ctrl/Cmd+K）"
+              className="rounded p-2 text-muted hover:bg-surface-2 hover:text-foreground"
+            >
+              <Search size={16} />
+            </button>
             <button
               type="button"
               onClick={toggle}

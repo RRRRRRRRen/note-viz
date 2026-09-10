@@ -81,6 +81,13 @@ export function latestNotes(count: number): NoteEntry[] {
   return [...notes].sort((a, b) => b.meta.updated.localeCompare(a.meta.updated)).slice(0, count);
 }
 
+/** 标签聚合：跨领域列出携带同一标签的笔记（按更新时间倒序） */
+export function notesByTag(tag: string): NoteEntry[] {
+  return notes
+    .filter((n) => n.meta.tags.includes(tag))
+    .sort((a, b) => b.meta.updated.localeCompare(a.meta.updated));
+}
+
 export interface CategoryChild {
   slug: string;
   label: string;

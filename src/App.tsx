@@ -1,17 +1,21 @@
 import { useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import { TopBar } from "./components/layout/TopBar";
 import Sidebar from "./components/layout/Sidebar";
+import { SearchPalette } from "./components/layout/SearchPalette";
 import { ZenProvider, useZen } from "./lib/zen";
 
 function Chrome() {
-  const { zen } = useZen();
+  const { zen, setZen } = useZen();
   const location = useLocation();
   const isHome = location.pathname === "/";
   const isNote = location.pathname.startsWith("/note/");
-  const domainSlug =
-    isHome || isNote
+  const isTag = location.pathname.startsWith("/tag/");
+  const domainSlug = isTag
+    ? undefined
+    : isHome || isNote
       ? isNote
         ? location.pathname.split("/")[2]
         : undefined
@@ -22,12 +26,22 @@ function Chrome() {
   if (domainSlug) lastDomain.current = domainSlug;
   const sidebarDomain = domainSlug ?? lastDomain.current;
 
-  const showSidebar = !zen && !isHome && sidebarDomain !== undefined;
+  const showSidebar = !zen && !isHome && !isTag && sidebarDomain !== undefined;
 
   if (zen) {
     return (
       <div className="h-screen overflow-y-auto">
         <Outlet />
+        {/* Esc 之外的显式退出入口：右上角浮动按钮 */}
+        <button
+          type="button"
+          onClick={() => setZen(false)}
+          aria-label="退出 Zen 模式"
+          className="fixed top-4 right-4 z-40 flex items-center gap-1.5 rounded-full border border-border bg-background/90 px-3 py-1.5 text-xs text-muted shadow-sm backdrop-blur transition-colors hover:text-foreground"
+        >
+          <X size={13} />
+          退出 Zen
+        </button>
       </div>
     );
   }
@@ -62,6 +76,7 @@ export default function App() {
   return (
     <ZenProvider>
       <Chrome />
+      <SearchPalette />
     </ZenProvider>
   );
 }

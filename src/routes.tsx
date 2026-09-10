@@ -21,6 +21,13 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: "tag/:tag",
+        lazy: async () => {
+          const { default: TagPage } = await import("./pages/TagPage");
+          return { Component: TagPage };
+        },
+      },
+      {
         path: "*",
         lazy: async () => {
           const { default: CategoryPage } = await import("./pages/CategoryPage");

@@ -1,9 +1,10 @@
 import { Component, Suspense, lazy, useEffect, useMemo, useRef, type ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { breadcrumbParts, noteByPath } from "@/lib/registry";
 import { openTab } from "@/lib/tabs";
 import { difficultyBadgeClass } from "@/components/difficulty";
 import { Toc } from "@/components/layout/Toc";
+import { backlinks } from "virtual:backlinks";
 
 /** 笔记 chunk 加载失败（典型场景：发版后旧 chunk 被删、浏览器缓存失效）的兜底 UI */
 class NoteLoadErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -46,6 +47,7 @@ export default function NotePage() {
 
   const m = note.meta;
   const crumbs = breadcrumbParts(note.slug.slice(0, 3));
+  const refSources = backlinks[note.path] ?? [];
 
   return (
     /* main 是唯一滚动容器：外壳随内容增长（min-h-full），内容列不再自带滚动 */
@@ -73,9 +75,13 @@ export default function NotePage() {
             </span>
             <span className="text-border">·</span>
             {m.tags.map((t) => (
-              <span key={t} className="rounded border border-border px-1.5 py-0.5">
+              <Link
+                key={t}
+                to={`/tag/${encodeURIComponent(t)}`}
+                className="rounded border border-border px-1.5 py-0.5 transition-colors hover:border-accent hover:text-accent"
+              >
                 {t}
-              </span>
+              </Link>
             ))}
             <span className="text-border">·</span>
             <span>更新于 {m.updated}</span>
@@ -88,6 +94,27 @@ export default function NotePage() {
             {LazyNote ? <LazyNote /> : null}
           </Suspense>
         </NoteLoadErrorBoundary>
+
+        {refSources.length > 0 && (
+          <section className="mt-12 border-t border-border pt-4">
+            <div className="mb-2.5 text-[10px] tracking-[0.1em] text-muted uppercase meta-mono">
+              被引用 / referenced by
+            </div>
+            <p className="mb-3 text-xs text-muted">以下笔记链接到了本篇（前置知识 / 延伸阅读）：</p>
+            <ul className="space-y-1.5">
+              {refSources.map((p) => (
+                <li key={p}>
+                  <Link
+                    to={p}
+                    className="text-[13px] text-accent underline-offset-4 transition-colors hover:underline"
+                  >
+                    ↩ {noteByPath(p)?.meta.title ?? p}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
       {/* 右：大纲栏。sticky 钉在 main 可视区（顶栏+标签栏 92px 之外），自身内滚 */}
