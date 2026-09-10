@@ -5,7 +5,9 @@ import type { Plugin } from "vite";
 import { taxonomy } from "../src/content/taxonomy.ts";
 import type { TaxonomyNode } from "../src/lib/types.ts";
 
-const REQUIRED_KEYS = ["title", "description", "difficulty", "tags", "updated"] as const;
+const REQUIRED_KEYS = ["title", "description", "type", "difficulty", "tags", "updated"] as const;
+
+const NOTE_TYPES = ["knowledge", "question", "practice", "draft"] as const;
 
 function findNoteDirs(base: string): string[] {
   const entries = fs.readdirSync(base, { withFileTypes: true });
@@ -25,13 +27,24 @@ function validateMetaFile(filePath: string): string[] {
     const re = new RegExp(`\\b${key}\\s*:`);
     if (!re.test(src)) errors.push(`缺少必填字段 "${key}"`);
   }
-  // title 必须是问句（疑问主干，可带冒号副题）且 ≤25 字符
+  // 笔记类型：合法枚举，决定标题规则
+  const typeMatch = src.match(/type:\s*"([a-z]+)"/);
+  const noteType = typeMatch?.[1];
+  if (noteType !== undefined && !(NOTE_TYPES as readonly string[]).includes(noteType)) {
+    errors.push(`type 非法: "${noteType}"（合法值 ${NOTE_TYPES.join(" / ")}）`);
+  }
+  // 标题：question 必须问句；knowledge/practice 允许陈述式；draft 免检（未完成内容）
   const titleMatch = src.match(/title:\s*(?:"([^"]+)"|'([^']+)')/);
   const title = titleMatch?.[1] ?? titleMatch?.[2];
-  if (title) {
+  if (title && noteType !== "draft") {
     if ([...title].length > 25) errors.push(`title 超过 25 字符（当前 ${[...title].length}）`);
-    const interrogative = /[？？?]|怎么|怎样|如何|为什么|为何|什么|是不是|能否|还是|哪|多少|几|吗/;
-    if (!interrogative.test(title)) errors.push(`title 必须是问句（含 ？/怎么/为什么 等疑问主干）`);
+    if (noteType === "question") {
+      const interrogative =
+        /[？？?]|怎么|怎样|如何|为什么|为何|什么|是不是|能否|还是|哪|多少|几|吗/;
+      if (!interrogative.test(title)) {
+        errors.push(`question 类型 title 必须是问句（含 ？/怎么/为什么 等疑问主干）`);
+      }
+    }
   }
   return errors;
 }
@@ -207,14 +220,20 @@ export function contentScan(): Plugin {
         const noteDirs = findNoteDirs(contentDir).sort();
         const imports: string[] = [];
         const rows: string[] = [];
-        noteDirs.forEach((dir, i) => {
-          imports.push(`import * as meta${i} from "${toImportPath(contentDir, dir)}/meta.ts";`);
+        let n = 0;
+        for (const dir of noteDirs) {
+          const metaPath = path.join(dir, "meta.ts");
+          if (!fs.existsSync(metaPath)) continue; // 缺失由 buildStart 闸门报错
+          const metaSrc = fs.readFileSync(metaPath, "utf-8");
+          if (/type:\s*"draft"/.test(metaSrc)) continue; // 草稿不进搜索索引
+          imports.push(`import * as meta${n} from "${toImportPath(contentDir, dir)}/meta.ts";`);
           const segs = path.relative(contentDir, dir).split(path.sep);
           const notePath = `/note/${segs.map(encodeURIComponent).join("/")}`;
           rows.push(
-            `  { path: ${JSON.stringify(notePath)}, title: meta${i}.meta.title, description: meta${i}.meta.description, tags: meta${i}.meta.tags, updated: meta${i}.meta.updated, text: ${JSON.stringify(extractText(noteSourceFiles(dir)))} },`,
+            `  { path: ${JSON.stringify(notePath)}, title: meta${n}.meta.title, description: meta${n}.meta.description, tags: meta${n}.meta.tags, updated: meta${n}.meta.updated, text: ${JSON.stringify(extractText(noteSourceFiles(dir)))} },`,
           );
-        });
+          n += 1;
+        }
         return [...imports, `export const searchEntries = [`, ...rows, `];`].join("\n");
       }
       if (id === resolvedBacklinksId) {

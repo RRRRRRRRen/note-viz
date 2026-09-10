@@ -5,6 +5,7 @@ export const meta = {
   description:
     "new 的四步语义、继承方案的修补史（原型链→借用构造→组合→寄生组合）、class extends 的引擎层等价物。",
   difficulty: "进阶",
+  type: "knowledge",
   tags: ["继承", "原型链", "class", "面试"],
   updated: "2026-09-10",
 } satisfies NoteMeta;

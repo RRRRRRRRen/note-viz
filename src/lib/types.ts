@@ -2,9 +2,13 @@ import type { ComponentType } from "react";
 
 export type Difficulty = "入门" | "进阶" | "高级";
 
+/** 笔记类型：决定标题闸门与展示行为（draft 不进任何聚合，仅 URL 直达） */
+export type NoteType = "knowledge" | "question" | "practice" | "draft";
+
 export interface NoteMeta {
   title: string;
   description: string;
+  type: NoteType;
   difficulty: Difficulty;
   tags: string[];
   updated: string;

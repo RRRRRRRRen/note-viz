@@ -5,6 +5,7 @@ export const meta = {
   description:
     "布局选型全景：两种布局哲学、对齐体系与决策树。加权收缩算法与 auto-repeat 已拆分为专题篇，入口在此。",
   difficulty: "进阶",
+  type: "knowledge",
   tags: ["Flexbox", "Grid", "布局", "CSS"],
   updated: "2026-09-10",
 } satisfies NoteMeta;

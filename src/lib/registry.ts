@@ -32,6 +32,7 @@ export interface DomainTree {
 function notesUnder(prefix: string[], exact: boolean): NoteEntry[] {
   return notes.filter(
     (n) =>
+      n.meta.type !== "draft" &&
       n.slug.length === (exact ? prefix.length + 1 : n.slug.length) &&
       prefix.every((p, i) => n.slug[i] === p) &&
       n.slug.length > prefix.length,
@@ -78,13 +79,16 @@ export function domainTree(slug: string): DomainTree | undefined {
 }
 
 export function latestNotes(count: number): NoteEntry[] {
-  return [...notes].sort((a, b) => b.meta.updated.localeCompare(a.meta.updated)).slice(0, count);
+  return notes
+    .filter((n) => n.meta.type !== "draft")
+    .sort((a, b) => b.meta.updated.localeCompare(a.meta.updated))
+    .slice(0, count);
 }
 
-/** 标签聚合：跨领域列出携带同一标签的笔记（按更新时间倒序） */
+/** 标签聚合：跨领域列出携带同一标签的笔记（按更新时间倒序，草稿除外） */
 export function notesByTag(tag: string): NoteEntry[] {
   return notes
-    .filter((n) => n.meta.tags.includes(tag))
+    .filter((n) => n.meta.type !== "draft" && n.meta.tags.includes(tag))
     .sort((a, b) => b.meta.updated.localeCompare(a.meta.updated));
 }
 

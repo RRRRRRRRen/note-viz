@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { breadcrumbParts, noteByPath } from "@/lib/registry";
 import { openTab } from "@/lib/tabs";
 import { difficultyBadgeClass } from "@/components/difficulty";
+import { NoteTypeBadge } from "@/components/notetype";
 import { Toc } from "@/components/layout/Toc";
 import { backlinks } from "virtual:backlinks";
 
@@ -54,6 +55,11 @@ export default function NotePage() {
     <div className="relative mx-auto flex min-h-full max-w-[1200px] items-start">
       {/* 左：内容块流（高度随内容增长，滚动交给 main） */}
       <div ref={contentRef} className="min-w-0 flex-1 px-8 py-7">
+        {m.type === "draft" && (
+          <div className="mb-5 rounded-lg border border-dashed border-warn/60 bg-warn/10 px-4 py-2.5 text-xs leading-relaxed text-warn">
+            草稿——内容未完成，仅通过 URL 直达；不出现在导航、搜索与各聚合页。
+          </div>
+        )}
         <nav className="mb-5 flex items-center gap-2 text-[11px] text-muted meta-mono">
           <span>NoteViz</span>
           {crumbs.map((c) => (
@@ -68,6 +74,7 @@ export default function NotePage() {
           <p className="eyebrow">学习详情</p>
           <h1 className="max-w-[800px] text-3xl leading-tight font-semibold">{m.title}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-muted meta-mono">
+            <NoteTypeBadge type={m.type} />
             <span
               className={`rounded px-2 py-0.5 font-sans font-medium ${difficultyBadgeClass(m.difficulty)}`}
             >

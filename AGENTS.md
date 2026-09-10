@@ -32,11 +32,11 @@ pnpm preview    # 预览 dist（AI 禁止启动）
 
 创建或修改 `src/content/` 下的笔记时，**必须使用 `noteviz-note-writing` skill**，按其工作流执行。要点：
 
-1. **一篇一问**：笔记按知识点组织而非综合指南——一篇笔记 = 一个知识点 = 一个问句标题；话题知识点多时先出拆分表格再逐篇写
+1. **一篇一论 + 笔记类型**：笔记按知识点组织而非综合指南——一篇笔记 = 一个知识点；meta.type 四型（knowledge 知识 / question 问题 / practice 实战 / draft 草稿）决定标题规则——question 必须问句标题，knowledge/practice 允许陈述式，draft 免检且不进导航聚合；话题知识点多时先出拆分表格再逐篇写
 2. **禁止跳过大纲确认直接动笔**——先产出大纲提案（固定表格：标题 / 知识点 / 难度，每行一篇笔记）+ 询问熟悉程度，用户确认后才逐篇写正文
 3. 内容规范、组件 API、视觉规范、详略表全部在 skill 文件里（`.opencode/skills/noteviz-note-writing/SKILL.md`）
 4. 组件签名以源码为准：`src/components/note.tsx`（排版）、`src/components/viz/`（可视化目录）
-5. 构建时自动扫描注册笔记并校验 meta 五字段，缺失直接报错
+5. 构建时自动扫描注册笔记并校验 meta 六字段（含 type 枚举与类型化标题规则），缺失/非法直接报错
 
 ## 验证
 
