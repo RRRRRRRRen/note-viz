@@ -214,7 +214,7 @@ import {
 
 | 层       | 包装                                            | 组件                                                                                     |
 | -------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 正文层   | 无边框无背景，直接落在页面上                    | Prose / Section 标题                                                                     |
+| 正文层   | 无边框无背景，直接落在页面上                    | Paragraph / Heading / List / Figure（块流结构块）                                        |
 | 可视化层 | VizBlock 统一包壳：边框 + 彩色标题栏 + 圆点标签 | Timeline / CompareTable / BarChart / DoDont / MemoryCard（**已内置，直接用**）           |
 | 演示层   | 代码呈现与交互演示（运行/切换/步进/日志）       | PlayGround / StepThrough / CodeBlock·DiffBlock·CodeTabs·CodeAnnotate / LogPanel / 模拟器 |
 
