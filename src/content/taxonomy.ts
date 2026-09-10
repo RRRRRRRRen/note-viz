@@ -135,6 +135,22 @@ export const taxonomy: Record<string, TaxonomyNode> = {
       },
     },
   },
+  network: {
+    label: "网络",
+    color: "#0ea5e9",
+    icon: "Network",
+    children: {
+      http: {
+        label: "HTTP",
+        children: {
+          compression: {
+            label: "内容压缩",
+            order: ["gzip-deflate", "gz-file-format", "content-negotiation", "brotli-zstd"],
+          },
+        },
+      },
+    },
+  },
   backend: {
     label: "后端",
     color: "#10b981",
@@ -373,6 +389,10 @@ export const taxonomy: Record<string, TaxonomyNode> = {
           "text-pipeline": {
             label: "文本搜索与管道",
             order: ["grep-pipe-basics"],
+          },
+          "file-basics": {
+            label: "文件与压缩",
+            order: ["file-type-magic", "gzip-cli"],
           },
         },
       },
