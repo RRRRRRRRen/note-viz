@@ -157,7 +157,7 @@
 
 ### `<VersionNote>` —— 版本差异
 
-- **签名**：`{ label?, note?, versions: { range, text, color? }[] }`（range 如 "Node < 20"，默认蓝，废弃/移除用红色 `#f85149`）
+- **签名**：`{ label?, note?, versions: { range, text, color? }[] }`（range 如 "Node < 20"，默认蓝，废弃/移除用红色（PALETTE.red））
 - **适用**：同一行为在不同版本/环境下表现不同——Node/浏览器版本、ES 规范阶段、框架大版本迁移
 - **不适用**：普遍对错（→ `DoDont`）；仅一句话提到的差异（正文 `<strong>` 即可）
 - **示例**：declaration-files（TS 7 起 lib 内嵌）、vite-transpile-ts（Vite 8 转译层换 Oxc）
@@ -364,6 +364,6 @@
 ## 五、新组件开发流程
 
 1. 确认第 3 步查表确实无匹配组件、npm 生态无成熟轻量包（禁外部 CDN）
-2. 先在本文件候选区登记 → 实现放 `src/components/viz/`（静态）或 `src/components/demo/`（交互），遵守三层边界、VizBlock 包壳、配色语义（蓝 #1677ff 通用 / 紫 #8b5cf6 对比左 / 橙 #f59e0b 同步警告 / 绿 #3fb950 正确 / 红 #f85149 错误）
+2. 先在本文件候选区登记 → 实现放 `src/components/viz/`（静态）或 `src/components/demo/`（交互），遵守三层边界、VizBlock 包壳、配色语义（色值单一来源 src/components/palette.ts，勿抄色值——有构建闸门）
 3. 在 `src/components/viz/index.tsx` 补 re-export，本文件正式区补条目（签名 + 适用/不适用 + 示例）
 4. `pnpm build && pnpm lint` 通过

@@ -50,7 +50,7 @@ docs/                    工程规范（本文件）
 ## 构建闸门（contentScan，违规 = 构建失败）
 
 1. **meta 六字段**：title / description / **type** / difficulty / tags / updated；type 枚举 knowledge·question·practice·draft
-2. **类型化标题**：question 必须问句且 ≤25 字；knowledge / practice 允许陈述式（≤25 字）；draft 免检。draft 不进任何聚合（导航/首页/分类/标签/搜索），仅 URL 直达
+2. **类型化标题与 draft 行为**：标题规则源在 validate.ts（有单测）；draft 不进任何聚合（导航/首页/分类/标签/搜索），仅 URL 直达
 3. **内部链接**：正文中的 `/note/…` 链接必须指向存在的笔记
 4. **taxonomy 登记**：每篇必须列入所属知识面节点的 `order` 数组
 5. **语义色**：笔记内容与应用源码（`src/pages|components|lib`）禁止 PALETTE 七值字面量（`="#1677ff"` / `: "#1677ff"` 模式）。豁免：`palette.ts` 本体、`taxonomy.ts` 领域色（配置数据）、Tailwind className 任意值（`text-[#3fb950]` 这类无法引用 JS 常量，属结构性限制）
@@ -82,7 +82,3 @@ docs/                    工程规范（本文件）
 1. 批量脚本改完内容：**按命令退出码**跑 `pnpm build` 验证——不要用 `build | grep error` 管道（grep 匹配到错误行反而 exit 0，会吞掉构建失败）
 2. 冒烟测试临时改文件后：用脚本精确恢复，**不要 `git checkout`**（会把文件打回未迁移的 HEAD 版本引发连锁）
 3. 脚本插入 import 的锚点：**文件顶部第一个连续 import 区的结束行**（带多行 import 深度跟踪）——不能按「最后一个 import 开头的行」找（多行 import 块会插错位），也不能全文件扫（教学代码示例里有以 `import` 开头的行）
-
-## 验证三件套
-
-任何代码改动后：`pnpm build && pnpm lint && pnpm test`。提交信息中文短句，格式 `type: 描述`；每批改动等用户确认再 commit。

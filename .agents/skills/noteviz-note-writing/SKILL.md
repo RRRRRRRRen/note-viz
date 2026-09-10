@@ -17,66 +17,41 @@ description: 为 NoteViz 学习站创建或修改笔记时使用。强制执行�
 
 ## 组件 API
 
+三个桶导入（**签名、选型条件、成本分级全部以同目录 `COMPONENTS.md` 为准**，此处只定导入方式）：
+
 ```tsx
-// ★ 块流结构组件（架构见 BLOCK-SYSTEM.md：标题与内容平级平铺，禁止结构容器）
 import {
-  Conclusion, // 结论块（每篇首个块）
-  Heading, // { level: 2 | 3, title } 标题块——只有标题，内容块是它的兄弟节点
-  Kbd, // 行级：按键胶囊 <Kbd>Ctrl</Kbd>
-  List, // { items: ReactNode[], ordered? } 列表块
-  Figure, // { src, alt, caption?, width?, height? } 图片块——图片放 public/images/<tech>/，src 写 "/images/..."
-  NoteShell, // 唯一容器：块流垂直布局器
-  Paragraph, // 正文段落块：恰好一段；children 内用原生 strong/em/code
-  QAChain, // { items: QAItem[] { q, a, intent?, bonus?, depth? 1-5 }[], reveal?: "click"|"always", intro? }
-  Tag, // 行级：归类标记胶囊
+  Conclusion,
+  Heading,
+  Paragraph,
+  List,
+  Figure,
+  QAChain,
+  Kbd,
+  Tag,
+  NoteShell,
 } from "@/components/note";
-// 已删除：Section/Subsection → Heading；Prose → 多个 Paragraph（存量已全量迁移）
-
-// ★ 演示层统一桶导入（与 viz/ 桶惯例对齐）：
 import {
-  CodeBlock, // 代码块：{ code, lang?: "javascript" | "typescript" }，shiki 高亮 + 复制按钮
-  PlayGround, // 在线游乐场：{ code, label?, height? } 可编辑 + 真实执行 + 控制台（本地 iframe 沙箱，离线可用）
-  FlowChart, // 流程图/拓扑：React Flow + dagre 自动布局；{ data {direction?, nodes, edges}, label?, height? }（封顶 720）
-  DemoButton, // 演示通用件三件套（日志面板 + 控制/重置按钮）
-  LogPanel,
-  ResetButton,
-} from "@/components/demo";
-
-// ★ 可视化组件（均自带 VizBlock 包壳）——完整目录与选型条件见同目录 COMPONENTS.md
-import {
-  VizBlock,
   CompareTable,
   Timeline,
-  OutputTimeline,
-  MemoryCard,
-  BarChart,
   DoDont,
-  MemoryMap,
-  LayerStack,
-  StateFlow,
-  SequenceDiagram,
-  Callout, // { kind?: "info"|"tip"|"warning"|"danger", title?, children } 四态提示框
-  Table, // { label?, head, rows } 结构化明细表
-  ShortcutTable, // { label?, rows: { keys, desc }[] } 快捷键速查
-  VersionNote, // { label?, note?, versions: { range, text, color? }[] } 版本差异
-  SpecQuote, // { source, children } 规范引用（强制出处）
-  Prerequisite, // { notes: { title, to }[], children? } 前置知识
-  CrossRef, // { title?, notes: { title, to, description? }[] } 延伸阅读
+  Callout,
+  Table,
+  Prerequisite,
+  CrossRef /* … */,
 } from "@/components/viz";
-
-// ★ 演示层：步进推演 / 代码呈现 / 自测（统一从 "@/components/demo" 桶导入）
 import {
-  StepThrough, // 步进推演：{ steps: { title, desc?, render? }[], autoMs?, height? }
-  DiffBlock, // { label?, caption?, lines: { type: "add"|"del"|"keep", code }[] }
-  CodeTabs, // { tabs: { name, code, lang? }[] }
-  CodeAnnotate, // { code, lang?, annotations: { line, text }[] }
-  ShellBlock, // { children: string } 终端输出块（shell/配置类无高亮代码）
-  Collapsible, // { title, children, defaultOpen? }
-  Exercise, // { question, answer, tags?, hint? }
-  Quiz, // { question, options, answer, explain? }
-  Checklist, // 自查清单：{ title?, items: { text, note? }[] } 勾选 + 进度 + 按篇 localStorage 持久化
+  CodeBlock,
+  ShellBlock,
+  FlowChart,
+  PlayGround,
+  StepThrough,
+  Checklist /* … */,
 } from "@/components/demo";
 ```
+
+- 架构裁决（块流 / 标题与内容平级 / 禁结构容器）见同目录 BLOCK-SYSTEM.md；已删除 Section/Subsection/Prose（→ `Heading` / 多个 `Paragraph`）
+- 可视化组件均自带 VizBlock 包壳，禁止二次包壳
 
 **可视化设计前置分析（强制）**：动笔前（大纲提案阶段）逐个分析本次的重点知识点——它属于哪种认知类型（见下方枚举），应该用什么视觉形式最有效地提升学习效果，而不是拿现成组件硬套内容。分析结果写入大纲提案（每个重点知识点 → 拟用的视觉形式）。**每个拟用组件都必须经过下方四步决策流程**。
 
@@ -94,45 +69,7 @@ import {
 
 **组件选型优先级**：内容需要某种视觉呈现时，先查有没有成熟 npm 包（流程图 → React Flow + dagre；在线代码执行 → 本地 iframe 沙箱；图表 → 可考虑 recharts 等），确认没有合适的再自研。禁止重复造轮子，也不为简单需求引重型依赖。**禁用依赖外部 CDN/云端 runner 的方案**——执行与渲染必须本地完成、离线可用。
 
-**认知类型 → 组件速查**（每个组件的适用/不适用条件以 COMPONENTS.md 为准）：
-
-| 认知类型          | 首选组件                                                    |
-| ----------------- | ----------------------------------------------------------- |
-| 线性顺序          | `Timeline`                                                  |
-| 拓扑流程/数据流   | `FlowChart`                                                 |
-| 状态迁移          | `StateFlow`                                                 |
-| 层级包含/堆叠     | `LayerStack`                                                |
-| 内存布局/引用关系 | `MemoryMap`                                                 |
-| 多角色消息往返    | `SequenceDiagram`                                           |
-| 二元对比          | `CompareTable`                                              |
-| 量级直觉          | `BarChart`（注明"仅供直觉"）                                |
-| 对错对照          | `DoDont`                                                    |
-| 输出题逐条解读    | `OutputTimeline`（输出题必须用这个，不用 Timeline）         |
-| 关键结论记忆      | `MemoryCard`（每篇 ≤3）                                     |
-| 动态过程逐步推演  | `StepThrough`                                               |
-| 参数探索          | 笔记私有模拟器（参照 FlexShrinkSimulator 模式，放笔记目录） |
-| 在线执行          | `PlayGround`                                                |
-| 面试自测          | `QAChain`（见「追问链问答模式」）                           |
-
-**内容语义 → 组件速查**（语义块按内容含义选用，适用条件见 COMPONENTS.md）：
-
-| 语义                        | 首选组件                                  |
-| --------------------------- | ----------------------------------------- |
-| 提示/技巧/注意/危险         | `Callout`（同屏 ≤3 个，不计入可视化密度） |
-| 代码增删对照                | `DiffBlock`                               |
-| 多种解法/语言               | `CodeTabs`                                |
-| 源码逐段讲解                | `CodeAnnotate`                            |
-| 结构化明细（API/配置/参数） | `Table`                                   |
-| 快捷键速查                  | `ShortcutTable`                           |
-| 行内按键                    | `Kbd`                                     |
-| 版本行为差异                | `VersionNote`                             |
-| 规范/文档原文引用           | `SpecQuote`（强制带出处）                 |
-| 前置知识                    | `Prerequisite`（紧随 Conclusion 之后）    |
-| 延伸阅读                    | `CrossRef`（笔记结尾，过渡钩子卡片化）    |
-| 次要细节/完整推导           | `Collapsible`（主线内容禁止折叠）         |
-| 动手练习题                  | `Exercise`                                |
-| 选择题自测                  | `Quiz`                                    |
-| 行内归类标记                | `Tag`（一屏 ≤5 个）                       |
+**组件速查**：认知类型 → 组件、内容语义 → 组件两张速查总表见同目录 `COMPONENTS.md` 开头（含成本分级）；选型时逐条核对适用/不适用条件。
 
 产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（六字段：title——按类型定，question 必须问句、其余陈述式，≤25 字 / type——knowledge·question·practice·draft / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，内部是**平铺块流**——`<Heading>` 只放标题本身，段落/图表/列表等块与标题平级依次排列（架构裁决见 BLOCK-SYSTEM.md），私有子组件放同文件底部（超 150 行拆到同目录）。禁止 `<Section>`/`<Prose>` 等结构容器（已 deprecated）。
 
@@ -219,9 +156,9 @@ import {
 | 演示层   | 代码呈现与交互演示（运行/切换/步进/日志）       | PlayGround / StepThrough / CodeBlock·DiffBlock·CodeTabs·CodeAnnotate / LogPanel / 模拟器 |
 
 - **禁止双重边框**：viz 组件已内置 VizBlock 包壳，不要再套 border div
-- 自定义可视化（无现成组件）用 `<VizBlock label="示意 / diagram" color="#8b5cf6">` 包壳；label 规范：中文短标签 + 空格 + 英文斜杠小写
+- 自定义可视化（无现成组件）用 `<VizBlock label="示意 / diagram" color={PALETTE.purple}>` 包壳；label 规范：中文短标签 + 空格 + 英文斜杠小写
 - **重点展示标准**：核心结论 → MemoryCard（≤3 个，多了稀释重点）；流程顺序 → Timeline；概念混淆 → CompareTable；写法对错 → DoDont；量级 → BarChart（注明"仅供直觉"）；输出题 → OutputTimeline；其余认知类型查 COMPONENTS.md；一般提示 → 正文 `<strong>`/`<code>` 即可，不升级
-- **配色语义**：蓝 `#1677ff` 通用强调 / 紫 `#8b5cf6` 对比左·微任务 / 橙 `#f59e0b` 调用栈·同步·警告 / 绿 `#3fb950` 正确·渲染 / 红 `#f85149` 错误·危险 / 灰 `#9ca3af` 中性·热身（追问链热身档、无语义连线）；DiffBlock 增删行沿用绿/红语义；语义色单一来源在 `src/components/palette.ts`，组件内不得再散落硬编码语义色
+- **配色语义**：蓝=通用强调 / 紫=对比左·微任务 / 橙=同步·警告 / 绿=正确·渲染 / 红=错误·危险 / 灰=中性（色值单一来源 `src/components/palette.ts`，禁止字面量拷贝——有构建闸门）
 - **间距节奏**：VizBlock 包壳块统一 `my-5`（自带）；轻语义卡（Callout/SpecQuote/VersionNote/Prerequisite/CrossRef/Exercise/Quiz/Collapsible/CodeTabs）统一 `my-4`
 - **一知识点一主图**：同一知识点只保留一张 canonical 可视化——两种图形式复述同一信息即违规（反例：旧版事件循环笔记用 Timeline 和 FlowChart 各画了一遍循环）；换更合适的图时必须删除旧图，宁可少一块也不留重复
 - **红线**：正文不加 bg 容器；类比不加框（是叙事的一部分）；markdown 语法禁用

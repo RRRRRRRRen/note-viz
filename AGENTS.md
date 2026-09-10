@@ -31,26 +31,20 @@ pnpm preview    # 预览 dist（AI 禁止启动）
 
 本仓库的全部 AI 资产（技能 / 任务 / 计划 / MCP）canonical 在 `.agents/`，目录契约见 `.agents/README.md`。任何 agent 开工前：读本文件 → 查 `.agents/tasks/backlog.md` 是否有未完工作 → 按下表按需加载：
 
-| 场景 | 动作 |
-|---|---|
-| 写/改笔记 | 必须先读 `.agents/skills/noteviz-note-writing/SKILL.md` 并走其工作流 |
-| 接续未完工作 | 先读 `.agents/plans/` 未归档计划与 backlog 暂缓区触发条件 |
-| 接 MCP | 以 `.agents/mcp/servers.json` 为准，按契约同步到本工具 |
-| 工程约定 | `docs/engineering.md` |
+| 场景         | 动作                                                                 |
+| ------------ | -------------------------------------------------------------------- |
+| 写/改笔记    | 必须先读 `.agents/skills/noteviz-note-writing/SKILL.md` 并走其工作流 |
+| 接续未完工作 | 先读 `.agents/plans/` 未归档计划与 backlog 暂缓区触发条件            |
+| 接 MCP       | 以 `.agents/mcp/servers.json` 为准，按契约同步到本工具               |
+| 工程约定     | `docs/engineering.md`                                                |
 
 桥接层（如 `.opencode/skills/` 下的 symlink）是生成物：改内容只改 `.agents/`，桥接坏了重建，绝不反向编辑。
 
 ## 写笔记（重要）
 
-本仓库同时是用户的学习讨论空间：用户会以本仓库为根目录开启 AI agent 讨论技术知识。**讨论/学习过程中禁止主动创建笔记页面或触发 `noteviz-note-writing` skill**——只有用户明确要求"整理笔记"或"开始写笔记"时，才进入下述写作流程。
+本仓库同时是用户的学习讨论空间：用户会以本仓库为根目录开启 AI agent 讨论技术知识。**讨论/学习过程中禁止主动创建笔记页面或触发 `noteviz-note-writing` skill**——只有用户明确要求"整理笔记"或"开始写笔记"时才进入写作流程。
 
-创建或修改 `src/content/` 下的笔记时，**必须使用 `noteviz-note-writing` skill**，按其工作流执行。要点：
-
-1. **一篇一论 + 笔记类型**：笔记按知识点组织而非综合指南——一篇笔记 = 一个知识点；meta.type 四型（knowledge 知识 / question 问题 / practice 实战 / draft 草稿）决定标题规则——question 必须问句标题，knowledge/practice 允许陈述式，draft 免检且不进导航聚合；话题知识点多时先出拆分表格再逐篇写
-2. **禁止跳过大纲确认直接动笔**——先产出大纲提案（固定表格：标题 / 知识点 / 难度，每行一篇笔记）+ 询问熟悉程度，用户确认后才逐篇写正文
-3. 内容规范、组件 API、视觉规范、详略表全部在 skill 文件里（`.agents/skills/noteviz-note-writing/SKILL.md`）
-4. 组件签名以源码为准：`src/components/note/`（块流结构，桶导入 `@/components/note`）、`src/components/viz/` 与 `src/components/demo/`（各自桶导入）；工程侧约定（目录/闸门/状态管理/测试）见 `docs/engineering.md`
-5. 构建时自动扫描注册笔记并校验 meta 六字段（含 type 枚举与类型化标题规则），缺失/非法直接报错
+创建或修改 `src/content/` 下的笔记：**必须先读 `.agents/skills/noteviz-note-writing/SKILL.md` 并走其工作流**——一篇一论 + 笔记类型定标题规则、大纲确认表格先行（禁止跳过直接动笔）、meta 六字段过构建闸门。组件签名以源码为准（三个桶：`@/components/{note,viz,demo}`）；工程侧约定见 `docs/engineering.md`。
 
 ## 验证
 
