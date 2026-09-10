@@ -281,7 +281,7 @@
 
 ## 三、块流结构组件 `src/components/note/`
 
-架构见 BLOCK-SYSTEM.md：`NoteShell` 是唯一容器，内部平铺块流；**标题与内容平级**，禁止 Section/Prose 类结构容器。
+架构：`NoteShell` 是唯一容器，内部平铺块流；**标题与内容平级**，禁止 Section/Prose 类结构容器（裁决细节见 SKILL.md「块流架构」节）。
 
 ### `<Heading>` —— 标题块
 
@@ -360,6 +360,7 @@
 | `Footnote`               | 脚注        | 出处过多需要脚注区                                                                                 |                                     |
 | `H4`                     | 四级标题    | 小节内还需要一级细分标题                                                                           | 带大纲锚点                          |
 | `Breadcrumb`             | 路径导航    | 页面级 taxonomy 路径组件化                                                                         |                                     |
+| `Divider`                | 分隔块      | 正文确需非标题的强分隔时（默认不用——Heading 自带 mt-10 喘息）                                     | 一行 `<hr>`                          |
 
 ## 五、新组件开发流程
 

@@ -10,10 +10,8 @@ description: 为 NoteViz 学习站创建或修改笔记时使用。强制执行�
 
 ## 文件结构
 
-- 笔记位置：`src/content/<领域>/<技术>/<知识面>/<笔记名>/`，每篇含 `meta.ts` + `index.tsx`
-- 领域/技术/知识面需先在 `src/content/taxonomy.ts` 登记
-- 组件签名以源码为准：`src/components/note/`（块流结构组件目录，桶导入 `@/components/note`）、`src/components/viz/`（可视化目录）
-- 新增/修改笔记文件后 dev 自动重扫，无需重启
+- 笔记位置：`src/content/<领域>/<技术>/<知识面>/<笔记名>/`，每篇 `meta.ts` + `index.tsx`（可带私有组件）；领域/技术/知识面需先在 `src/content/taxonomy.ts` 登记
+- 新增/修改笔记后 dev 自动重扫，无需重启；组件签名以源码为准（三个桶，见下）
 
 ## 组件 API
 
@@ -50,7 +48,7 @@ import {
 } from "@/components/demo";
 ```
 
-- 架构裁决（块流 / 标题与内容平级 / 禁结构容器）见同目录 BLOCK-SYSTEM.md；已删除 Section/Subsection/Prose（→ `Heading` / 多个 `Paragraph`）
+- 块流架构裁决见下方「块流架构」节；已删除 Section/Subsection/Prose（→ `Heading` / 多个 `Paragraph`）
 - 可视化组件均自带 VizBlock 包壳，禁止二次包壳
 
 **可视化设计前置分析（强制）**：动笔前（大纲提案阶段）逐个分析本次的重点知识点——它属于哪种认知类型（见下方枚举），应该用什么视觉形式最有效地提升学习效果，而不是拿现成组件硬套内容。分析结果写入大纲提案（每个重点知识点 → 拟用的视觉形式）。**每个拟用组件都必须经过下方四步决策流程**。
@@ -71,7 +69,7 @@ import {
 
 **组件速查**：认知类型 → 组件、内容语义 → 组件两张速查总表见同目录 `COMPONENTS.md` 开头（含成本分级）；选型时逐条核对适用/不适用条件。
 
-产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（六字段：title——按类型定，question 必须问句、其余陈述式，≤25 字 / type——knowledge·question·practice·draft / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，内部是**平铺块流**——`<Heading>` 只放标题本身，段落/图表/列表等块与标题平级依次排列（架构裁决见 BLOCK-SYSTEM.md），私有子组件放同文件底部（超 150 行拆到同目录）。禁止 `<Section>`/`<Prose>` 等结构容器（已 deprecated）。
+产出文件模板：`meta.ts` 用 `satisfies NoteMeta`（六字段：title——按类型定，question 必须问句、其余陈述式，≤25 字 / type——knowledge·question·practice·draft / description / difficulty 入门·进阶·高级 / tags / updated）；`index.tsx` 默认导出 `function Note()`，根元素 `<NoteShell>`，内部是**平铺块流**——`<Heading>` 只放标题本身，段落/图表/列表等块与标题平级依次排列，私有子组件放同文件底部（超 150 行拆到同目录）。禁止 `<Section>`/`<Prose>` 等结构容器（已 deprecated）。
 
 ## 一篇一论：知识点拆分与笔记类型（硬性）
 
@@ -147,6 +145,13 @@ import {
 6. **答案默认折叠、点击显示（先想再看）**：模拟真实面试——先自己想，再点「显示参考答案」对照。阅读型笔记可传 `reveal="always"` 直接展开。禁止绕过组件手写问答列表。
 7. **追问链以短标签进大纲**：组件自动把每问以 `① 热身 · 问题摘要` 的短标签收录进右侧大纲（可跳转），问题全文不出现在大纲中。不要把追问链写成纯数组渲染的普通列表而绕过大纲；同理，其他可独立跳转的内容单元（如多个练习题、多个案例）也应挂 `data-toc-item`/`Subsection` 纳入大纲。
 
+## 块流架构（硬性裁决）
+
+- **平铺块流**：`NoteShell` 是唯一容器，内部直接堆叠块组件，无中间结构层；标题自己是块（`Heading` 无 children），内容块与标题是兄弟节点
+- **嵌套禁令**：禁止结构容器吞并异构内容（内容仅因"属于这一章"而被包裹）；允许数据驱动的同构子项（Timeline 的 step、Table 的 row，等同 `<li>` 之于 `<ul>`）与容器型块（Collapsible 展开体、MemoryCard 正文）。判断口诀：**删掉这个容器，内容是否仍然各自成立？**成立 → 容器违规
+- **间距模型**：`NoteShell` 不产生间距；块流间距完全由各块自带 `my-*` 驱动（轻语义卡 my-4 / VizBlock my-5 / Heading mt-10·mt-5），相邻兄弟边距自然塌缩
+- **大纲锚点**：由组件自动挂（`data-toc` / `data-toc-item`），写笔记不需要也不应该手写锚点
+
 ## 视觉规范（三层边界）
 
 | 层       | 包装                                            | 组件                                                                                     |
@@ -174,23 +179,16 @@ import {
 
 自查方法：逐段问"这句是对读者说的，还是对对话方说的？"——对对话方说的，删。
 
-## 质量自查（提交前）
+## 质量自查（提交前的飞行检查）
 
-- [ ] meta 六字段齐全（含 type），title 符合类型规则（question 问句）且 ≤25 字；全篇围绕标题论题展开
-- [ ] 多知识点话题已产出拆分表格（标题/知识点/难度）并经用户确认
-- [ ] 无综合大杂烩式笔记（一篇只回答一个问题；综合性内容走「整合应用」小节或独立整合篇）
-- [ ] 拆分归属检查已完成：独立知识点已独立成篇，补充细节已并入对应知识点篇（或已写明并入结论）
-- [ ] 已联网调研权威来源（官方文档/规范优先），关键结论有出处，规范级引用已注明
-- [ ] 大纲层级：Heading level 2/3 层次清晰；追问链以短标签出现在大纲中
-- [ ] 可视化按需密度：每块有明确认知功能、无装饰性块；无连续三屏纯文字
-- [ ] 重点知识点做过可视化形式分析并走完四步决策流程：优先复用组件库/npm 包，新开发的组件已放 `src/components/` 并登记进 COMPONENTS.md
-- [ ] 写大纲前查过 PAINPOINTS.md，反复提问的知识点已做可视化升级
-- [ ] 每个输出题都有 OutputTimeline 逐条解读
-- [ ] 内容纯净：无对话痕迹、无任务元话语、无工具操作说明
-- [ ] FlowChart 节点/边完整可见（React Flow fitView 保证，不手写坐标）
-- [ ] 新笔记 slug 已按知识难度与深度插入 taxonomy 对应知识面的 `order` 数组
-- [ ] 类比核查：无生活化故事；技术参照（如有）用的是高普及度技术且确有必要
-- [ ] `pnpm build` 通过（meta 校验是构建时强制的）
+内容细则以各节硬性要求为准，此处只列易漏的临门检查：
+
+- [ ] 走过大纲确认（拆分表格 + 归属检查 + PAINPOINTS 查询），未跳步直接动笔
+- [ ] 联网调研已完成、关键结论有出处；输出题是真实运行结果并配 OutputTimeline
+- [ ] 内容纯净：无对话痕迹 / 任务元话语 / 工具操作说明；无生活化类比
+- [ ] 视觉抽查：FlowChart 节点边完整可见；同一知识点无重复主图；追问链短标签已进大纲
+- [ ] 新组件已放 `src/components/` 并登记 COMPONENTS.md；新笔记 slug 已插入 taxonomy `order`
+- [ ] `pnpm build` 通过（六字段 / 链接 / 登记 / 语义色由构建闸门强制）
 
 ## 元约束（对本规范自身的约束）
 
