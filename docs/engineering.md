@@ -1,6 +1,6 @@
 # NoteViz 工程规范
 
-> 面向在本仓库写代码的人和 AI agent。笔记**写作**规范在 `.opencode/skills/noteviz-note-writing/`（SKILL / COMPONENTS / BLOCK-SYSTEM / PAINPOINTS），本文管**代码侧**的全部约定。
+> 面向在本仓库写代码的人和 AI agent。笔记**写作**规范在 `.agents/skills/noteviz-note-writing/`（SKILL / COMPONENTS / BLOCK-SYSTEM / PAINPOINTS），本文管**代码侧**的全部约定。
 
 ## 目录结构（职责单一）
 

@@ -5,3 +5,6 @@ dist
 .DS_Store
 .zcode/
 tsconfig.tsbuildinfo
+
+# AI 工作区本地状态（见 .agents/README.md）
+.agents/local/

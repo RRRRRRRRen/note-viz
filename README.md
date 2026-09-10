@@ -44,7 +44,7 @@ export const meta = {
 
 构建时自动扫描注册并校验（六字段 / 类型化标题 / 内部链接 / taxonomy 登记 / 语义色），违规直接构建失败。新领域/技术/知识面在 `src/content/taxonomy.ts` 登记（label / color / icon / order）。
 
-完整写作规范见 `.opencode/skills/noteviz-note-writing/`（一篇一论与笔记类型 / 组件选型字典 / 块流架构），工程约定见 `docs/engineering.md`。
+完整写作规范见 `.agents/skills/noteviz-note-writing/`（一篇一论与笔记类型 / 组件选型字典 / 块流架构），工程约定见 `docs/engineering.md`，AI 工作区契约见 `.agents/README.md`。
 
 ## 部署
 
