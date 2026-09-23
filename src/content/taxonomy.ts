@@ -135,6 +135,7 @@ export const taxonomy: Record<string, TaxonomyNode> = {
               "project-references",
               "type-lookup",
               "tool-conflicts",
+              "type-sources-placement",
             ],
           },
         },
@@ -250,10 +251,13 @@ export const taxonomy: Record<string, TaxonomyNode> = {
           },
           merge: {
             label: "合并",
-            order: ["three-way-merge"],
+            order: ["three-way-merge", "merge-policy"],
             children: {
               "three-way-merge": {
                 label: "三方合并与冲突",
+              },
+              "merge-policy": {
+                label: "merge 记录的配置与强制",
               },
             },
           },

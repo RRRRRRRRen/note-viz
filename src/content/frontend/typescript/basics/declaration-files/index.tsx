@@ -257,6 +257,11 @@ declare module "legacy-lib" { /* 按真实 API */ }`,
         title="下一个该问的问题"
         notes={[
           {
+            title: "为什么没有 import/export 的文件就是全局的？",
+            to: "/note/frontend/typescript/basics/scope-script-vs-module",
+            description: "声明如何进入作用域：脚本 vs 模块的判定、收录即生效、同名配对的忽略规则。",
+          },
+          {
             title: "TS 是怎么找到 npm 包的类型声明的？",
             to: "/note/frontend/engineering/typescript/type-lookup",
             description: "合同有了，查找的管道长什么样——types/typeRoots/@types 的完整水流图。",
