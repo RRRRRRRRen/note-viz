@@ -58,7 +58,13 @@ export const taxonomy: Record<string, TaxonomyNode> = {
         children: {
           basics: {
             label: "语言基础",
-            order: ["ts-feature-surface", "ts-version-history", "declaration-files"],
+            order: [
+              "ts-feature-surface",
+              "ts-version-history",
+              "declaration-files",
+              "scope-script-vs-module",
+              "declaration-merging",
+            ],
           },
         },
       },
@@ -85,6 +91,15 @@ export const taxonomy: Record<string, TaxonomyNode> = {
           fundamentals: {
             label: "工作原理",
             order: ["url-to-render", "reflow-repaint"],
+          },
+          positioning: {
+            label: "定位与坐标系",
+            order: [
+              "geolocation-signals",
+              "map-coordinate-systems",
+              "gcj02-algorithm",
+              "webview-geolocation-timeout",
+            ],
           },
         },
       },
