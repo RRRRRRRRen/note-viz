@@ -405,6 +405,12 @@ parent 579ef936dc624822fe5de5c11c098f73798d91e1   ← parent₂：feature 顶端
       <CrossRef
         notes={[
           {
+            title: "怎么让每次合并都留下 merge 记录？",
+            to: "/note/devtools/git/merge/merge-policy",
+            description:
+              "本文的 ff 机制落到工程策略层：merge.ff 与 pull.rebase 的配置组合，以及为什么强制协作者遵守只能靠服务端。",
+          },
+          {
             title: "origin/main 是远程上的分支吗？",
             to: "/note/devtools/git/remote/fetch-pull",
             description:
