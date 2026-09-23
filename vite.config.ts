@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { contentScan } from "./plugins/contentScan/index.ts";
 
 export default defineConfig({
+  // GitHub Pages 项目站点部署在 https://<user>.github.io/note-viz/ 子路径下
+  base: "/note-viz/",
   resolve: {
     // @ 别名单一来源在 tsconfig.json paths，这里开启 Vite 8 原生读取
     tsconfigPaths: true,
